@@ -1,0 +1,2604 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MR Chat — Games Arena</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0B0C10;
+            --bg-sidebar: #12131C;
+            --bg-card: #1F2029;
+            --bg-hover: #252736;
+            --pink-primary: #FF007F;
+            --pink-hover: #E0006C;
+            --pink-light: #FF66B2;
+            --text-main: #FFFFFF;
+            --text-muted: #8F92A1;
+            --glass-border: rgba(255, 0, 127, 0.15);
+            --success: #34C759;
+            --danger: #FF3B30;
+            --warning: #FFD700;
+            --info: #00E6FF;
+            --radius: 16px;
+            --radius-sm: 12px;
+            --love-red: #FF1744;
+            --love-pink: #FF4081;
+            --love-purple: #E040FB;
+            --love-orange: #FF9100;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: background-color 0.2s, border-color 0.2s, color 0.2s; }
+        body { background-color: var(--bg-main); color: var(--text-main); height: 100vh; overflow: hidden; }
+        .hidden { display: none !important; }
+
+        .games-layout { display: flex; flex-direction: column; width: 100vw; height: 100vh; overflow: hidden; }
+        .games-header {
+            height: 70px;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            flex-shrink: 0;
+        }
+        .games-header h1 { font-size: 1.25rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .games-header h1 i { color: var(--pink-primary); }
+        .nav-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover { border-color: var(--pink-primary); color: var(--pink-primary); }
+
+        .tabs-bar {
+            display: flex;
+            gap: 8px;
+            padding: 16px 30px;
+            background: var(--bg-sidebar);
+            border-bottom: 1px solid var(--glass-border);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .tabs-bar::-webkit-scrollbar { display: none; }
+        .tab-btn {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .tab-btn:hover { background: rgba(255, 0, 127, 0.06); color: var(--text-main); }
+        .tab-btn.active {
+            background: rgba(255, 0, 127, 0.12);
+            color: var(--pink-primary);
+            border-color: var(--glass-border);
+        }
+
+        .games-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--pink-primary) transparent;
+        }
+        .games-content::-webkit-scrollbar { width: 6px; }
+        .games-content::-webkit-scrollbar-thumb { background: var(--pink-primary); border-radius: 3px; }
+        .game-section { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== LOVE CALCULATOR STYLES ===== */
+        .love-arena {
+            max-width: 480px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .love-arena::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,0,127,0.03) 0%, transparent 70%);
+            animation: loveGlow 4s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes loveGlow {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 1; }
+        }
+        .love-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--love-red), var(--love-pink), var(--love-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+        .love-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 1;
+        }
+        .love-heart-main {
+            font-size: 4rem;
+            margin: 20px 0;
+            display: inline-block;
+            position: relative;
+            z-index: 1;
+        }
+        .love-heart-main.beating {
+            animation: heartBeat 1.2s ease-in-out infinite;
+        }
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+        .love-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        .love-input-group {
+            position: relative;
+        }
+        .love-input {
+            width: 100%;
+            padding: 14px 18px 14px 44px;
+            background: var(--bg-main);
+            border: 2px solid var(--glass-border);
+            border-radius: 14px;
+            color: var(--text-main);
+            font-size: 1rem;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .love-input:focus {
+            border-color: var(--love-pink);
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.15);
+        }
+        .love-input::placeholder { color: var(--text-muted); font-weight: 400; }
+        .love-input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--love-pink);
+            font-size: 1rem;
+        }
+        .love-vs {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--love-pink);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin: -4px 0;
+        }
+        .love-cost-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #FFD700;
+            position: relative;
+            z-index: 1;
+        }
+        .love-cooldown-bar {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 59, 48, 0.08);
+            border: 1px solid rgba(255, 59, 48, 0.2);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--danger);
+            position: relative;
+            z-index: 1;
+        }
+        .love-cooldown-bar.active { display: flex; }
+        .love-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--love-red), var(--love-pink));
+            border: none;
+            border-radius: 14px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(255, 23, 68, 0.3);
+        }
+        .love-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(255, 23, 68, 0.4);
+        }
+        .love-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .love-btn i { margin-right: 8px; }
+
+        .love-result-area {
+            margin-top: 24px;
+            position: relative;
+            z-index: 1;
+            min-height: 200px;
+        }
+        .love-result-area.hidden { display: none; }
+        .love-score-display {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--love-red), var(--love-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .love-progress-container {
+            width: 100%;
+            height: 16px;
+            background: var(--bg-main);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 16px 0;
+            border: 1px solid var(--glass-border);
+        }
+        .love-progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--love-red), var(--love-pink), var(--love-purple));
+            width: 0%;
+            transition: width 2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .love-progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .love-message {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin: 12px 0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: var(--bg-main);
+            border: 1px solid var(--glass-border);
+        }
+        .love-title-reward {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,0,127,0.15));
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #FFD700;
+            margin: 8px 0;
+            animation: titlePop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes titlePop {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            60% { transform: scale(1.1) rotate(2deg); }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+        }
+        .love-share-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        .love-share-btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .love-share-btn:hover { border-color: var(--pink-primary); color: var(--pink-primary); }
+
+        .love-history {
+            max-width: 480px;
+            margin: 20px auto 0;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+        .love-history h4 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .love-history-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg-main);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--glass-border);
+            font-size: 0.85rem;
+        }
+        .love-history-score {
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+        }
+        .love-history-names {
+            flex: 1;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .love-history-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .love-daily-lb {
+            max-width: 480px;
+            margin: 20px auto 0;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+        .love-daily-lb h4 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .love-lb-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg-main);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--glass-border);
+            transition: transform 0.15s;
+        }
+        .love-lb-row:hover { transform: scale(1.01); border-color: var(--love-pink); }
+        .love-lb-rank {
+            font-weight: 700;
+            width: 28px;
+            text-align: center;
+            color: var(--love-pink);
+        }
+        .love-lb-name { flex: 1; font-weight: 600; font-size: 0.85rem; }
+        .love-lb-score {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--love-red);
+        }
+
+        .sound-toggle {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            z-index: 2;
+            background: var(--bg-main);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sound-toggle:hover { color: var(--love-pink); border-color: var(--love-pink); }
+        .sound-toggle.active { color: var(--love-pink); }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 25000;
+        }
+
+        /* Existing game styles */
+        .dice-arena {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 30px;
+            text-align: center;
+        }
+        .gold-display-bar {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #FFD700;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: rgba(255,215,0,0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .bet-selection { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .bet-btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+        .bet-btn:hover, .bet-btn.selected {
+            border-color: var(--pink-primary);
+            background: rgba(255,0,127,0.1);
+            color: var(--pink-primary);
+            box-shadow: 0 0 10px rgba(255,0,127,0.2);
+        }
+        .dice-stage { display: flex; justify-content: center; margin: 30px 0; perspective: 800px; }
+        .dice {
+            width: 100px; height: 100px;
+            background: var(--bg-main);
+            border-radius: 20px;
+            border: 2px solid var(--pink-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--pink-primary);
+            box-shadow: 0 0 30px rgba(255,0,127,0.3);
+            transition: transform 0.1s;
+        }
+        .dice.rolling { animation: diceRoll 0.6s linear infinite; }
+        @keyframes diceRoll {
+            0% { transform: rotateX(0) rotateY(0); }
+            25% { transform: rotateX(90deg) rotateY(90deg); }
+            50% { transform: rotateX(180deg) rotateY(180deg); }
+            75% { transform: rotateX(270deg) rotateY(270deg); }
+            100% { transform: rotateX(360deg) rotateY(360deg); }
+        }
+        .dice-result { min-height: 24px; font-weight: 600; margin: 15px 0; font-size: 1.1rem; }
+        .dice-history {
+            max-height: 180px;
+            overflow-y: auto;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border-top: 1px solid var(--glass-border);
+            padding-top: 12px;
+        }
+        .dice-history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .dice-history-item:last-child { border-bottom: none; }
+
+        .quiz-arena {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 30px;
+        }
+        .quiz-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .quiz-timer-box {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--pink-primary);
+        }
+        .quiz-question-box {
+            background: var(--bg-main);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+        .quiz-options { display: flex; flex-direction: column; gap: 12px; }
+        .quiz-opt-btn {
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: var(--bg-main);
+            color: var(--text-main);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+        .quiz-opt-btn:hover { border-color: var(--pink-primary); }
+        .quiz-result-area { margin-top: 20px; text-align: center; min-height: 30px; font-weight: 600; font-size: 1.05rem; }
+        .quiz-leaderboard-mini { margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 20px; }
+        .quiz-leader { display: flex; align-items: center; gap: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 6px; }
+
+        .lb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
+        .lb-card { background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 24px; }
+        .lb-card h3 { font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .lb-row { display: flex; align-items: center; gap: 12px; padding: 10px; background: var(--bg-main); border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 8px; transition: transform 0.15s; }
+        .lb-row:hover { transform: scale(1.01); border-color: var(--pink-primary); }
+        .lb-rank { font-size: 1.1rem; font-weight: 700; width: 36px; text-align: center; color: var(--pink-primary); }
+        .lb-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--pink-primary); }
+        .lb-name { flex: 1; font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .lb-stat { font-weight: 700; font-size: 0.9rem; }
+
+        .main-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--pink-primary);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .main-btn:hover { background: var(--pink-hover); transform: translateY(-1px); }
+        .main-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 30000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            background: var(--bg-sidebar);
+            border: 1px solid var(--glass-border);
+            border-left: 4px solid var(--pink-primary);
+            color: var(--text-main);
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            animation: slideIn 0.3s ease-out;
+            pointer-events: auto;
+            max-width: 360px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.success { border-left-color: var(--success); }
+        .toast.error { border-left-color: var(--danger); }
+        .toast.love { border-left-color: var(--love-red); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        @media (max-width: 768px) {
+            .games-header { padding: 0 16px; }
+            .games-content { padding: 16px; }
+            .tabs-bar { padding: 12px 16px; }
+            .dice-arena, .quiz-arena, .love-arena { padding: 20px; }
+            .lb-grid { grid-template-columns: 1fr; }
+            .love-score-display { font-size: 2.5rem; }
+            .love-heart-main { font-size: 3rem; }
+        }
+        @media (max-width: 380px) {
+            .love-title { font-size: 1.3rem; }
+            .love-share-row { flex-direction: column; }
+            .love-share-btn { width: 100%; justify-content: center; }
+        }
+    
+        /* ===== MEMORY MATCH GAME ===== */
+        .memory-arena {
+            max-width: 420px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+        }
+        .memory-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #00E6FF, #00B0FF, #7B61FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+        .memory-stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 16px 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .memory-stat {
+            background: var(--bg-main);
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+        }
+        .memory-stat strong {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            display: block;
+        }
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px auto;
+            max-width: 360px;
+        }
+        .memory-card {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #1a1c2e, #252736);
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+        .memory-card:hover:not(.flipped):not(.matched) {
+            border-color: var(--info);
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 230, 255, 0.2);
+        }
+        .memory-card.flipped {
+            background: var(--bg-main);
+            border-color: var(--info);
+            transform: rotateY(180deg);
+        }
+        .memory-card.matched {
+            background: rgba(52, 199, 89, 0.15);
+            border-color: var(--success);
+            animation: matchPulse 0.5s ease;
+            pointer-events: none;
+        }
+        .memory-card .card-front {
+            position: absolute;
+            backface-visibility: hidden;
+            transform: rotateY(180deg);
+        }
+        .memory-card .card-back {
+            font-size: 1.4rem;
+            color: var(--info);
+        }
+        .memory-card.matched .card-front {
+            filter: grayscale(0.3);
+        }
+        @keyframes matchPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+        .memory-reward-bar {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: #FFD700;
+        }
+        .memory-difficulty {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .memory-diff-btn {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+            background: var(--bg-main);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .memory-diff-btn:hover, .memory-diff-btn.active {
+            border-color: var(--info);
+            color: var(--info);
+            background: rgba(0, 230, 255, 0.08);
+        }
+
+        /* ===== NUMBER GUESS GAME ===== */
+        .guess-arena {
+            max-width: 440px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 28px;
+            text-align: center;
+        }
+        .guess-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #FFD700, #FF9100, #FF1744);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+        .guess-mystery-box {
+            width: 120px;
+            height: 120px;
+            margin: 20px auto;
+            background: linear-gradient(135deg, #252736, #1a1c2e);
+            border: 3px solid var(--glass-border);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            transition: all 0.4s;
+        }
+        .guess-mystery-box.revealed {
+            border-color: #FFD700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            animation: revealBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes revealBounce {
+            0% { transform: scale(0.5) rotate(-10deg); }
+            60% { transform: scale(1.1) rotate(3deg); }
+            100% { transform: scale(1) rotate(0); }
+        }
+        .guess-range-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--bg-main);
+            border-radius: 12px;
+            margin: 16px 0;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        .guess-range-min { color: var(--info); }
+        .guess-range-max { color: var(--love-red); }
+        .guess-input-area {
+            display: flex;
+            gap: 10px;
+            margin: 16px 0;
+        }
+        .guess-input {
+            flex: 1;
+            padding: 14px;
+            background: var(--bg-main);
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .guess-input:focus {
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.15);
+        }
+        .guess-btn {
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #FFD700, #FF9100);
+            border: none;
+            border-radius: 12px;
+            color: #000;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .guess-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+        .guess-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .guess-hint {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 12px 0;
+            min-height: 28px;
+        }
+        .guess-hint.hot { color: #FF1744; }
+        .guess-hint.warm { color: #FF9100; }
+        .guess-hint.cold { color: #00E6FF; }
+        .guess-hint.win { color: #34C759; }
+        .guess-attempts {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin: 12px 0;
+            flex-wrap: wrap;
+        }
+        .guess-attempt-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-main);
+            border: 2px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            transition: all 0.3s;
+        }
+        .guess-attempt-dot.hot { background: rgba(255, 23, 68, 0.2); border-color: #FF1744; color: #FF1744; }
+        .guess-attempt-dot.warm { background: rgba(255, 145, 0, 0.2); border-color: #FF9100; color: #FF9100; }
+        .guess-attempt-dot.cold { background: rgba(0, 230, 255, 0.2); border-color: #00E6FF; color: #00E6FF; }
+        .guess-attempt-dot.win { background: rgba(52, 199, 89, 0.2); border-color: #34C759; color: #34C759; }
+        .guess-rewards {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            color: #FFD700;
+        }
+        .guess-leaderboard-mini {
+            max-width: 440px;
+            margin: 20px auto 0;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            padding: 20px;
+        }
+        .guess-leaderboard-mini h4 {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .guess-lb-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg-main);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid var(--glass-border);
+            font-size: 0.85rem;
+        }
+        .guess-lb-rank {
+            font-weight: 700;
+            width: 28px;
+            text-align: center;
+            color: #FFD700;
+        }
+        .guess-lb-name { flex: 1; font-weight: 600; }
+        .guess-lb-stat { font-weight: 700; color: #FFD700; }
+
+    </style>
+</head>
+<body>
+    <div class="games-layout">
+        <div class="games-header">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="nav-btn" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Back to App</button>
+                <h1><i class="fas fa-gamepad"></i> Games Arena</h1>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 700; color: #FFD700;">
+                    <i class="fas fa-coins"></i> <span id="header-gold">0</span>
+                </div>
+                <button class="nav-btn" onclick="window.location.href='store.html'"><i class="fas fa-store"></i> Store</button>
+            </div>
+        </div>
+
+        <div class="tabs-bar">
+            <button class="tab-btn" data-tab="dice" onclick="switchGameTab('dice')"><i class="fas fa-dice"></i> Dice Arena</button>
+            <button class="tab-btn" data-tab="quiz" onclick="switchGameTab('quiz')"><i class="fas fa-brain"></i> Science Quiz</button>
+            <button class="tab-btn active" data-tab="love" onclick="switchGameTab('love')"><i class="fas fa-heart" style="color: var(--love-red);"></i> Love Calc</button>
+            <button class="tab-btn" data-tab="memory" onclick="switchGameTab('memory')"><i class="fas fa-puzzle-piece" style="color: #00E6FF;"></i> Memory Match</button>
+            <button class="tab-btn" data-tab="guess" onclick="switchGameTab('guess')"><i class="fas fa-question-circle" style="color: #FFD700;"></i> Guess Num</button>
+            
+            <!-- NEW EXTERNAL GAME BUTTONS -->
+            <button class="tab-btn" onclick="window.location.href='cricket.html'"><i class="fas fa-baseball-bat-ball" style="color: #0ea5e9;"></i> Cricket</button>
+            <button class="tab-btn" onclick="window.location.href='football.html'"><i class="fas fa-futbol" style="color: #10b981;"></i> Football</button>
+            <button class="tab-btn" onclick="window.location.href='mathematics.html'"><i class="fas fa-calculator" style="color: #8b5cf6;"></i> Math</button>
+            
+            <button class="tab-btn" data-tab="leaderboards" onclick="switchGameTab('leaderboards')"><i class="fas fa-trophy"></i> Leaderboards</button>
+        </div>
+
+        <div class="games-content">
+            <!-- Dice Section -->
+            <div id="tab-dice" class="game-section hidden">
+                <div class="dice-arena">
+                    <h2 style="margin-bottom: 5px;"><i class="fas fa-dice" style="color: var(--pink-primary);"></i> Dice Arena</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Test your luck. Win big.</p>
+                    <div class="gold-display-bar">
+                        <i class="fas fa-coins"></i>
+                        <span id="dice-gold-balance">0</span> Gold
+                    </div>
+                    <div class="bet-selection">
+                        <button class="bet-btn selected" data-bet="100">100</button>
+                        <button class="bet-btn" data-bet="500">500</button>
+                        <button class="bet-btn" data-bet="1000">1K</button>
+                        <button class="bet-btn" data-bet="5000">5K</button>
+                    </div>
+                    <div class="dice-stage">
+                        <div class="dice" id="dice-1"><div class="dice-face">?</div></div>
+                    </div>
+                    <div class="dice-result" id="dice-result" style="color: var(--text-muted);">Select your bet and roll!</div>
+                    <button id="roll-dice-btn" class="main-btn" style="max-width: 220px; margin: 20px auto 0;">ROLL DICE</button>
+                    <div class="dice-history" id="dice-history">
+                        <p style="text-align:center; opacity:0.5; padding: 10px;">No games yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Section -->
+            <div id="tab-quiz" class="game-section hidden">
+                <div class="quiz-arena">
+                    <h2 style="margin-bottom: 5px; text-align: center;"><i class="fas fa-brain" style="color: var(--pink-primary);"></i> Science Quiz</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px; text-align: center;">Answer fast. Win Gold. Questions are set by admins.</p>
+
+                    <div id="quiz-start-screen" style="text-align: center; padding: 40px 20px;">
+                        <div style="font-size: 3rem; margin-bottom: 16px;">🧪</div>
+                        <h3 style="margin-bottom: 10px;">Ready to test your knowledge?</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 24px;">10 questions • 15 seconds each • Win up to 500 Gold</p>
+                        <button class="main-btn" style="max-width: 200px; margin: 0 auto;" onclick="startQuizGame()">Start Quiz</button>
+                    </div>
+
+                    <div id="quiz-play-screen" class="hidden">
+                        <div class="quiz-header-bar">
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">Question <span id="quiz-current-q" style="color: var(--pink-primary); font-weight: 700;">1</span>/<span id="quiz-total-q">10</span></div>
+                            <div class="quiz-timer-box" id="quiz-timer">15s</div>
+                        </div>
+                        <div class="quiz-question-box" id="quiz-question-box">Loading...</div>
+                        <div class="quiz-options" id="quiz-options"></div>
+                        <div class="quiz-result-area" id="quiz-result-area"></div>
+                        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+                            <button id="quiz-next-btn" class="main-btn hidden" style="max-width: 160px;" onclick="nextQuizQuestion()">Next Question</button>
+                        </div>
+                    </div>
+
+                    <div id="quiz-end-screen" class="hidden" style="text-align: center; padding: 30px 20px;">
+                        <div id="quiz-end-emoji" style="font-size: 3rem; margin-bottom: 10px;">🎉</div>
+                        <h3 id="quiz-end-title" style="margin-bottom: 8px;">Quiz Complete!</h3>
+                        <p id="quiz-end-msg" style="color: var(--text-muted); margin-bottom: 20px;">You scored 0/10</p>
+                        <button class="main-btn" style="max-width: 200px; margin: 0 auto;" onclick="resetQuizUI()">Play Again</button>
+                    </div>
+
+                    <div class="quiz-leaderboard-mini">
+                        <h4 style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-muted);"><i class="fas fa-trophy"></i> Quiz Leaders</h4>
+                        <div id="quiz-leaders-list">
+                            <p style="text-align: center; color: var(--text-muted); padding: 10px;">No quiz data yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOVE CALCULATOR SECTION -->
+            <div id="tab-love" class="game-section">
+                <div class="love-arena">
+                    <button class="sound-toggle" id="love-sound-toggle" onclick="toggleLoveSound()" title="Toggle sound">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+
+                    <div class="love-title">❤️ Love Calculator</div>
+                    <div class="love-subtitle">Discover your destiny. Just for fun! 💕</div>
+
+                    <div class="love-heart-main" id="love-heart">💝</div>
+
+                    <div class="love-inputs">
+                        <div class="love-input-group">
+                            <i class="fas fa-user love-input-icon"></i>
+                            <input type="text" class="love-input" id="love-name1" placeholder="Your Name" maxlength="20" autocomplete="off">
+                        </div>
+                        <div class="love-vs">VS</div>
+                        <div class="love-input-group">
+                            <i class="fas fa-user love-input-icon"></i>
+                            <input type="text" class="love-input" id="love-name2" placeholder="Their Name" maxlength="20" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="love-cost-bar" id="love-cost-bar">
+                        <i class="fas fa-coins"></i> Costs <strong>100 Gold</strong> per calculation
+                    </div>
+                    <div class="love-cooldown-bar" id="love-cooldown-bar">
+                        <i class="fas fa-clock"></i> Cooldown: <span id="love-cooldown-timer">0</span>s
+                    </div>
+
+                    <button class="love-btn" id="love-calc-btn" onclick="calculateLove()">
+                        <i class="fas fa-heart"></i> Calculate Love
+                    </button>
+
+                    <div class="love-result-area hidden" id="love-result-area">
+                        <div class="love-score-display" id="love-score">0%</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Compatibility Score</div>
+                        <div class="love-progress-container">
+                            <div class="love-progress-bar" id="love-progress"></div>
+                        </div>
+                        <div class="love-message" id="love-message"></div>
+                        <div id="love-title-area"></div>
+                        <div class="love-share-row">
+                            <button class="love-share-btn" onclick="shareLoveResult()">
+                                <i class="fas fa-share-alt"></i> Share
+                            </button>
+                            <button class="love-share-btn" onclick="resetLoveCalc()">
+                                <i class="fas fa-redo"></i> Try Again
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="love-history">
+                    <h4><i class="fas fa-history"></i> Your History</h4>
+                    <div id="love-history-list">
+                        <p style="text-align: center; color: var(--text-muted); padding: 10px;">No calculations yet</p>
+                    </div>
+                </div>
+
+                <div class="love-daily-lb">
+                    <h4><i class="fas fa-trophy"></i> Today's Top Matches</h4>
+                    <div id="love-daily-lb-list">
+                        <p style="text-align: center; color: var(--text-muted); padding: 10px;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            
+            <!-- MEMORY MATCH SECTION -->
+            <div id="tab-memory" class="game-section hidden">
+                <div class="memory-arena">
+                    <div class="memory-title">🧩 Memory Match</div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Find all matching pairs. Fastest wins gold!</p>
+
+                    <div class="memory-difficulty">
+                        <button class="memory-diff-btn active" data-diff="easy" onclick="setMemoryDiff('easy')">Easy (4x3)</button>
+                        <button class="memory-diff-btn" data-diff="medium" onclick="setMemoryDiff('medium')">Medium (4x4)</button>
+                        <button class="memory-diff-btn" data-diff="hard" onclick="setMemoryDiff('hard')">Hard (4x5)</button>
+                    </div>
+
+                    <div class="memory-stats">
+                        <div class="memory-stat">Moves<br><strong id="memory-moves">0</strong></div>
+                        <div class="memory-stat">Time<br><strong id="memory-time">0s</strong></div>
+                        <div class="memory-stat">Pairs<br><strong id="memory-pairs">0/6</strong></div>
+                    </div>
+
+                    <div class="memory-grid" id="memory-grid"></div>
+
+                    <button class="main-btn" id="memory-start-btn" onclick="startMemoryGame()" style="max-width: 200px; margin: 0 auto;">
+                        <i class="fas fa-play"></i> Start Game
+                    </button>
+
+                    <div class="memory-reward-bar" id="memory-reward-bar" style="display:none;">
+                        <i class="fas fa-coins"></i> <span id="memory-reward-text">Complete to win Gold!</span>
+                    </div>
+                </div>
+
+                <div class="love-daily-lb" style="margin-top: 20px;">
+                    <h4><i class="fas fa-trophy"></i> Memory Masters</h4>
+                    <div id="memory-lb-list">
+                        <p style="text-align: center; color: var(--text-muted); padding: 10px;">No records yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NUMBER GUESS SECTION -->
+            <div id="tab-guess" class="game-section hidden">
+                <div class="guess-arena">
+                    <div class="guess-title">🔢 Guess the Number</div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">Guess the secret number. Win up to 500 Gold!</p>
+
+                    <div class="gold-display-bar" style="margin-bottom: 16px;">
+                        <i class="fas fa-coins"></i>
+                        <span id="guess-gold-display">0</span> Gold
+                    </div>
+
+                    <div class="guess-mystery-box" id="guess-mystery-box">❓</div>
+
+                    <div class="guess-range-bar">
+                        <span class="guess-range-min" id="guess-min">1</span>
+                        <span style="color: var(--text-muted);">Range</span>
+                        <span class="guess-range-max" id="guess-max">100</span>
+                    </div>
+
+                    <div class="guess-input-area">
+                        <input type="number" class="guess-input" id="guess-input" placeholder="?" min="1" max="100">
+                        <button class="guess-btn" id="guess-submit-btn" onclick="submitGuess()">GUESS</button>
+                    </div>
+
+                    <div class="guess-hint" id="guess-hint">Enter a number and press GUESS!</div>
+
+                    <div class="guess-attempts" id="guess-attempts"></div>
+
+                    <div class="guess-rewards" id="guess-rewards">
+                        <i class="fas fa-gift"></i> Win <strong>500 Gold</strong> in 5 tries, <strong>200</strong> in 7, <strong>100</strong> in 10
+                    </div>
+
+                    <button class="main-btn" id="guess-new-btn" onclick="startNewGuessGame()" style="max-width: 200px; margin: 16px auto 0; display: none;">
+                        <i class="fas fa-redo"></i> New Game
+                    </button>
+                </div>
+
+                <div class="guess-leaderboard-mini">
+                    <h4><i class="fas fa-trophy"></i> Best Guessers</h4>
+                    <div id="guess-lb-list">
+                        <p style="text-align: center; color: var(--text-muted); padding: 10px;">No records yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboards Section -->
+            <div id="tab-leaderboards" class="game-section hidden">
+                <div class="lb-grid">
+                    <div class="lb-card">
+                        <h3><i class="fas fa-coins" style="color: #FFD700;"></i> Gold Leaderboard</h3>
+                        <div id="gold-lb-list"><p style="text-align:center; color: var(--text-muted); padding: 20px;">Loading...</p></div>
+                    </div>
+                    <div class="lb-card">
+                        <h3><i class="fas fa-trophy" style="color: var(--pink-primary);"></i> Level Leaderboard</h3>
+                        <div id="level-lb-list"><p style="text-align:center; color: var(--text-muted); padding: 20px;">Loading...</p></div>
+                    </div>
+                    <div class="lb-card">
+                        <h3><i class="fas fa-brain" style="color: var(--success);"></i> Quiz Leaders</h3>
+                        <div id="quiz-lb-list"><p style="text-align:center; color: var(--text-muted); padding: 20px;">Loading...</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+    <canvas id="confetti-canvas"></canvas>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, orderBy, onSnapshot, addDoc, increment, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCr9Bfn4Ep-qw9JFkguyak00dsN90GSgRY",
+            authDomain: "mr-chatting-ff2b6.firebaseapp.com",
+            projectId: "mr-chatting-ff2b6",
+            storageBucket: "mr-chatting-ff2b6.firebasestorage.app",
+            messagingSenderId: "710151594912",
+            appId: "1:710151594912:web:bc2861e503db1481223ac5",
+            measurementId: "G-NNXG57V3KL"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let userGold = 0;
+        let selectedDiceBet = 100;
+        let quizQuestions = [];
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let quizTimer = null;
+        let quizTimeLeft = 15;
+        let quizAnswered = false;
+        let quizActive = false;
+        let goldLbUnsub = null;
+        let levelLbUnsub = null;
+        let quizLbUnsub = null;
+        let loveLbUnsub = null;
+        let loveSoundEnabled = true;
+        let loveCooldownActive = false;
+        let loveCooldownTimer = null;
+        const LOVE_COOLDOWN_SECONDS = 5;
+        const LOVE_COST = 100;
+
+        // ===== SOUND EFFECTS =====
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+        }
+
+        function playLoveSound(type) {
+            if (!loveSoundEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'calculate') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(784, audioCtx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                } else if (type === 'high') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.15);
+                    osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.3);
+                    osc.frequency.setValueAtTime(1047, audioCtx.currentTime + 0.45);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.8);
+                } else if (type === 'low') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.4);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                } else if (type === 'tick') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+                }
+            } catch(e) {}
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = user;
+            const snap = await getDoc(doc(db, "users", user.uid));
+            if (snap.exists()) {
+                const data = snap.data();
+                userGold = data.gold || 0;
+                document.getElementById('header-gold').innerText = userGold.toLocaleString();
+                document.getElementById('dice-gold-balance').innerText = userGold.toLocaleString();
+                document.getElementById('guess-gold-display').innerText = userGold.toLocaleString();
+            }
+            loadDiceHistory();
+            loadQuizLeaderboard();
+            loadLoveHistory();
+            loadLoveDailyLeaderboard();
+            loadMemoryLeaderboard();
+            loadGuessLeaderboard();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam && ['dice','quiz','love','memory','guess','leaderboards'].includes(tabParam)) {
+                switchGameTab(tabParam);
+            }
+        });
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            const icons = { info: 'fa-info-circle', success: 'fa-check-circle', error: 'fa-circle-xmark', love: 'fa-heart' };
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.info}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        window.switchGameTab = function(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+            document.querySelectorAll('.game-section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            if (tab === 'leaderboards') {
+                loadGoldLeaderboard();
+                loadLevelLeaderboard();
+                loadQuizLeaderboard();
+            } else if (tab === 'love') {
+                loadLoveDailyLeaderboard();
+                loadLoveHistory();
+            } else if (tab === 'memory') {
+                loadMemoryLeaderboard();
+            } else if (tab === 'guess') {
+                loadGuessLeaderboard();
+                document.getElementById('guess-gold-display').innerText = userGold.toLocaleString();
+                if (!guessGameActive) startNewGuessGame();
+            }
+        };
+
+        // ===== LOVE CALCULATOR GAME =====
+        const LOVE_MESSAGES = {
+            0: { msg: "Maybe try being friends first? 😅", color: "#FF3B30" },
+            10: { msg: "It's complicated... very complicated. 🤷", color: "#FF3B30" },
+            20: { msg: "Not impossible, but you'd need a miracle! ✨", color: "#FF6B35" },
+            30: { msg: "There's a spark... somewhere. Maybe. 🔥", color: "#FF9100" },
+            40: { msg: "Could work if you both try REALLY hard. 💪", color: "#FFAB00" },
+            50: { msg: "50/50! It's a coin flip! 🪙", color: "#FFD700" },
+            60: { msg: "Not bad! There's definitely potential. 😉", color: "#C6FF00" },
+            70: { msg: "Pretty good match! Go for it! 💕", color: "#76FF03" },
+            80: { msg: "Great chemistry! This could be special! 🌟", color: "#00E676" },
+            90: { msg: "Amazing match! Soulmates? Maybe! 🔥❤️", color: "#00B0FF" },
+            100: { msg: "PERFECT MATCH! The stars have aligned! 💫💖", color: "#FFD700" }
+        };
+
+        const LOVE_TITLES = [
+            { min: 95, title: "💫 Cosmic Lovers", rarity: "Legendary" },
+            { min: 85, title: "🔥 Power Couple", rarity: "Epic" },
+            { min: 75, title: "💕 Sweethearts", rarity: "Rare" },
+            { min: 65, title: "🌟 Good Match", rarity: "Uncommon" },
+            { min: 50, title: "🤝 Potential Pair", rarity: "Common" },
+            { min: 30, title: "😅 Friends Maybe?", rarity: "Common" },
+            { min: 0, title: "💔 Disaster Zone", rarity: "Common" }
+        ];
+
+        function getLoveMessage(score) {
+            const keys = Object.keys(LOVE_MESSAGES).map(Number).sort((a, b) => b - a);
+            for (const key of keys) {
+                if (score >= key) return LOVE_MESSAGES[key];
+            }
+            return LOVE_MESSAGES[0];
+        }
+
+        function getLoveTitle(score) {
+            for (const t of LOVE_TITLES) {
+                if (score >= t.min) return t;
+            }
+            return LOVE_TITLES[LOVE_TITLES.length - 1];
+        }
+
+        function seededRandom(seed) {
+            let x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function generateLoveScore(name1, name2) {
+            const combined = (name1.toLowerCase().trim() + name2.toLowerCase().trim()).replace(/\s/g, '');
+            let hash = 0;
+            for (let i = 0; i < combined.length; i++) {
+                hash = ((hash << 5) - hash) + combined.charCodeAt(i);
+                hash |= 0;
+            }
+            const seed = Math.abs(hash);
+            const base = Math.floor(seededRandom(seed) * 101);
+
+            const daySeed = new Date().getDate() + new Date().getMonth() * 31;
+            const variance = Math.floor(seededRandom(seed + daySeed) * 11) - 5;
+            let final = Math.max(0, Math.min(100, base + variance));
+
+            const rareRoll = seededRandom(seed + daySeed + 999);
+            if (rareRoll < 0.02) final = 100;
+            else if (rareRoll > 0.98) final = 0;
+
+            return final;
+        }
+
+        window.toggleLoveSound = function() {
+            loveSoundEnabled = !loveSoundEnabled;
+            const btn = document.getElementById('love-sound-toggle');
+            btn.innerHTML = loveSoundEnabled ? '<i class="fas fa-volume-up"></i>' : '<i class="fas fa-volume-mute"></i>';
+            btn.classList.toggle('active', loveSoundEnabled);
+            if (loveSoundEnabled) initAudio();
+        };
+
+        window.calculateLove = async function() {
+            if (!currentUser) { showToast('Please login first', 'error'); return; }
+            if (loveCooldownActive) { showToast('Please wait for cooldown!', 'error'); return; }
+
+            initAudio();
+
+            const name1 = document.getElementById('love-name1').value.trim();
+            const name2 = document.getElementById('love-name2').value.trim();
+
+            if (!name1 || !name2) {
+                showToast('Enter both names!', 'error');
+                return;
+            }
+            if (name1.length < 2 || name2.length < 2) {
+                showToast('Names must be at least 2 characters!', 'error');
+                return;
+            }
+
+            if (userGold < LOVE_COST) {
+                showToast(`Not enough Gold! Need ${LOVE_COST} Gold.`, 'error');
+                return;
+            }
+
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), { gold: increment(-LOVE_COST) });
+                userGold -= LOVE_COST;
+                document.getElementById('header-gold').innerText = userGold.toLocaleString();
+                document.getElementById('dice-gold-balance').innerText = userGold.toLocaleString();
+                document.getElementById('guess-gold-display').innerText = userGold.toLocaleString();
+            } catch(e) { showToast('Error processing gold', 'error'); return; }
+
+            const btn = document.getElementById('love-calc-btn');
+            const heart = document.getElementById('love-heart');
+            const resultArea = document.getElementById('love-result-area');
+            btn.disabled = true;
+            heart.classList.add('beating');
+            resultArea.classList.add('hidden');
+            playLoveSound('calculate');
+
+            let tickCount = 0;
+            const tickInterval = setInterval(() => {
+                tickCount++;
+                const fakeScore = Math.floor(Math.random() * 101);
+                document.getElementById('love-score').innerText = fakeScore + '%';
+                document.getElementById('love-progress').style.width = fakeScore + '%';
+                if (tickCount % 3 === 0) playLoveSound('tick');
+            }, 80);
+
+            setTimeout(async () => {
+                clearInterval(tickInterval);
+                const score = generateLoveScore(name1, name2);
+                const msgData = getLoveMessage(score);
+                const titleData = getLoveTitle(score);
+
+                document.getElementById('love-score').innerText = score + '%';
+                document.getElementById('love-progress').style.width = score + '%';
+                document.getElementById('love-message').innerText = msgData.msg;
+                document.getElementById('love-message').style.color = msgData.color;
+                document.getElementById('love-message').style.borderColor = msgData.color + '40';
+
+                const titleArea = document.getElementById('love-title-area');
+                titleArea.innerHTML = `<div class="love-title-reward">🏆 ${titleData.title} <span style="opacity:0.7;font-size:0.75rem;">(${titleData.rarity})</span></div>`;
+
+                resultArea.classList.remove('hidden');
+                heart.classList.remove('beating');
+
+                if (score >= 80) {
+                    playLoveSound('high');
+                    fireConfetti();
+                    showToast(`Amazing! ${score}% match!`, 'love');
+                } else if (score <= 20) {
+                    playLoveSound('low');
+                    showToast(`Oof... ${score}% match.`, 'error');
+                } else {
+                    showToast(`Love score: ${score}%`, 'info');
+                }
+
+                try {
+                    await addDoc(collection(db, "love_calculations"), {
+                        userId: currentUser.uid,
+                        userName: currentUser.displayName || 'User',
+                        name1: name1,
+                        name2: name2,
+                        score: score,
+                        title: titleData.title,
+                        rarity: titleData.rarity,
+                        timestamp: serverTimestamp(),
+                        dateKey: getDateKey()
+                    });
+                } catch(e) {}
+
+                if (score >= 65) {
+                    try {
+                        const userRef = doc(db, "users", currentUser.uid);
+                        const userSnap = await getDoc(userRef);
+                        const userData = userSnap.data() || {};
+                        const titles = userData.loveTitles || [];
+                        if (!titles.includes(titleData.title)) {
+                            titles.push(titleData.title);
+                            await updateDoc(userRef, { loveTitles: titles });
+                        }
+                    } catch(e) {}
+                }
+
+                loadLoveHistory();
+                loadLoveDailyLeaderboard();
+                startLoveCooldown();
+                btn.disabled = false;
+
+            }, 2000);
+        };
+
+        function startLoveCooldown() {
+            loveCooldownActive = true;
+            const bar = document.getElementById('love-cooldown-bar');
+            const timerEl = document.getElementById('love-cooldown-timer');
+            const costBar = document.getElementById('love-cost-bar');
+            bar.classList.add('active');
+            costBar.style.display = 'none';
+
+            let remaining = LOVE_COOLDOWN_SECONDS;
+            timerEl.innerText = remaining;
+
+            loveCooldownTimer = setInterval(() => {
+                remaining--;
+                timerEl.innerText = remaining;
+                if (remaining <= 0) {
+                    clearInterval(loveCooldownTimer);
+                    loveCooldownActive = false;
+                    bar.classList.remove('active');
+                    costBar.style.display = 'flex';
+                }
+            }, 1000);
+        }
+
+        window.resetLoveCalc = function() {
+            document.getElementById('love-result-area').classList.add('hidden');
+            document.getElementById('love-name1').value = '';
+            document.getElementById('love-name2').value = '';
+            document.getElementById('love-heart').innerText = '💝';
+            document.getElementById('love-progress').style.width = '0%';
+        };
+
+        window.shareLoveResult = function() {
+            const score = document.getElementById('love-score').innerText;
+            const name1 = document.getElementById('love-name1').value;
+            const name2 = document.getElementById('love-name2').value;
+            const text = `💕 Love Calculator Result 💕\n${name1} + ${name2} = ${score}\nPlay now on MR Chat!`;
+
+            if (navigator.share) {
+                navigator.share({ title: 'Love Calculator', text: text });
+            } else {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Result copied to clipboard!', 'success');
+                });
+            }
+        };
+
+        function getDateKey() {
+            const d = new Date();
+            return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+        }
+
+        async function loadLoveHistory() {
+            if (!currentUser) return;
+            const container = document.getElementById('love-history-list');
+            try {
+                // Query by userId only, then sort client-side to avoid composite index
+                const q = query(
+                    collection(db, "love_calculations"),
+                    where("userId", "==", currentUser.uid),
+                    limit(50)
+                );
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">No calculations yet</p>';
+                    return;
+                }
+                let docs = [];
+                snap.forEach(d => docs.push({ id: d.id, data: d.data() }));
+                // Sort by timestamp descending client-side
+                docs.sort((a, b) => {
+                    const ta = a.data.timestamp ? a.data.timestamp.toDate().getTime() : 0;
+                    const tb = b.data.timestamp ? b.data.timestamp.toDate().getTime() : 0;
+                    return tb - ta;
+                });
+                docs = docs.slice(0, 10);
+
+                let html = '';
+                docs.forEach(({data}) => {
+                    const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : 'Just now';
+                    const color = data.score >= 80 ? '#34C759' : (data.score <= 20 ? '#FF3B30' : 'var(--text-muted)');
+                    html += `<div class="love-history-item">
+                        <div class="love-history-score" style="color:${color}">${data.score}%</div>
+                        <div class="love-history-names">${data.name1} ❤️ ${data.name2}</div>
+                        <div class="love-history-time">${time}</div>
+                    </div>`;
+                });
+                container.innerHTML = html;
+            } catch(e) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Loading history...</p>';
+            }
+        }
+
+        function loadLoveDailyLeaderboard() {
+            const container = document.getElementById('love-daily-lb-list');
+            if (!container) return;
+            if (loveLbUnsub) { loveLbUnsub(); loveLbUnsub = null; }
+
+            const today = getDateKey();
+            try {
+                // Use orderBy timestamp desc with limit, then filter client-side for today
+                // This avoids needing a composite index for dateKey + score
+                loveLbUnsub = onSnapshot(
+                    query(collection(db, "love_calculations"), orderBy("timestamp", "desc"), limit(100)),
+                    (snap) => {
+                        if (snap.empty) {
+                            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">No matches today yet</p>';
+                            return;
+                        }
+                        let entries = [];
+                        snap.forEach(d => {
+                            const data = d.data();
+                            if (data.dateKey === today) {
+                                entries.push(data);
+                            }
+                        });
+
+                        // Sort by score descending
+                        entries.sort((a, b) => b.score - a.score);
+                        entries = entries.slice(0, 10);
+
+                        if (entries.length === 0) {
+                            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">No matches today yet</p>';
+                            return;
+                        }
+
+                        let html = '';
+                        entries.forEach((data, idx) => {
+                            const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+                            html += `<div class="love-lb-row">
+                                <div class="love-lb-rank">${medal}</div>
+                                <div class="love-lb-name">${data.name1} ❤️ ${data.name2}</div>
+                                <div class="love-lb-score">${data.score}%</div>
+                            </div>`;
+                        });
+                        container.innerHTML = html;
+                    },
+                    (err) => {
+                        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Leaderboard loading...</p>';
+                    }
+                );
+            } catch(e) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Leaderboard loading...</p>';
+            }
+        }
+
+        // ===== CONFETTI SYSTEM =====
+        function fireConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#FF007F', '#FF1744', '#FF4081', '#E040FB', '#FFD700', '#00E6FF', '#76FF03', '#FF9100'];
+            const shapes = ['heart', 'circle', 'square'];
+
+            for (let i = 0; i < 80; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    vx: (Math.random() - 0.5) * 15,
+                    vy: (Math.random() - 1) * 15 - 5,
+                    size: Math.random() * 10 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    shape: shapes[Math.floor(Math.random() * shapes.length)],
+                    rotation: Math.random() * 360,
+                    rotationSpeed: (Math.random() - 0.5) * 10,
+                    opacity: 1,
+                    gravity: 0.3,
+                    drag: 0.98
+                });
+            }
+
+            let animId;
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let active = false;
+
+                particles.forEach(p => {
+                    if (p.opacity <= 0) return;
+                    active = true;
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += p.gravity;
+                    p.vx *= p.drag;
+                    p.vy *= p.drag;
+                    p.rotation += p.rotationSpeed;
+                    p.opacity -= 0.008;
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate((p.rotation * Math.PI) / 180);
+                    ctx.globalAlpha = Math.max(0, p.opacity);
+                    ctx.fillStyle = p.color;
+
+                    if (p.shape === 'heart') {
+                        const s = p.size;
+                        ctx.beginPath();
+                        ctx.moveTo(0, s * 0.3);
+                        ctx.bezierCurveTo(-s * 0.5, -s * 0.3, -s, 0, 0, s);
+                        ctx.bezierCurveTo(s, 0, s * 0.5, -s * 0.3, 0, s * 0.3);
+                        ctx.fill();
+                    } else if (p.shape === 'circle') {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    }
+
+                    ctx.restore();
+                });
+
+                if (active) {
+                    animId = requestAnimationFrame(draw);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            }
+
+            draw();
+            setTimeout(() => cancelAnimationFrame(animId), 5000);
+        }
+
+
+        // ===== MEMORY MATCH GAME =====
+        const MEMORY_EMOJIS = ['🐶','🐱','🦊','🐼','🐨','🐯','🦁','🐷','🐸','🐙','🦄','🦋','🌸','🌟','🔥','💎','🎸','🚀','🎮','🎯'];
+        let memoryCards = [];
+        let memoryFlipped = [];
+        let memoryMatched = 0;
+        let memoryMoves = 0;
+        let memoryTimer = null;
+        let memorySeconds = 0;
+        let memoryGameActive = false;
+        let memoryDifficulty = 'easy';
+        let memoryLbUnsub = null;
+
+        const MEMORY_CONFIG = {
+            easy: { rows: 3, cols: 4, pairs: 6, reward: 50 },
+            medium: { rows: 4, cols: 4, pairs: 8, reward: 100 },
+            hard: { rows: 5, cols: 4, pairs: 10, reward: 200 }
+        };
+
+        window.setMemoryDiff = function(diff) {
+            memoryDifficulty = diff;
+            document.querySelectorAll('.memory-diff-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`.memory-diff-btn[data-diff="${diff}"]`).classList.add('active');
+            if (!memoryGameActive) startMemoryGame();
+        };
+
+        window.startMemoryGame = function() {
+            const config = MEMORY_CONFIG[memoryDifficulty];
+            const grid = document.getElementById('memory-grid');
+            const startBtn = document.getElementById('memory-start-btn');
+            const rewardBar = document.getElementById('memory-reward-bar');
+
+            // Reset state
+            memoryCards = [];
+            memoryFlipped = [];
+            memoryMatched = 0;
+            memoryMoves = 0;
+            memorySeconds = 0;
+            memoryGameActive = true;
+
+            document.getElementById('memory-moves').innerText = '0';
+            document.getElementById('memory-time').innerText = '0s';
+            document.getElementById('memory-pairs').innerText = `0/${config.pairs}`;
+            rewardBar.style.display = 'none';
+            startBtn.innerHTML = '<i class="fas fa-redo"></i> Restart';
+
+            // Setup grid columns
+            grid.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
+
+            // Generate cards
+            const selected = MEMORY_EMOJIS.sort(() => 0.5 - Math.random()).slice(0, config.pairs);
+            const deck = [...selected, ...selected].sort(() => 0.5 - Math.random());
+
+            grid.innerHTML = '';
+            deck.forEach((emoji, idx) => {
+                const card = document.createElement('div');
+                card.className = 'memory-card';
+                card.dataset.index = idx;
+                card.dataset.emoji = emoji;
+                card.innerHTML = `<span class="card-back">?</span><span class="card-front">${emoji}</span>`;
+                card.onclick = () => flipMemoryCard(idx);
+                grid.appendChild(card);
+                memoryCards.push(card);
+            });
+
+            // Start timer
+            stopMemoryTimer();
+            memoryTimer = setInterval(() => {
+                memorySeconds++;
+                document.getElementById('memory-time').innerText = memorySeconds + 's';
+            }, 1000);
+        };
+
+        function stopMemoryTimer() {
+            if (memoryTimer) { clearInterval(memoryTimer); memoryTimer = null; }
+        }
+
+        function flipMemoryCard(idx) {
+            if (!memoryGameActive || memoryFlipped.length >= 2) return;
+            const card = memoryCards[idx];
+            if (card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+            card.innerHTML = `<span class="card-front">${card.dataset.emoji}</span>`;
+            memoryFlipped.push(card);
+
+            if (memoryFlipped.length === 2) {
+                memoryMoves++;
+                document.getElementById('memory-moves').innerText = memoryMoves;
+
+                const [c1, c2] = memoryFlipped;
+                if (c1.dataset.emoji === c2.dataset.emoji) {
+                    setTimeout(() => {
+                        c1.classList.add('matched');
+                        c2.classList.add('matched');
+                        memoryMatched++;
+                        const config = MEMORY_CONFIG[memoryDifficulty];
+                        document.getElementById('memory-pairs').innerText = `${memoryMatched}/${config.pairs}`;
+                        memoryFlipped = [];
+
+                        if (memoryMatched === config.pairs) {
+                            endMemoryGame();
+                        }
+                    }, 400);
+                } else {
+                    setTimeout(() => {
+                        c1.classList.remove('flipped');
+                        c2.classList.remove('flipped');
+                        c1.innerHTML = '<span class="card-back">?</span>';
+                        c2.innerHTML = '<span class="card-back">?</span>';
+                        memoryFlipped = [];
+                    }, 800);
+                }
+            }
+        }
+
+        async function endMemoryGame() {
+            memoryGameActive = false;
+            stopMemoryTimer();
+
+            const config = MEMORY_CONFIG[memoryDifficulty];
+            const baseReward = config.reward;
+            const timeBonus = memorySeconds < 30 ? 50 : (memorySeconds < 60 ? 20 : 0);
+            const totalReward = baseReward + timeBonus;
+
+            const rewardBar = document.getElementById('memory-reward-bar');
+            rewardBar.style.display = 'block';
+            document.getElementById('memory-reward-text').innerText = 
+                `You won ${totalReward} Gold! (${baseReward} base + ${timeBonus} time bonus)`;
+
+            if (currentUser) {
+                try {
+                    await updateDoc(doc(db, "users", currentUser.uid), { gold: increment(totalReward) });
+                    userGold += totalReward;
+                    document.getElementById('header-gold').innerText = userGold.toLocaleString();
+                    document.getElementById('dice-gold-balance').innerText = userGold.toLocaleString();
+
+                    await addDoc(collection(db, "memory_games"), {
+                        userId: currentUser.uid,
+                        userName: currentUser.displayName || 'User',
+                        difficulty: memoryDifficulty,
+                        moves: memoryMoves,
+                        time: memorySeconds,
+                        reward: totalReward,
+                        timestamp: serverTimestamp()
+                    });
+                } catch(e) {}
+            }
+
+            showToast(`Memory Match complete! +${totalReward} Gold!`, 'success');
+            loadMemoryLeaderboard();
+        }
+
+        function loadMemoryLeaderboard() {
+            const container = document.getElementById('memory-lb-list');
+            if (!container) return;
+            if (memoryLbUnsub) { memoryLbUnsub(); memoryLbUnsub = null; }
+
+            try {
+                memoryLbUnsub = onSnapshot(
+                    query(collection(db, "memory_games"), orderBy("timestamp", "desc"), limit(50)),
+                    (snap) => {
+                        if (snap.empty) {
+                            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">No records yet</p>';
+                            return;
+                        }
+                        let entries = [];
+                        snap.forEach(d => entries.push(d.data()));
+                        // Sort by difficulty then time
+                        entries.sort((a, b) => {
+                            const diffOrder = { hard: 3, medium: 2, easy: 1 };
+                            if (diffOrder[b.difficulty] !== diffOrder[a.difficulty]) 
+                                return diffOrder[b.difficulty] - diffOrder[a.difficulty];
+                            return a.time - b.time;
+                        });
+                        entries = entries.slice(0, 10);
+
+                        let html = '';
+                        entries.forEach((data, idx) => {
+                            const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+                            const diffColor = data.difficulty === 'hard' ? '#FF1744' : (data.difficulty === 'medium' ? '#FF9100' : '#00E6FF');
+                            html += `<div class="guess-lb-row">
+                                <div class="guess-lb-rank">${medal}</div>
+                                <div class="guess-lb-name">${data.userName || 'User'}</div>
+                                <div class="guess-lb-stat" style="color:${diffColor};font-size:0.75rem;text-transform:uppercase;">${data.difficulty}</div>
+                                <div class="guess-lb-stat">${data.time}s</div>
+                                <div class="guess-lb-stat">${data.moves} moves</div>
+                            </div>`;
+                        });
+                        container.innerHTML = html;
+                    },
+                    () => {
+                        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Loading...</p>';
+                    }
+                );
+            } catch(e) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Loading...</p>';
+            }
+        }
+
+        // ===== NUMBER GUESS GAME =====
+        let guessTarget = 0;
+        let guessAttempts = [];
+        let guessGameActive = false;
+        let guessLbUnsub = null;
+        const GUESS_REWARDS = { 5: 500, 6: 400, 7: 200, 8: 150, 9: 100, 10: 50 };
+
+        window.startNewGuessGame = function() {
+            guessTarget = Math.floor(Math.random() * 100) + 1;
+            guessAttempts = [];
+            guessGameActive = true;
+
+            document.getElementById('guess-mystery-box').innerText = '❓';
+            document.getElementById('guess-mystery-box').classList.remove('revealed');
+            document.getElementById('guess-input').value = '';
+            document.getElementById('guess-input').disabled = false;
+            document.getElementById('guess-submit-btn').disabled = false;
+            document.getElementById('guess-hint').innerText = 'Enter a number 1-100 and press GUESS!';
+            document.getElementById('guess-hint').className = 'guess-hint';
+            document.getElementById('guess-attempts').innerHTML = '';
+            document.getElementById('guess-new-btn').style.display = 'none';
+            document.getElementById('guess-min').innerText = '1';
+            document.getElementById('guess-max').innerText = '100';
+            document.getElementById('guess-rewards').style.display = 'block';
+
+            document.getElementById('guess-input').focus();
+        };
+
+        window.submitGuess = async function() {
+            if (!guessGameActive) return;
+            if (!currentUser) { showToast('Please login first', 'error'); return; }
+
+            const input = document.getElementById('guess-input');
+            const guess = parseInt(input.value);
+
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                showToast('Enter a number between 1 and 100!', 'error');
+                return;
+            }
+
+            if (guessAttempts.some(a => a.num === guess)) {
+                showToast('You already guessed that number!', 'error');
+                return;
+            }
+
+            const diff = Math.abs(guess - guessTarget);
+            let hintClass = '';
+            let hintText = '';
+            let dotClass = '';
+
+            if (guess === guessTarget) {
+                hintClass = 'win';
+                hintText = `🎉 Correct! The number was ${guessTarget}!`;
+                dotClass = 'win';
+            } else if (diff <= 5) {
+                hintClass = 'hot';
+                hintText = guess > guessTarget ? '🔥 Very hot! Go LOWER!' : '🔥 Very hot! Go HIGHER!';
+                dotClass = 'hot';
+            } else if (diff <= 15) {
+                hintClass = 'warm';
+                hintText = guess > guessTarget ? '🌡️ Warm! Go LOWER!' : '🌡️ Warm! Go HIGHER!';
+                dotClass = 'warm';
+            } else {
+                hintClass = 'cold';
+                hintText = guess > guessTarget ? '❄️ Cold! Go LOWER!' : '❄️ Cold! Go HIGHER!';
+                dotClass = 'cold';
+            }
+
+            guessAttempts.push({ num: guess, class: dotClass });
+
+            const hintEl = document.getElementById('guess-hint');
+            hintEl.innerText = hintText;
+            hintEl.className = 'guess-hint ' + hintClass;
+
+            // Update attempts display
+            const attemptsEl = document.getElementById('guess-attempts');
+            const dot = document.createElement('div');
+            dot.className = 'guess-attempt-dot ' + dotClass;
+            dot.innerText = guess;
+            dot.title = `Attempt ${guessAttempts.length}: ${guess}`;
+            attemptsEl.appendChild(dot);
+
+            // Update range hint
+            if (guess !== guessTarget) {
+                const minEl = document.getElementById('guess-min');
+                const maxEl = document.getElementById('guess-max');
+                if (guess < guessTarget && guess > parseInt(minEl.innerText)) {
+                    minEl.innerText = guess + 1;
+                } else if (guess > guessTarget && guess < parseInt(maxEl.innerText)) {
+                    maxEl.innerText = guess - 1;
+                }
+            }
+
+            input.value = '';
+            input.focus();
+
+            if (guess === guessTarget) {
+                endGuessGame();
+            } else if (guessAttempts.length >= 10) {
+                guessGameActive = false;
+                document.getElementById('guess-mystery-box').innerText = guessTarget;
+                document.getElementById('guess-mystery-box').classList.add('revealed');
+                hintEl.innerText = `Game Over! The number was ${guessTarget}.`;
+                hintEl.className = 'guess-hint';
+                document.getElementById('guess-input').disabled = true;
+                document.getElementById('guess-submit-btn').disabled = true;
+                document.getElementById('guess-new-btn').style.display = 'block';
+                document.getElementById('guess-rewards').style.display = 'none';
+                showToast('Better luck next time!', 'error');
+            }
+        };
+
+        async function endGuessGame() {
+            guessGameActive = false;
+            document.getElementById('guess-mystery-box').innerText = guessTarget;
+            document.getElementById('guess-mystery-box').classList.add('revealed');
+            document.getElementById('guess-input').disabled = true;
+            document.getElementById('guess-submit-btn').disabled = true;
+            document.getElementById('guess-new-btn').style.display = 'block';
+            document.getElementById('guess-rewards').style.display = 'none';
+
+            const tries = guessAttempts.length;
+            let reward = 0;
+            for (const [maxTries, gold] of Object.entries(GUESS_REWARDS)) {
+                if (tries <= parseInt(maxTries)) {
+                    reward = gold;
+                    break;
+                }
+            }
+
+            if (reward > 0 && currentUser) {
+                try {
+                    await updateDoc(doc(db, "users", currentUser.uid), { gold: increment(reward) });
+                    userGold += reward;
+                    document.getElementById('header-gold').innerText = userGold.toLocaleString();
+                    document.getElementById('dice-gold-balance').innerText = userGold.toLocaleString();
+                    document.getElementById('guess-gold-display').innerText = userGold.toLocaleString();
+
+                    await addDoc(collection(db, "guess_games"), {
+                        userId: currentUser.uid,
+                        userName: currentUser.displayName || 'User',
+                        target: guessTarget,
+                        attempts: tries,
+                        reward: reward,
+                        timestamp: serverTimestamp()
+                    });
+                } catch(e) {}
+            }
+
+            showToast(`You won ${reward} Gold in ${tries} tries!`, 'success');
+            loadGuessLeaderboard();
+        }
+
+        function loadGuessLeaderboard() {
+            const container = document.getElementById('guess-lb-list');
+            if (!container) return;
+            if (guessLbUnsub) { guessLbUnsub(); guessLbUnsub = null; }
+
+            try {
+                guessLbUnsub = onSnapshot(
+                    query(collection(db, "guess_games"), orderBy("timestamp", "desc"), limit(50)),
+                    (snap) => {
+                        if (snap.empty) {
+                            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">No records yet</p>';
+                            return;
+                        }
+                        let entries = [];
+                        snap.forEach(d => entries.push(d.data()));
+                        entries.sort((a, b) => a.attempts - b.attempts || b.reward - a.reward);
+                        entries = entries.slice(0, 10);
+
+                        let html = '';
+                        entries.forEach((data, idx) => {
+                            const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+                            html += `<div class="guess-lb-row">
+                                <div class="guess-lb-rank">${medal}</div>
+                                <div class="guess-lb-name">${data.userName || 'User'}</div>
+                                <div class="guess-lb-stat">${data.attempts} tries</div>
+                                <div class="guess-lb-stat">+${data.reward} <i class="fas fa-coins" style="font-size:0.7rem;"></i></div>
+                            </div>`;
+                        });
+                        container.innerHTML = html;
+                    },
+                    () => {
+                        container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Loading...</p>';
+                    }
+                );
+            } catch(e) {
+                container.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 10px;">Loading...</p>';
+            }
+        }
+
+        // ===== DICE GAME (existing) =====
+        document.querySelectorAll('.bet-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedDiceBet = parseInt(btn.dataset.bet);
+            });
+        });
+
+        document.getElementById('roll-dice-btn').addEventListener('click', playDiceGame);
+
+        async function loadDiceHistory() {
+            if (!currentUser) return;
+            const container = document.getElementById('dice-history');
+            try {
+                const q = query(collection(db, "dice_games"), where("userId", "==", currentUser.uid));
+                const snap = await getDocs(q);
+                container.innerHTML = "";
+                if (snap.empty) {
+                    container.innerHTML = "<p style='text-align:center; opacity:0.5; padding: 10px;'>No games yet</p>";
+                    return;
+                }
+                const games = [];
+                snap.forEach(d => games.push(d.data()));
+                games.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                let html = "";
+                games.forEach(data => {
+                    const net = data.winnings - data.bet;
+                    const color = net > 0 ? '#34C759' : (net < 0 ? '#FF3B30' : 'var(--text-muted)');
+                    const sign = net > 0 ? '+' : '';
+                    html += `<div class="dice-history-item"><span>Bet ${data.bet} | Roll ${data.roll}</span><span style="color:${color}; font-weight:600;">${sign}${net}</span></div>`;
+                });
+                container.innerHTML = html;
+            } catch(e) {
+                container.innerHTML = "<p style='text-align:center; color:red; padding: 10px;'>Error loading history</p>";
+            }
+        }
+
+        async function playDiceGame() {
+            if (!currentUser) return;
+            const bet = selectedDiceBet;
+            const userRef = doc(db, "users", currentUser.uid);
+            let gold = 0;
+            try {
+                const snap = await getDoc(userRef);
+                gold = (snap.data() || {}).gold || 0;
+            } catch(e) { return; }
+
+            if (gold < bet) {
+                showToast("Not enough Gold!", "error");
+                return;
+            }
+
+            const diceEl = document.getElementById('dice-1');
+            const resultEl = document.getElementById('dice-result');
+            const rollBtn = document.getElementById('roll-dice-btn');
+
+            rollBtn.disabled = true;
+            diceEl.classList.add('rolling');
+            resultEl.innerText = "Rolling...";
+            resultEl.style.color = "";
+
+            try {
+                await updateDoc(userRef, { gold: increment(-bet) });
+            } catch(e) { return; }
+            document.getElementById('dice-gold-balance').innerText = (gold - bet).toLocaleString();
+            document.getElementById('header-gold').innerText = (gold - bet).toLocaleString();
+
+            setTimeout(async () => {
+                const roll = Math.floor(Math.random() * 6) + 1;
+                diceEl.classList.remove('rolling');
+                diceEl.querySelector('.dice-face').innerText = roll;
+
+                let winnings = 0;
+                if (roll <= 2) winnings = 0;
+                else if (roll <= 4) winnings = bet;
+                else if (roll === 5) winnings = bet * 2;
+                else winnings = bet * 3;
+
+                if (winnings > 0) {
+                    try {
+                        await updateDoc(userRef, { gold: increment(winnings) });
+                    } catch(e) {}
+                    document.getElementById('dice-gold-balance').innerText = (gold - bet + winnings).toLocaleString();
+                    document.getElementById('header-gold').innerText = (gold - bet + winnings).toLocaleString();
+                }
+
+                try {
+                    await addDoc(collection(db, "dice_games"), {
+                        userId: currentUser.uid,
+                        bet: bet,
+                        roll: roll,
+                        winnings: winnings,
+                        timestamp: new Date().getTime()
+                    });
+                } catch(e) {}
+
+                if (roll <= 2) {
+                    resultEl.innerText = `Rolled ${roll}. You lost ${bet} Gold.`;
+                    resultEl.style.color = "#FF3B30";
+                } else if (roll <= 4) {
+                    resultEl.innerText = `Rolled ${roll}. Break even.`;
+                    resultEl.style.color = "var(--text-muted)";
+                } else if (roll === 5) {
+                    resultEl.innerText = `Rolled ${roll}! Won ${winnings} Gold!`;
+                    resultEl.style.color = "#34C759";
+                } else {
+                    resultEl.innerText = `Rolled ${roll}! JACKPOT! Won ${winnings} Gold!`;
+                    resultEl.style.color = "#FFD700";
+                }
+
+                rollBtn.disabled = false;
+                loadDiceHistory();
+            }, 1500);
+        }
+
+        // ===== QUIZ GAME (existing) =====
+        async function fetchQuizQuestions() {
+            try {
+                const q = query(collection(db, "quiz_questions"), where("enabled", "!=", false));
+                const snap = await getDocs(q);
+                let questions = [];
+                snap.forEach(d => {
+                    const data = d.data();
+                    questions.push({
+                        q: data.question,
+                        options: data.options,
+                        answer: data.correctIndex,
+                        category: data.category || 'General',
+                        goldReward: data.goldReward || 50
+                    });
+                });
+                questions = questions.sort(() => 0.5 - Math.random()).slice(0, 10);
+                return questions;
+            } catch(e) {
+                showToast("Failed to load quiz questions", "error");
+                return [];
+            }
+        }
+
+        window.resetQuizUI = function() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            quizAnswered = false;
+            quizActive = false;
+            document.getElementById('quiz-start-screen').classList.remove('hidden');
+            document.getElementById('quiz-play-screen').classList.add('hidden');
+            document.getElementById('quiz-end-screen').classList.add('hidden');
+            stopQuizTimer();
+        };
+
+        window.startQuizGame = async function() {
+            if (!currentUser) { showToast('Please login first', 'error'); return; }
+            quizQuestions = await fetchQuizQuestions();
+            if (quizQuestions.length === 0) {
+                showToast("No quiz questions available. Admins will add them soon!", "error");
+                return;
+            }
+            currentQuizIndex = 0;
+            quizScore = 0;
+            quizActive = true;
+            document.getElementById('quiz-start-screen').classList.add('hidden');
+            document.getElementById('quiz-play-screen').classList.remove('hidden');
+            document.getElementById('quiz-end-screen').classList.add('hidden');
+            document.getElementById('quiz-total-q').innerText = quizQuestions.length;
+            showQuizQuestion();
+        };
+
+        function showQuizQuestion() {
+            if (currentQuizIndex >= quizQuestions.length) {
+                endQuizGame();
+                return;
+            }
+            quizAnswered = false;
+            quizTimeLeft = 15;
+            const q = quizQuestions[currentQuizIndex];
+            document.getElementById('quiz-current-q').innerText = currentQuizIndex + 1;
+            document.getElementById('quiz-question-box').innerText = `[${q.category}] ${q.q}`;
+            document.getElementById('quiz-result-area').innerText = '';
+            document.getElementById('quiz-result-area').style.color = '';
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+
+            const optsContainer = document.getElementById('quiz-options');
+            optsContainer.innerHTML = '';
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'quiz-opt-btn';
+                btn.innerText = opt;
+                btn.onmouseover = function() { if (!quizAnswered) this.style.borderColor = 'var(--pink-primary)'; };
+                btn.onmouseout = function() { if (!quizAnswered) this.style.borderColor = 'var(--glass-border)'; };
+                btn.onclick = () => checkQuizAnswer(idx, btn, q.answer, q.goldReward);
+                optsContainer.appendChild(btn);
+            });
+
+            startQuizTimer();
+        }
+
+        function startQuizTimer() {
+            stopQuizTimer();
+            const timerEl = document.getElementById('quiz-timer');
+            timerEl.innerText = quizTimeLeft + 's';
+            timerEl.style.color = 'var(--pink-primary)';
+            quizTimer = setInterval(() => {
+                quizTimeLeft--;
+                timerEl.innerText = quizTimeLeft + 's';
+                if (quizTimeLeft <= 5) timerEl.style.color = '#FF3B30';
+                if (quizTimeLeft <= 0) {
+                    stopQuizTimer();
+                    if (!quizAnswered) {
+                        quizAnswered = true;
+                        document.getElementById('quiz-result-area').innerText = 'Time up! No points.';
+                        document.getElementById('quiz-result-area').style.color = 'var(--text-muted)';
+                        document.getElementById('quiz-next-btn').classList.remove('hidden');
+                        highlightCorrectAnswer(quizQuestions[currentQuizIndex].answer);
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopQuizTimer() {
+            if (quizTimer) { clearInterval(quizTimer); quizTimer = null; }
+        }
+
+        function highlightCorrectAnswer(correctIdx) {
+            const opts = document.getElementById('quiz-options').children;
+            for (let i = 0; i < opts.length; i++) {
+                if (i === correctIdx) {
+                    opts[i].style.background = 'rgba(52, 199, 89, 0.2)';
+                    opts[i].style.borderColor = '#34C759';
+                    opts[i].style.color = '#34C759';
+                } else {
+                    opts[i].style.opacity = '0.5';
+                    opts[i].style.cursor = 'default';
+                }
+            }
+        }
+
+        async function checkQuizAnswer(selectedIdx, btnElement, correctIdx, goldReward) {
+            if (quizAnswered || !quizActive) return;
+            quizAnswered = true;
+            stopQuizTimer();
+
+            const resultArea = document.getElementById('quiz-result-area');
+            const isCorrect = selectedIdx === correctIdx;
+
+            if (isCorrect) {
+                btnElement.style.background = 'rgba(52, 199, 89, 0.2)';
+                btnElement.style.borderColor = '#34C759';
+                btnElement.style.color = '#34C759';
+                resultArea.innerText = `Correct! +${goldReward} Gold`;
+                resultArea.style.color = '#34C759';
+                quizScore++;
+                try {
+                    await updateDoc(doc(db, "users", currentUser.uid), { gold: increment(goldReward) });
+                    const currentGold = parseInt(document.getElementById('header-gold').innerText.replace(/,/g, '')) || 0;
+                    document.getElementById('header-gold').innerText = (currentGold + goldReward).toLocaleString();
+                    document.getElementById('dice-gold-balance').innerText = (currentGold + goldReward).toLocaleString();
+                    await addDoc(collection(db, "quiz_results"), {
+                        userId: currentUser.uid,
+                        userName: currentUser.displayName || 'User',
+                        questionIndex: currentQuizIndex,
+                        correct: true,
+                        timestamp: new Date().getTime()
+                    });
+                } catch(e) {}
+            } else {
+                btnElement.style.background = 'rgba(255, 59, 48, 0.2)';
+                btnElement.style.borderColor = '#FF3B30';
+                btnElement.style.color = '#FF3B30';
+                resultArea.innerText = 'Wrong answer!';
+                resultArea.style.color = '#FF3B30';
+                try {
+                    await addDoc(collection(db, "quiz_results"), {
+                        userId: currentUser.uid,
+                        userName: currentUser.displayName || 'User',
+                        questionIndex: currentQuizIndex,
+                        correct: false,
+                        timestamp: new Date().getTime()
+                    });
+                } catch(e) {}
+            }
+
+            highlightCorrectAnswer(correctIdx);
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+        }
+
+        window.nextQuizQuestion = function() {
+            currentQuizIndex++;
+            showQuizQuestion();
+        };
+
+        function endQuizGame() {
+            quizActive = false;
+            stopQuizTimer();
+            document.getElementById('quiz-play-screen').classList.add('hidden');
+            document.getElementById('quiz-end-screen').classList.remove('hidden');
+
+            const total = quizQuestions.length;
+            const percentage = (quizScore / total) * 100;
+
+            document.getElementById('quiz-end-title').innerText = `Quiz Complete! You scored ${quizScore}/${total}`;
+            const msgEl = document.getElementById('quiz-end-msg');
+            if (percentage >= 70) {
+                document.getElementById('quiz-end-emoji').innerText = '🔥';
+                msgEl.innerText = 'Excellent! You earned bonus Gold!';
+                msgEl.style.color = '#FFD700';
+                try {
+                    updateDoc(doc(db, "users", currentUser.uid), { gold: increment(100) });
+                    const currentGold = parseInt(document.getElementById('header-gold').innerText.replace(/,/g, '')) || 0;
+                    document.getElementById('header-gold').innerText = (currentGold + 100).toLocaleString();
+                    document.getElementById('dice-gold-balance').innerText = (currentGold + 100).toLocaleString();
+                } catch(e) {}
+            } else if (percentage >= 40) {
+                document.getElementById('quiz-end-emoji').innerText = '👍';
+                msgEl.innerText = 'Good job! Keep learning.';
+                msgEl.style.color = 'var(--text-muted)';
+            } else {
+                document.getElementById('quiz-end-emoji').innerText = '💪';
+                msgEl.innerText = 'Keep practicing! You\'ll get better.';
+                msgEl.style.color = 'var(--text-muted)';
+            }
+            loadQuizLeaderboard();
+        }
+
+        // ===== LEADERBOARDS =====
+        function loadGoldLeaderboard() {
+            const container = document.getElementById('gold-lb-list');
+            if (!container) return;
+            if (goldLbUnsub) { goldLbUnsub(); goldLbUnsub = null; }
+            try {
+                goldLbUnsub = onSnapshot(collection(db, "users"), (snap) => {
+                    let users = [];
+                    snap.forEach(d => users.push(d.data()));
+                    users.sort((a, b) => (b.gold || 0) - (a.gold || 0));
+                    users = users.slice(0, 20);
+                    let html = "";
+                    users.forEach((u, idx) => {
+                        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+                        html += `<div class="lb-row"><div class="lb-rank">${medal}</div><img src="${u.photoURL || 'https://via.placeholder.com/40'}" class="lb-avatar"><div class="lb-name">${u.fullName || u.username || 'User'}</div><div class="lb-stat" style="color:#FFD700;">${(u.gold || 0).toLocaleString()} <i class="fas fa-coins" style="font-size:0.7rem;"></i></div></div>`;
+                    });
+                    container.innerHTML = html;
+                });
+            } catch(e) { container.innerHTML = '<p style="text-align:center; color:#FF3B30;">Failed to load.</p>'; }
+        }
+
+        function loadLevelLeaderboard() {
+            const container = document.getElementById('level-lb-list');
+            if (!container) return;
+            if (levelLbUnsub) { levelLbUnsub(); levelLbUnsub = null; }
+            try {
+                levelLbUnsub = onSnapshot(collection(db, "users"), (snap) => {
+                    let users = [];
+                    snap.forEach(d => users.push(d.data()));
+                    users.sort((a, b) => (b.level || 1) - (a.level || 1) || (b.xp || 0) - (a.xp || 0));
+                    users = users.slice(0, 20);
+                    let html = "";
+                    users.forEach((u, idx) => {
+                        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+                        html += `<div class="lb-row"><div class="lb-rank">${medal}</div><img src="${u.photoURL || 'https://via.placeholder.com/40'}" class="lb-avatar"><div class="lb-name">${u.fullName || u.username || 'User'}</div><div class="lb-stat" style="color:var(--pink-light);">Lv.${u.level || 1}</div></div>`;
+                    });
+                    container.innerHTML = html;
+                });
+            } catch(e) { container.innerHTML = '<p style="text-align:center; color:#FF3B30;">Failed to load.</p>'; }
+        }
+
+        function loadQuizLeaderboard() {
+            const container = document.getElementById('quiz-leaders-list');
+            const lbContainer = document.getElementById('quiz-lb-list');
+
+            if (quizLbUnsub) { quizLbUnsub(); quizLbUnsub = null; }
+            try {
+                quizLbUnsub = onSnapshot(query(collection(db, "quiz_results"), where("correct", "==", true)), (snap) => {
+                    const scores = {};
+                    snap.forEach(d => {
+                        const data = d.data();
+                        if (!scores[data.userId]) scores[data.userId] = { name: data.userName, count: 0 };
+                        scores[data.userId].count++;
+                    });
+                    const sorted = Object.entries(scores).sort((a, b) => b[1].count - a[1].count).slice(0, 10);
+                    let html = "";
+                    sorted.forEach(([uid, data], idx) => {
+                        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `#${idx + 1}`));
+                        html += `<div class="quiz-leader"><span style="font-weight:700; color:var(--pink-primary); width:28px;">${medal}</span><span style="flex:1; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${data.name}</span><span style="font-weight:600; color:#34C759; font-size:0.85rem;">${data.count} correct</span></div>`;
+                    });
+                    const finalHTML = html || '<p style="text-align:center; color:var(--text-muted); padding:10px;">No quiz data yet</p>';
+                    if (container) container.innerHTML = finalHTML;
+                    if (lbContainer) lbContainer.innerHTML = finalHTML;
+                });
+            } catch(e) {
+                const fallback = '<p style="text-align:center; color:var(--text-muted);">Quiz leaderboard loading...</p>';
+                if (container) container.innerHTML = fallback;
+            }
+        }
+    </script>
+</body>
+</html>

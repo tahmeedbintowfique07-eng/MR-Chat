@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MR Auction League - Cricket Auction Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #050810;
+            --bg-secondary: #0a0f1e;
+            --bg-card: rgba(10, 15, 30, 0.8);
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #e2e8f0;
+            --text-secondary: #64748b;
+            --accent-gold: #f59e0b;
+            --accent-cyan: #0ea5e9;
+            --accent-emerald: #10b981;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #f97316;
+            --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-cyan: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            --gradient-emerald: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            --gradient-red: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            --shadow-glow: 0 0 40px rgba(14, 165, 233, 0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .bg-particles {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .particle {
+            position: absolute; width: 4px; height: 4px;
+            background: rgba(14, 165, 233, 0.3); border-radius: 50%;
+            animation: particleFloat 15s infinite ease-in-out;
+        }
+        @keyframes particleFloat {
+            0%, 100% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        .bg-grid {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(14, 165, 233, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(14, 165, 233, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px; pointer-events: none; z-index: 0;
+        }
+
+        .glass {
+            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 16px;
+        }
+        .glass-card {
+            background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), var(--shadow-glow);
+        }
+
+        .app-container { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 24px; }
+
+        /* Header */
+        .game-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 24px 0; margin-bottom: 28px;
+            border-bottom: 1px solid var(--glass-border); flex-wrap: wrap; gap: 20px;
+        }
+        .logo { display: flex; align-items: center; gap: 16px; }
+        .logo-icon {
+            width: 56px; height: 56px; background: var(--gradient-cyan); border-radius: 16px;
+            display: flex; align-items: center; justify-content: center; font-size: 28px;
+            color: white; box-shadow: 0 0 30px rgba(14, 165, 233, 0.4);
+            animation: iconPulse 3s ease-in-out infinite;
+        }
+        @keyframes iconPulse { 0%, 100% { box-shadow: 0 0 20px rgba(14, 165, 233, 0.3); } 50% { box-shadow: 0 0 40px rgba(14, 165, 233, 0.6); } }
+        .logo-text h1 { font-size: 28px; font-weight: 900; letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .logo-text span { font-size: 12px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 3px; font-weight: 600; }
+
+        .header-stats { display: flex; gap: 12px; flex-wrap: wrap; }
+        .stat-pill {
+            display: flex; align-items: center; gap: 10px; padding: 10px 20px;
+            background: var(--glass); border: 1px solid var(--glass-border); border-radius: 100px;
+            font-size: 14px; font-weight: 700; transition: all 0.3s ease;
+        }
+        .stat-pill:hover { border-color: var(--accent-cyan); transform: scale(1.05); }
+        .stat-pill i { color: var(--accent-cyan); font-size: 16px; }
+
+        .theme-switcher { display: flex; gap: 8px; align-items: center; }
+        .theme-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.3s ease; }
+        .theme-dot:hover { transform: scale(1.2); }
+        .theme-dot.active { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+        .theme-dark { background: linear-gradient(135deg, #0a0e1a, #1e293b); }
+        .theme-neon { background: linear-gradient(135deg, #a855f7, #ec4899); }
+        .theme-royal { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .theme-ocean { background: linear-gradient(135deg, #06b6d4, #0ea5e9); }
+
+        /* Navigation */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 28px; overflow-x: auto; padding-bottom: 6px; }
+        .nav-tab {
+            padding: 12px 24px; background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 14px; color: var(--text-secondary); font-weight: 700; font-size: 14px;
+            cursor: pointer; transition: all 0.3s ease; white-space: nowrap;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .nav-tab:hover { background: rgba(255, 255, 255, 0.06); color: var(--text-primary); border-color: rgba(255, 255, 255, 0.15); }
+        .nav-tab.active {
+            background: var(--gradient-cyan); border-color: transparent; color: white;
+            box-shadow: 0 8px 25px rgba(14, 165, 233, 0.35); transform: translateY(-2px);
+        }
+
+        .main-grid { display: grid; grid-template-columns: 260px 1fr 300px; gap: 24px; margin-bottom: 24px; }
+        @media (max-width: 1200px) { .main-grid { grid-template-columns: 1fr; } }
+
+        .panel { background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border); border-radius: 24px; padding: 24px; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--glass-border); }
+        .panel-title { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); }
+
+        /* Team Overview */
+        .team-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03); transition: all 0.2s ease; }
+        .team-row:last-child { border-bottom: none; }
+        .team-row.user-team { background: rgba(14, 165, 233, 0.06); margin: 0 -16px; padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(14, 165, 233, 0.15); }
+        .team-info { display: flex; align-items: center; gap: 12px; }
+        .team-color { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+        .team-name { font-size: 14px; font-weight: 700; }
+        .team-budget { font-size: 13px; font-weight: 800; color: var(--accent-emerald); }
+        .team-count { font-size: 11px; color: var(--text-secondary); background: rgba(255, 255, 255, 0.05); padding: 4px 10px; border-radius: 100px; font-weight: 600; }
+
+        /* Player Showcase */
+        .player-showcase {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 15, 30, 0.95) 100%);
+            border: 1px solid var(--glass-border); border-radius: 28px; padding: 40px;
+            position: relative; overflow: hidden;
+        }
+        .player-showcase::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, transparent 50%); pointer-events: none;
+        }
+
+        .category-badge {
+            display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px;
+            border-radius: 100px; font-size: 13px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 2px; margin-bottom: 24px; animation: badgeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes badgeIn { from { opacity: 0; transform: translateY(-20px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .badge-a-plus { background: rgba(245, 158, 11, 0.12); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.25); }
+        .badge-a { background: rgba(14, 165, 233, 0.12); color: #0ea5e9; border: 1px solid rgba(14, 165, 233, 0.25); }
+        .badge-b { background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25); }
+        .badge-c { background: rgba(100, 116, 139, 0.12); color: #64748b; border: 1px solid rgba(100, 116, 139, 0.25); }
+        .badge-d { background: rgba(71, 85, 105, 0.12); color: #475569; border: 1px solid rgba(71, 85, 105, 0.25); }
+
+        .player-identity { display: flex; gap: 28px; align-items: center; margin-bottom: 28px; animation: slideUp 0.7s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .player-avatar {
+            width: 130px; height: 130px; border-radius: 50%; background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 3px solid var(--glass-border); display: flex; align-items: center; justify-content: center;
+            font-size: 52px; font-weight: 900; color: var(--text-primary); position: relative; overflow: hidden; flex-shrink: 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4); transition: all 0.4s ease;
+        }
+        .player-avatar:hover { transform: scale(1.05); border-color: var(--accent-cyan); box-shadow: 0 10px 40px rgba(14, 165, 233, 0.2); }
+        .player-avatar .flag-overlay {
+            position: absolute; bottom: 4px; right: 4px; width: 40px; height: 40px;
+            border-radius: 50%; background: var(--bg-secondary); border: 2px solid var(--glass-border);
+            display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .player-details h2 { font-size: 32px; font-weight: 900; margin-bottom: 6px; letter-spacing: -0.5px; }
+        .player-meta { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .meta-tag { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+        .meta-tag i { color: var(--accent-cyan); font-size: 14px; }
+
+        .ratings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 14px; margin-bottom: 28px; }
+        .rating-item { background: rgba(0, 0, 0, 0.25); border: 1px solid var(--glass-border); border-radius: 14px; padding: 14px; text-align: center; transition: all 0.3s ease; }
+        .rating-item:hover { border-color: var(--accent-cyan); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(14, 165, 233, 0.1); }
+        .rating-value { font-size: 24px; font-weight: 900; margin-bottom: 6px; }
+        .rating-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); font-weight: 700; }
+        .rating-excellent { color: #10b981; }
+        .rating-good { color: #0ea5e9; }
+        .rating-average { color: #f59e0b; }
+        .rating-poor { color: #ef4444; }
+
+        /* Bidding Area */
+        .bidding-area {
+            background: rgba(0, 0, 0, 0.35); border: 1px solid var(--glass-border);
+            border-radius: 24px; padding: 28px; text-align: center; position: relative;
+        }
+        .current-bid-display { margin-bottom: 24px; animation: fadeIn 0.6s ease; }
+        .bid-label { font-size: 13px; text-transform: uppercase; letter-spacing: 3px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 700; }
+        .bid-amount { font-size: 56px; font-weight: 900; background: var(--gradient-gold); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; transition: all 0.3s ease; }
+        .bid-amount.bid-up { animation: bidBounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        @keyframes bidBounce { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        .highest-bidder { font-size: 15px; color: var(--text-secondary); margin-top: 10px; font-weight: 500; }
+        .highest-bidder span { color: var(--accent-cyan); font-weight: 800; }
+
+        .bid-controls { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 24px; animation: fadeIn 0.5s ease; }
+        .bid-btn {
+            padding: 14px 28px; border: 1px solid var(--glass-border); background: var(--glass);
+            color: var(--text-primary); border-radius: 14px; font-weight: 800; font-size: 15px;
+            cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .bid-btn:hover { background: rgba(14, 165, 233, 0.12); border-color: var(--accent-cyan); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(14, 165, 233, 0.15); }
+        .bid-btn:active { transform: translateY(0) scale(0.97); }
+        .bid-btn.primary { background: var(--gradient-cyan); border-color: transparent; color: white; box-shadow: 0 8px 25px rgba(14, 165, 233, 0.35); }
+        .bid-btn.primary:hover { box-shadow: 0 12px 35px rgba(14, 165, 233, 0.5); transform: translateY(-3px); }
+        .bid-btn.gold { background: var(--gradient-gold); border-color: transparent; color: #000; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.35); }
+        .bid-btn.gold:hover { box-shadow: 0 12px 35px rgba(245, 158, 11, 0.5); }
+        .bid-btn.danger { background: var(--gradient-red); border-color: transparent; color: white; box-shadow: 0 8px 25px rgba(239, 68, 68, 0.35); }
+        .bid-btn.danger:hover { box-shadow: 0 12px 35px rgba(239, 68, 68, 0.5); }
+        .bid-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; filter: grayscale(0.6); }
+
+        .custom-bid-input { display: flex; gap: 10px; justify-content: center; align-items: center; }
+        .custom-bid-input input {
+            width: 110px; padding: 12px; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);
+            border-radius: 12px; color: var(--text-primary); font-weight: 800; text-align: center; font-size: 18px;
+        }
+        .custom-bid-input input:focus { outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(14, 165, 233, 0.2); }
+
+        .auction-status { font-size: 26px; font-weight: 900; margin-top: 20px; min-height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+        .status-bidding { color: var(--accent-cyan); animation: glowText 2s ease-in-out infinite; }
+        .status-going-once { color: #f59e0b; animation: pulse 1s infinite; }
+        .status-going-twice { color: #f97316; animation: pulse 0.5s infinite; }
+        .status-sold { color: #10b981; font-size: 40px; animation: soldPop 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .status-unsold { color: var(--accent-red); font-size: 32px; animation: soldPop 0.7s ease; }
+        .status-ai-auction { color: var(--accent-purple); animation: glowText 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.05); } }
+        @keyframes soldPop { 0% { transform: scale(0.3); opacity: 0; } 60% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes glowText { 0%, 100% { text-shadow: 0 0 10px currentColor; } 50% { text-shadow: 0 0 25px currentColor, 0 0 50px currentColor; } }
+
+        /* Result Display */
+        .result-box {
+            border-radius: 20px; padding: 24px; margin: 20px 0; animation: fadeIn 0.6s ease;
+            text-align: center;
+        }
+        .result-box.sold-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .result-box.unsold-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .result-box h3 { font-size: 22px; margin-bottom: 10px; font-weight: 900; }
+        .result-box p { font-size: 15px; color: var(--text-secondary); line-height: 1.6; }
+        .result-box .price-tag { font-size: 32px; font-weight: 900; color: var(--accent-gold); margin-top: 12px; }
+
+        /* Hammer */
+        .hammer-container { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; opacity: 0; z-index: 100; }
+        .hammer-container.active { animation: hammerSlam 1.2s ease-out forwards; }
+        @keyframes hammerSlam {
+            0% { opacity: 0; transform: translate(-50%, -50%) rotate(-60deg) scale(0.3); }
+            25% { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(1.3); }
+            40% { transform: translate(-50%, -50%) rotate(15deg) scale(1); }
+            60% { transform: translate(-50%, -50%) rotate(0deg) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0.7); }
+        }
+        .hammer-icon { font-size: 100px; color: var(--accent-gold); text-shadow: 0 0 40px rgba(245, 158, 11, 0.6); }
+
+        /* Confetti */
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 999; }
+
+        /* History */
+        .history-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.03); font-size: 14px; transition: all 0.2s ease; }
+        .history-item:hover { background: rgba(255, 255, 255, 0.03); margin: 0 -12px; padding: 12px; border-radius: 10px; }
+        .history-item:last-child { border-bottom: none; }
+        .history-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .history-info { flex: 1; min-width: 0; }
+        .history-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+        .history-team { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+        .history-price { font-weight: 900; color: var(--accent-gold); flex-shrink: 0; font-size: 14px; }
+        .history-status { font-size: 10px; padding: 3px 10px; border-radius: 100px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-sold-badge { background: rgba(16, 185, 129, 0.15); color: var(--accent-emerald); }
+        .status-unsold-badge { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+
+        /* Progress */
+        .progress-container { margin-bottom: 18px; }
+        .progress-header { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; color: var(--text-secondary); font-weight: 600; }
+        .progress-bar { height: 8px; background: rgba(255, 255, 255, 0.04); border-radius: 100px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 100px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .fill-a-plus { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .fill-a { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+        .fill-b { background: linear-gradient(90deg, #10b981, #34d399); }
+        .fill-c { background: linear-gradient(90deg, #64748b, #94a3b8); }
+        .fill-d { background: linear-gradient(90deg, #475569, #64748b); }
+
+        /* Player Lists */
+        .player-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px; }
+        .player-card {
+            background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 18px; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden;
+        }
+        .player-card:hover { transform: translateY(-6px); border-color: rgba(255, 255, 255, 0.2); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), var(--shadow-glow); }
+        .player-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+        .player-card-avatar {
+            width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(145deg, #1e293b, #0f172a);
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+            font-weight: 800; color: var(--text-primary); border: 2px solid var(--glass-border);
+        }
+        .player-card-flag { font-size: 22px; }
+        .player-card-body h4 { font-size: 15px; font-weight: 800; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .player-card-body p { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 500; }
+        .player-card-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .card-stat { text-align: center; padding: 8px; background: rgba(0, 0, 0, 0.2); border-radius: 10px; }
+        .card-stat-value { font-size: 15px; font-weight: 900; }
+        .card-stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; font-weight: 700; }
+        .sold-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75);
+            border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 900; color: var(--accent-red); text-transform: uppercase; letter-spacing: 2px;
+        }
+        .sold-overlay .sold-price { font-size: 13px; color: var(--accent-gold); margin-top: 6px; letter-spacing: 0; text-transform: none; font-weight: 700; }
+        .sold-overlay .sold-team { font-size: 12px; color: var(--text-secondary); letter-spacing: 0; text-transform: none; font-weight: 500; }
+
+        /* Squad */
+        .squad-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px; }
+        .squad-filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+        .filter-btn {
+            padding: 10px 20px; background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 100px; color: var(--text-secondary); font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: all 0.3s ease;
+        }
+        .filter-btn:hover, .filter-btn.active { background: var(--accent-cyan); color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.3); }
+
+        /* XI Builder - FIXED */
+        .xi-builder { display: grid; grid-template-columns: 1fr 320px; gap: 28px; }
+        @media (max-width: 900px) { .xi-builder { grid-template-columns: 1fr; } }
+        .pitch-area {
+            background: linear-gradient(180deg, #1a4a2e 0%, #0f2e1c 100%); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px; padding: 40px; min-height: 600px; position: relative; overflow: hidden;
+        }
+        .pitch-area::before {
+            content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 55%; height: 35%; border: 2px solid rgba(255, 255, 255, 0.08); border-radius: 50%;
+        }
+        .xi-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; position: relative; z-index: 1; }
+        .xi-slot {
+            background: rgba(0, 0, 0, 0.35); border: 2px dashed rgba(255, 255, 255, 0.15); border-radius: 18px;
+            padding: 18px; text-align: center; min-height: 110px; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; transition: all 0.3s ease; cursor: pointer;
+        }
+        .xi-slot:hover { border-color: rgba(255, 255, 255, 0.25); background: rgba(0, 0, 0, 0.4); }
+        .xi-slot.drag-over { border-color: var(--accent-cyan); background: rgba(14, 165, 233, 0.1); border-style: solid; transform: scale(1.03); }
+        .xi-slot.filled { border-style: solid; border-color: var(--accent-emerald); background: rgba(16, 185, 129, 0.08); }
+        .xi-slot.filled:hover { border-color: #34d399; background: rgba(16, 185, 129, 0.12); }
+        .xi-slot .slot-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 700; }
+        .xi-slot .slot-hint { font-size: 28px; color: var(--text-secondary); opacity: 0.3; }
+        .xi-player-card {
+            cursor: grab; width: 100%; transition: all 0.2s ease;
+        }
+        .xi-player-card:active { cursor: pointer; }
+        .xi-player-card .xi-avatar {
+            width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(145deg, #1e293b, #0f172a);
+            display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 900;
+            margin: 0 auto 10px; border: 2px solid var(--glass-border);
+        }
+        .xi-player-card .xi-name { font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+        .xi-player-card .xi-role { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+        .captain-badge, .vice-badge {
+            display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 10px;
+            font-weight: 900; text-transform: uppercase; margin-top: 6px; letter-spacing: 1px;
+        }
+        .captain-badge { background: var(--gradient-gold); color: #000; }
+        .vice-badge { background: var(--gradient-cyan); color: #fff; }
+        .xi-actions { display: flex; gap: 6px; justify-content: center; margin-top: 10px; }
+        .xi-action-btn {
+            padding: 5px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;
+            border: 1px solid var(--glass-border); background: var(--glass); color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .xi-action-btn:hover { background: var(--accent-cyan); color: white; border-color: transparent; }
+        .xi-action-btn.remove:hover { background: var(--accent-red); }
+
+        .xi-available-list { max-height: 520px; overflow-y: auto; padding-right: 4px; }
+        .xi-available-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--glass);
+            border: 1px solid var(--glass-border); border-radius: 12px; margin-bottom: 10px;
+            cursor: grab; transition: all 0.3s ease; touch-action: pan-y; user-select: none;
+        }
+        .xi-available-item:hover { border-color: var(--accent-cyan); background: rgba(14, 165, 233, 0.05); transform: translateX(4px); }
+        .xi-available-item:active { cursor: pointer; }
+        /* click-based selection */
+        .xi-available-item .avail-avatar {
+            width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(145deg, #1e293b, #0f172a);
+            display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; flex-shrink: 0;
+        }
+        .xi-available-item .avail-info { flex: 1; min-width: 0; }
+        .xi-available-item .avail-name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+        .xi-available-item .avail-meta { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+        .xi-available-item .avail-power { font-size: 13px; font-weight: 900; color: var(--accent-cyan); }
+
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 28px; }
+        .stat-card {
+            background: var(--glass); border: 1px solid var(--glass-border); border-radius: 20px;
+            padding: 24px; display: flex; align-items: center; gap: 20px; transition: all 0.3s ease;
+        }
+        .stat-card:hover { border-color: rgba(255, 255, 255, 0.2); transform: translateY(-3px); }
+        .stat-icon {
+            width: 56px; height: 56px; border-radius: 16px; display: flex; align-items: center;
+            justify-content: center; font-size: 24px; background: rgba(14, 165, 233, 0.1); color: var(--accent-cyan);
+        }
+        .stat-content h3 { font-size: 28px; font-weight: 900; margin-bottom: 4px; }
+        .stat-content p { font-size: 13px; color: var(--text-secondary); font-weight: 600; }
+
+        /* Hall of Fame */
+        .hof-table { width: 100%; border-collapse: collapse; }
+        .hof-table th { text-align: left; padding: 14px; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); font-weight: 800; border-bottom: 1px solid var(--glass-border); }
+        .hof-table td { padding: 14px; font-size: 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); font-weight: 600; }
+        .hof-table tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(16px);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: all; }
+        .modal-content {
+            background: var(--bg-secondary); border: 1px solid var(--glass-border);
+            border-radius: 28px; padding: 40px; max-width: 480px; width: 90%;
+            transform: scale(0.9) translateY(30px); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        }
+        .modal-overlay.active .modal-content { transform: scale(1) translateY(0); }
+
+        .setup-input {
+            width: 100%; padding: 16px 18px; background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--glass-border); border-radius: 14px;
+            color: var(--text-primary); font-size: 16px; font-weight: 700; margin-bottom: 18px;
+            transition: all 0.3s ease;
+        }
+        .setup-input:focus { outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(14, 165, 233, 0.15); }
+        .setup-label { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text-secondary); margin-bottom: 10px; font-weight: 800; }
+
+        .segment-wallet {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.03) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 20px;
+            padding: 24px; text-align: center; margin-bottom: 24px; animation: fadeIn 0.6s ease;
+        }
+        .segment-wallet h3 { font-size: 36px; font-weight: 900; color: var(--accent-gold); margin-bottom: 6px; }
+        .segment-wallet p { font-size: 14px; color: var(--text-secondary); font-weight: 600; }
+
+        .sound-toggle {
+            position: fixed; bottom: 24px; right: 24px; z-index: 100;
+            width: 50px; height: 50px; border-radius: 50%; background: var(--glass);
+            border: 1px solid var(--glass-border); display: flex; align-items: center;
+            justify-content: center; cursor: pointer; color: var(--text-secondary);
+            font-size: 20px; transition: all 0.3s ease; backdrop-filter: blur(10px);
+        }
+        .sound-toggle:hover { background: var(--accent-cyan); color: white; border-color: transparent; transform: scale(1.1); }
+        .sound-toggle.muted { color: var(--accent-red); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+        body.modal-open { overflow: hidden; }
+        .hof-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; }
+        .hof-panel { overflow: hidden; }
+        .modal-content { max-height: 90vh; overflow-y: auto; }
+        .shake { animation: shake 0.4s ease; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 100px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.15); }
+
+        @media (max-width: 768px) {
+            .game-header { flex-direction: column; gap: 20px; }
+            .player-identity { flex-direction: column; text-align: center; }
+            .bid-amount { font-size: 40px; }
+            .player-showcase { padding: 24px; }
+            .app-container { padding: 16px; }
+            .main-grid { grid-template-columns: 1fr; }
+            .xi-slots { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .hidden { display: none !important; }
+
+        /* ========== THEME OVERRIDES ========== */
+        [data-theme="neon"] {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #120a1e;
+            --accent-cyan: #d946ef;
+            --accent-gold: #f0abfc;
+            --gradient-cyan: linear-gradient(135deg, #d946ef 0%, #a855f7 100%);
+            --gradient-gold: linear-gradient(135deg, #f0abfc 0%, #d946ef 100%);
+            --shadow-glow: 0 0 40px rgba(217, 70, 239, 0.15);
+        }
+        [data-theme="neon"] .logo-icon { background: var(--gradient-cyan); box-shadow: 0 0 30px rgba(217, 70, 239, 0.4); }
+        [data-theme="neon"] .nav-tab.active { background: var(--gradient-cyan); box-shadow: 0 8px 25px rgba(217, 70, 239, 0.35); }
+        [data-theme="neon"] .stat-pill:hover { border-color: var(--accent-cyan); }
+        [data-theme="neon"] .theme-dot.theme-neon { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+        [data-theme="neon"] .player-showcase::before { background: radial-gradient(circle, rgba(217, 70, 239, 0.08) 0%, transparent 50%); }
+        [data-theme="neon"] .bg-grid { background-image: linear-gradient(rgba(217, 70, 239, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(217, 70, 239, 0.02) 1px, transparent 1px); }
+        [data-theme="neon"] .rating-item:hover { border-color: var(--accent-cyan); box-shadow: 0 8px 20px rgba(217, 70, 239, 0.1); }
+        [data-theme="neon"] .bid-btn.primary { background: var(--gradient-cyan); box-shadow: 0 8px 25px rgba(217, 70, 239, 0.35); }
+        [data-theme="neon"] .bid-btn.primary:hover { box-shadow: 0 12px 35px rgba(217, 70, 239, 0.5); }
+        [data-theme="neon"] .filter-btn:hover, [data-theme="neon"] .filter-btn.active { background: var(--accent-cyan); box-shadow: 0 4px 15px rgba(217, 70, 239, 0.3); }
+        [data-theme="neon"] .xi-slot.drag-over { border-color: var(--accent-cyan); background: rgba(217, 70, 239, 0.1); }
+        [data-theme="neon"] .xi-action-btn:hover { background: var(--accent-cyan); }
+        [data-theme="neon"] .xi-available-item:hover { border-color: var(--accent-cyan); background: rgba(217, 70, 239, 0.05); }
+        [data-theme="neon"] .custom-bid-input input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(217, 70, 239, 0.2); }
+        [data-theme="neon"] .setup-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(217, 70, 239, 0.15); }
+        [data-theme="neon"] .sound-toggle:hover { background: var(--accent-cyan); }
+        [data-theme="neon"] .player-avatar:hover { border-color: var(--accent-cyan); box-shadow: 0 10px 40px rgba(217, 70, 239, 0.2); }
+
+        [data-theme="royal"] {
+            --bg-primary: #1a1005;
+            --bg-secondary: #1e1508;
+            --accent-cyan: #f59e0b;
+            --accent-gold: #fbbf24;
+            --gradient-cyan: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --gradient-gold: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            --shadow-glow: 0 0 40px rgba(245, 158, 11, 0.15);
+        }
+        [data-theme="royal"] .logo-icon { background: var(--gradient-cyan); box-shadow: 0 0 30px rgba(245, 158, 11, 0.4); }
+        [data-theme="royal"] .nav-tab.active { background: var(--gradient-cyan); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.35); }
+        [data-theme="royal"] .stat-pill:hover { border-color: var(--accent-cyan); }
+        [data-theme="royal"] .theme-dot.theme-royal { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+        [data-theme="royal"] .player-showcase::before { background: radial-gradient(circle, rgba(245, 158, 11, 0.08) 0%, transparent 50%); }
+        [data-theme="royal"] .bg-grid { background-image: linear-gradient(rgba(245, 158, 11, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(245, 158, 11, 0.02) 1px, transparent 1px); }
+        [data-theme="royal"] .rating-item:hover { border-color: var(--accent-cyan); box-shadow: 0 8px 20px rgba(245, 158, 11, 0.1); }
+        [data-theme="royal"] .bid-btn.primary { background: var(--gradient-cyan); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.35); }
+        [data-theme="royal"] .bid-btn.primary:hover { box-shadow: 0 12px 35px rgba(245, 158, 11, 0.5); }
+        [data-theme="royal"] .filter-btn:hover, [data-theme="royal"] .filter-btn.active { background: var(--accent-cyan); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+        [data-theme="royal"] .xi-slot.drag-over { border-color: var(--accent-cyan); background: rgba(245, 158, 11, 0.1); }
+        [data-theme="royal"] .xi-action-btn:hover { background: var(--accent-cyan); }
+        [data-theme="royal"] .xi-available-item:hover { border-color: var(--accent-cyan); background: rgba(245, 158, 11, 0.05); }
+        [data-theme="royal"] .custom-bid-input input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+        [data-theme="royal"] .setup-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(245, 158, 11, 0.15); }
+        [data-theme="royal"] .sound-toggle:hover { background: var(--accent-cyan); }
+        [data-theme="royal"] .player-avatar:hover { border-color: var(--accent-cyan); box-shadow: 0 10px 40px rgba(245, 158, 11, 0.2); }
+
+        [data-theme="ocean"] {
+            --bg-primary: #051a1a;
+            --bg-secondary: #081f24;
+            --accent-cyan: #06b6d4;
+            --accent-gold: #22d3ee;
+            --gradient-cyan: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+            --gradient-gold: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+            --shadow-glow: 0 0 40px rgba(6, 182, 212, 0.15);
+        }
+        [data-theme="ocean"] .logo-icon { background: var(--gradient-cyan); box-shadow: 0 0 30px rgba(6, 182, 212, 0.4); }
+        [data-theme="ocean"] .nav-tab.active { background: var(--gradient-cyan); box-shadow: 0 8px 25px rgba(6, 182, 212, 0.35); }
+        [data-theme="ocean"] .stat-pill:hover { border-color: var(--accent-cyan); }
+        [data-theme="ocean"] .theme-dot.theme-ocean { border-color: white; box-shadow: 0 0 15px rgba(255,255,255,0.4); }
+        [data-theme="ocean"] .player-showcase::before { background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 50%); }
+        [data-theme="ocean"] .bg-grid { background-image: linear-gradient(rgba(6, 182, 212, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(6, 182, 212, 0.02) 1px, transparent 1px); }
+        [data-theme="ocean"] .rating-item:hover { border-color: var(--accent-cyan); box-shadow: 0 8px 20px rgba(6, 182, 212, 0.1); }
+        [data-theme="ocean"] .bid-btn.primary { background: var(--gradient-cyan); box-shadow: 0 8px 25px rgba(6, 182, 212, 0.35); }
+        [data-theme="ocean"] .bid-btn.primary:hover { box-shadow: 0 12px 35px rgba(6, 182, 212, 0.5); }
+        [data-theme="ocean"] .filter-btn:hover, [data-theme="ocean"] .filter-btn.active { background: var(--accent-cyan); box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3); }
+        [data-theme="ocean"] .xi-slot.drag-over { border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.1); }
+        [data-theme="ocean"] .xi-action-btn:hover { background: var(--accent-cyan); }
+        [data-theme="ocean"] .xi-available-item:hover { border-color: var(--accent-cyan); background: rgba(6, 182, 212, 0.05); }
+        [data-theme="ocean"] .custom-bid-input input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 15px rgba(6, 182, 212, 0.2); }
+        [data-theme="ocean"] .setup-input:focus { border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(6, 182, 212, 0.15); }
+        [data-theme="ocean"] .sound-toggle:hover { background: var(--accent-cyan); }
+        [data-theme="ocean"] .player-avatar:hover { border-color: var(--accent-cyan); box-shadow: 0 10px 40px rgba(6, 182, 212, 0.2); }
+
+    </style>
+</head>
+<body>
+    <div class="bg-particles" id="bg-particles"></div>
+    <div class="bg-grid"></div>
+    <canvas id="confetti-canvas"></canvas>
+
+    <div class="app-container">
+        <header class="game-header">
+            <div class="logo">
+                <div class="logo-icon"><i class="fas fa-gavel"></i></div>
+                <div class="logo-text">
+                    <h1>MR Auction League</h1>
+                    <span>Cricket Manager 2026</span>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <div class="theme-switcher">
+                    <span style="font-size: 11px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800;">Theme</span>
+                    <div class="theme-dot theme-dark active" onclick="game.setTheme('dark')" title="Dark"></div>
+                    <div class="theme-dot theme-neon" onclick="game.setTheme('neon')" title="Neon"></div>
+                    <div class="theme-dot theme-royal" onclick="game.setTheme('royal')" title="Royal"></div>
+                    <div class="theme-dot theme-ocean" onclick="game.setTheme('ocean')" title="Ocean"></div>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-pill"><i class="fas fa-wallet"></i><span id="user-budget">₹50.0 Cr</span></div>
+                    <div class="stat-pill"><i class="fas fa-users"></i><span id="user-squad">0/24</span></div>
+                    <div class="stat-pill"><i class="fas fa-star"></i><span id="user-rating">0.0</span></div>
+                </div>
+            </div>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-screen="auction"><i class="fas fa-gavel"></i> Live Auction</button>
+            <button class="nav-tab" data-screen="unsold"><i class="fas fa-list"></i> Unsold</button>
+            <button class="nav-tab" data-screen="stats"><i class="fas fa-chart-bar"></i> Stats</button>
+            <button class="nav-tab" data-screen="squad"><i class="fas fa-users"></i> Squad</button>
+            <button class="nav-tab" data-screen="xi"><i class="fas fa-chess-king"></i> Best XI</button>
+            <button class="nav-tab" data-screen="hof"><i class="fas fa-trophy"></i> Hall of Fame</button>
+        </nav>
+
+        <div id="screen-auction" class="screen">
+            <div class="main-grid">
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">Teams Overview</span><i class="fas fa-shield-alt" style="color: var(--text-secondary);"></i></div>
+                    <div id="teams-overview"></div>
+                    <div class="panel-header" style="margin-top: 24px;"><span class="panel-title">Auction Progress</span></div>
+                    <div id="auction-progress"></div>
+                </div>
+
+                <div class="auction-stage">
+                    <div class="player-showcase" id="player-showcase">
+                        <div class="hammer-container" id="hammer-animation"><i class="fas fa-gavel hammer-icon"></i></div>
+                        <div id="current-player-display">
+                            <div class="category-badge badge-a-plus" id="player-category">A+ Category</div>
+                            <div class="player-identity">
+                                <div class="player-avatar" id="player-avatar">
+                                    <span id="player-initials">VK</span>
+                                    <div class="flag-overlay" id="player-flag">🇮🇳</div>
+                                </div>
+                                <div class="player-details">
+                                    <h2 id="player-name">Virat Kohli</h2>
+                                    <div class="player-meta">
+                                        <span class="meta-tag"><i class="fas fa-globe"></i><span id="player-country">India</span></span>
+                                        <span class="meta-tag"><i class="fas fa-user-tag"></i><span id="player-role">Batsman</span></span>
+                                        <span class="meta-tag"><i class="fas fa-birthday-cake"></i><span id="player-age">35</span> yrs</span>
+                                        <span class="meta-tag"><i class="fas fa-tag"></i>Base: <span id="player-base">₹2.0 Cr</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ratings-grid" id="player-ratings"></div>
+                            <div class="bidding-area">
+                                <div class="current-bid-display">
+                                    <div class="bid-label">Current Bid</div>
+                                    <div class="bid-amount" id="current-bid">₹0.0 Cr</div>
+                                    <div class="highest-bidder">Highest Bidder: <span id="highest-bidder">None</span></div>
+                                </div>
+                                <div class="bid-controls" id="bid-controls">
+                                    <button class="bid-btn" onclick="game.placeBid(0.1)">+₹0.1 Cr</button>
+                                    <button class="bid-btn" onclick="game.placeBid(0.2)">+₹0.2 Cr</button>
+                                    <button class="bid-btn" onclick="game.placeBid(0.5)">+₹0.5 Cr</button>
+                                    <div class="custom-bid-input">
+                                        <input type="number" id="custom-bid" step="0.1" min="0.1" placeholder="0.0">
+                                        <button class="bid-btn primary" onclick="game.placeCustomBid()"><i class="fas fa-gavel"></i> Bid</button>
+                                    </div>
+                                </div>
+                                <div id="result-area" class="hidden"></div>
+                                <div style="display: flex; gap: 12px; justify-content: center; margin-top: 16px; flex-wrap: wrap;">
+                                    <button class="bid-btn gold hidden" id="start-bidding-btn" onclick="game.startBiddingCurrent()">
+                                        <i class="fas fa-play"></i> Start Bidding
+                                    </button>
+                                    <button class="bid-btn danger hidden" id="skip-player-btn" onclick="game.skipPlayer()">
+                                        <i class="fas fa-forward"></i> Skip (AI Only)
+                                    </button>
+                                    <button class="bid-btn primary hidden" id="next-player-btn" onclick="game.nextPlayer()">
+                                        <i class="fas fa-arrow-right"></i> Next Player
+                                    </button>
+                                </div>
+                                <div class="auction-status" id="auction-status">Waiting to start...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="panel" style="margin-bottom: 24px;">
+                        <div class="panel-header"><span class="panel-title">Auction History</span><i class="fas fa-history" style="color: var(--text-secondary);"></i></div>
+                        <div id="auction-history" style="max-height: 320px; overflow-y: auto;"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">Top Purchases</span><i class="fas fa-crown" style="color: var(--accent-gold);"></i></div>
+                        <div id="top-purchases"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-unsold" class="screen hidden">
+            <div class="panel">
+                <div class="panel-header"><span class="panel-title">Unsold Players</span><span style="font-size: 13px; color: var(--text-secondary); font-weight: 600;" id="unsold-count">0 players</span></div>
+                <div class="player-list" id="unsold-list"></div>
+            </div>
+        </div>
+
+        <div id="screen-stats" class="screen hidden">
+            <div class="stats-grid" id="stats-grid"></div>
+            <div class="panel">
+                <div class="panel-header"><span class="panel-title">Most Expensive Players</span></div>
+                <div class="player-list" id="expensive-players"></div>
+            </div>
+            <div class="panel" style="margin-top: 24px;">
+                <div class="panel-header"><span class="panel-title">Best Bargains</span></div>
+                <div class="player-list" id="bargain-players"></div>
+            </div>
+        </div>
+
+        <div id="screen-squad" class="screen hidden">
+            <div class="panel">
+                <div class="panel-header">
+                    <span class="panel-title">My Squad</span>
+                    <div class="squad-filters">
+                        <button class="filter-btn active" onclick="game.filterSquad('all')">All</button>
+                        <button class="filter-btn" onclick="game.filterSquad('Batsman')">Batsmen</button>
+                        <button class="filter-btn" onclick="game.filterSquad('Bowler')">Bowlers</button>
+                        <button class="filter-btn" onclick="game.filterSquad('All-Rounder')">All-Rounders</button>
+                        <button class="filter-btn" onclick="game.filterSquad('Wicket Keeper')">Keepers</button>
+                    </div>
+                </div>
+                <div class="squad-grid" id="squad-grid"></div>
+            </div>
+        </div>
+
+        <div id="screen-xi" class="screen hidden">
+            <div class="xi-builder">
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Select Best XI</span>
+                        <div style="font-size: 13px; color: var(--text-secondary); font-weight: 600;">Click player to add | Click slot to remove | <span id="xi-count">0/11</span></div>
+                    </div>
+                    <div class="pitch-area">
+                        <div class="xi-slots" id="xi-slots"></div>
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 14px; justify-content: center;">
+                        <button class="bid-btn primary" onclick="game.autoSelectXI()"><i class="fas fa-magic"></i> Auto Select</button>
+                        <button class="bid-btn" onclick="game.clearXI()"><i class="fas fa-trash"></i> Clear</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="panel" style="margin-bottom: 24px;">
+                        <div class="panel-header"><span class="panel-title">Team Stats</span></div>
+                        <div id="xi-stats">
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-star"></i></div>
+                                <div class="stat-content"><h3 id="xi-rating">0.0</h3><p>Overall Rating</p></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon"><i class="fas fa-fire"></i></div>
+                                <div class="stat-content"><h3 id="xi-chemistry">0</h3><p>Chemistry Score</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-header"><span class="panel-title">Available Players</span></div>
+                        <div class="xi-available-list" id="xi-available"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="screen-hof" class="screen hidden">
+            <div class="panel hof-panel">
+                <div class="panel-header"><span class="panel-title">Hall of Fame - Season 2026</span><i class="fas fa-trophy" style="color: var(--accent-gold);"></i></div>
+                <div class="hof-table-wrapper">
+                <table class="hof-table">
+                    <thead><tr><th>Rank</th><th>Team</th><th>Players</th><th>Spent</th><th>Remaining</th><th>Avg Rating</th><th>Score</th></tr></thead>
+                    <tbody id="hof-table-body"></tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay active" id="setup-modal">
+        <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 72px; margin-bottom: 24px; animation: float 3s ease-in-out infinite;">🏏</div>
+            <h2 style="font-size: 32px; margin-bottom: 8px; font-weight: 900;">MR Auction League</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 28px; font-weight: 600;">Cricket Auction Manager 2026</p>
+            <div style="text-align: left; margin-bottom: 28px;">
+                <label class="setup-label">Your Team Name</label>
+                <input type="text" class="setup-input" id="setup-team-name" placeholder="e.g. Dhaka Dominators" value="My Team">
+                <label class="setup-label">Owner Name</label>
+                <input type="text" class="setup-input" id="setup-owner-name" placeholder="e.g. Shakib Al Hasan" value="You">
+            </div>
+            <div style="background: var(--glass); border-radius: 16px; padding: 20px; margin-bottom: 28px; text-align: left;">
+                <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); margin-bottom: 14px; font-weight: 800;">Tournament Rules</div>
+                <div style="font-size: 14px; line-height: 1.8; color: var(--text-secondary); font-weight: 500;">
+                    <div>• 7 Teams (You + 6 AI)</div>
+                    <div>• 200 Players in 5 Categories</div>
+                    <div>• Squad Size: Max 24 Players</div>
+                    <div>• Budget: ₹50 Crore per team</div>
+                    <div>• Base: A+ ₹2Cr | A ₹1Cr | B ₹50L | C ₹25L | D ₹10L</div>
+                    <div>• Skip = AI-only auction for that player</div>
+                </div>
+            </div>
+            <button class="bid-btn primary" style="width: 100%; padding: 18px; font-size: 18px;" onclick="game.setupComplete()">
+                <i class="fas fa-play"></i> Start Auction
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="segment-modal">
+        <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 56px; margin-bottom: 20px;">🎯</div>
+            <h2 style="font-size: 28px; margin-bottom: 10px; font-weight: 900;" id="segment-title">A+ Category Complete!</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 28px; font-weight: 600;" id="segment-desc">All A+ players have been auctioned.</p>
+            <div class="segment-wallet">
+                <h3 id="segment-wallet">₹50.0 Cr</h3>
+                <p>Your Remaining Budget</p>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px;">
+                <div style="background: var(--glass); border-radius: 14px; padding: 16px;">
+                    <div style="font-size: 24px; font-weight: 900; color: var(--accent-cyan);" id="segment-players">0</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Players Bought</div>
+                </div>
+                <div style="background: var(--glass); border-radius: 14px; padding: 16px;">
+                    <div style="font-size: 24px; font-weight: 900; color: var(--accent-gold);" id="segment-spent">₹0.0 Cr</div>
+                    <div style="font-size: 12px; color: var(--text-secondary); font-weight: 600;">Spent So Far</div>
+                </div>
+            </div>
+            <button class="bid-btn primary" style="width: 100%; padding: 16px; font-size: 16px;" onclick="game.closeSegmentModal()">
+                <i class="fas fa-arrow-right"></i> Continue to Next Category
+            </button>
+        </div>
+    </div>
+
+    <div class="sound-toggle" id="sound-toggle" onclick="game.toggleSound()">
+        <i class="fas fa-volume-up" id="sound-icon"></i>
+    </div>
+
+    <script>
+        // ==================== AUDIO ENGINE ====================
+        class AudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.initialized = false;
+            }
+            init() {
+                if (this.initialized) return;
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                this.initialized = true;
+            }
+            playTone(freq, type, duration, vol = 0.1) {
+                if (!this.enabled || !this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            }
+            hammer() {
+                this.init();
+                this.playTone(100, 'square', 0.2, 0.3);
+                setTimeout(() => this.playTone(70, 'sawtooth', 0.5, 0.25), 100);
+                setTimeout(() => this.playTone(50, 'triangle', 0.7, 0.2), 300);
+            }
+            bid() {
+                this.init();
+                this.playTone(700, 'sine', 0.1, 0.07);
+                setTimeout(() => this.playTone(900, 'sine', 0.12, 0.06), 60);
+            }
+            win() {
+                this.init();
+                [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => {
+                    setTimeout(() => this.playTone(f, 'sine', 0.3, 0.08), i * 70);
+                });
+            }
+            goingOnce() {
+                this.init();
+                this.playTone(400, 'triangle', 0.5, 0.1);
+            }
+            goingTwice() {
+                this.init();
+                this.playTone(350, 'triangle', 0.5, 0.1);
+                setTimeout(() => this.playTone(320, 'triangle', 0.4, 0.08), 250);
+            }
+            skip() {
+                this.init();
+                this.playTone(500, 'sine', 0.12, 0.06);
+                setTimeout(() => this.playTone(350, 'sine', 0.18, 0.05), 120);
+            }
+            unsold() {
+                this.init();
+                this.playTone(220, 'sawtooth', 0.4, 0.1);
+                setTimeout(() => this.playTone(180, 'sawtooth', 0.5, 0.08), 200);
+            }
+            startBid() {
+                this.init();
+                this.playTone(440, 'sine', 0.2, 0.1);
+                setTimeout(() => this.playTone(554, 'sine', 0.2, 0.1), 120);
+                setTimeout(() => this.playTone(659, 'sine', 0.25, 0.1), 240);
+            }
+            aiAuction() {
+                this.init();
+                this.playTone(330, 'sine', 0.15, 0.06);
+                setTimeout(() => this.playTone(440, 'sine', 0.15, 0.06), 150);
+            }
+        }
+
+        // ==================== CONFETTI ENGINE ====================
+        class ConfettiEngine {
+            constructor() {
+                this.canvas = document.getElementById('confetti-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+                this.loop();
+            }
+            resize() { this.canvas.width = window.innerWidth; this.canvas.height = window.innerHeight; }
+            burst() {
+                const colors = ['#f59e0b', '#0ea5e9', '#10b981', '#8b5cf6', '#ef4444', '#f97316', '#ec4899', '#06b6d4'];
+                for (let i = 0; i < 150; i++) {
+                    this.particles.push({
+                        x: this.canvas.width / 2, y: this.canvas.height / 2,
+                        vx: (Math.random() - 0.5) * 30, vy: (Math.random() - 0.5) * 30 - 10,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        size: Math.random() * 12 + 4, rotation: Math.random() * 360,
+                        rotationSpeed: (Math.random() - 0.5) * 20, life: 1, decay: 0.007 + Math.random() * 0.008
+                    });
+                }
+            }
+            loop() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                this.particles = this.particles.filter(p => {
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.2; p.vx *= 0.97;
+                    p.rotation += p.rotationSpeed; p.life -= p.decay;
+                    if (p.life > 0) {
+                        this.ctx.save(); this.ctx.translate(p.x, p.y); this.ctx.rotate(p.rotation * Math.PI / 180);
+                        this.ctx.fillStyle = p.color; this.ctx.globalAlpha = p.life;
+                        this.ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size); this.ctx.restore();
+                        return true;
+                    }
+                    return false;
+                });
+                requestAnimationFrame(() => this.loop());
+            }
+        }
+
+        // ==================== DATA ====================
+        const COUNTRIES = {
+            'Bangladesh': '🇧🇩', 'India': '🇮🇳', 'Pakistan': '🇵🇰', 'Australia': '🇦🇺',
+            'England': '🇬🇧', 'South Africa': '🇿🇦', 'New Zealand': '🇳🇿', 'West Indies': '🏝️',
+            'Sri Lanka': '🇱🇰', 'Afghanistan': '🇦🇫', 'Zimbabwe': '🇿🇼', 'Ireland': '🇮🇪',
+            'Scotland': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'Nepal': '🇳🇵'
+        };
+
+        const PLAYER_POOL = [
+            { name: 'Shakib Al Hasan', country: 'Bangladesh', role: 'All-Rounder', age: 37, power: 92, batting: 88, bowling: 90, fielding: 82, fitness: 78, form: 85 },
+            { name: 'Tamim Iqbal', country: 'Bangladesh', role: 'Batsman', age: 35, power: 88, batting: 90, bowling: 20, fielding: 75, fitness: 80, form: 82 },
+            { name: 'Mushfiqur Rahim', country: 'Bangladesh', role: 'Wicket Keeper', age: 36, power: 86, batting: 87, bowling: 15, fielding: 88, fitness: 82, form: 80 },
+            { name: 'Mahmudullah Riyad', country: 'Bangladesh', role: 'All-Rounder', age: 38, power: 84, batting: 85, bowling: 78, fielding: 80, fitness: 75, form: 78 },
+            { name: 'Liton Das', country: 'Bangladesh', role: 'Wicket Keeper', age: 29, power: 85, batting: 86, bowling: 20, fielding: 85, fitness: 88, form: 84 },
+            { name: 'Taskin Ahmed', country: 'Bangladesh', role: 'Bowler', age: 29, power: 86, batting: 45, bowling: 88, fielding: 78, fitness: 90, form: 86 },
+            { name: 'Mustafizur Rahman', country: 'Bangladesh', role: 'Bowler', age: 29, power: 87, batting: 35, bowling: 89, fielding: 75, fitness: 85, form: 85 },
+            { name: 'Mehidy Hasan Miraz', country: 'Bangladesh', role: 'All-Rounder', age: 26, power: 85, batting: 78, bowling: 88, fielding: 82, fitness: 90, form: 88 },
+            { name: 'Najmul Hossain Shanto', country: 'Bangladesh', role: 'Batsman', age: 25, power: 84, batting: 85, bowling: 25, fielding: 80, fitness: 88, form: 86 },
+            { name: 'Afif Hossain', country: 'Bangladesh', role: 'All-Rounder', age: 24, power: 80, batting: 82, bowling: 72, fielding: 80, fitness: 88, form: 82 },
+            { name: 'Soumya Sarkar', country: 'Bangladesh', role: 'All-Rounder', age: 31, power: 82, batting: 84, bowling: 70, fielding: 82, fitness: 85, form: 80 },
+            { name: 'Mosaddek Hossain', country: 'Bangladesh', role: 'All-Rounder', age: 28, power: 79, batting: 80, bowling: 75, fielding: 82, fitness: 85, form: 78 },
+            { name: 'Rubel Hossain', country: 'Bangladesh', role: 'Bowler', age: 34, power: 80, batting: 30, bowling: 84, fielding: 75, fitness: 80, form: 76 },
+            { name: 'Taijul Islam', country: 'Bangladesh', role: 'Bowler', age: 31, power: 82, batting: 40, bowling: 86, fielding: 78, fitness: 85, form: 84 },
+            { name: 'Shoriful Islam', country: 'Bangladesh', role: 'Bowler', age: 22, power: 83, batting: 35, bowling: 85, fielding: 80, fitness: 90, form: 85 },
+            { name: 'Ebadot Hossain', country: 'Bangladesh', role: 'Bowler', age: 30, power: 81, batting: 32, bowling: 84, fielding: 78, fitness: 85, form: 80 },
+            { name: 'Hasan Mahmud', country: 'Bangladesh', role: 'Bowler', age: 24, power: 80, batting: 38, bowling: 83, fielding: 80, fitness: 88, form: 82 },
+            { name: 'Nurul Hasan Sohan', country: 'Bangladesh', role: 'Wicket Keeper', age: 29, power: 78, batting: 76, bowling: 20, fielding: 85, fitness: 85, form: 80 },
+            { name: 'Yasir Ali Chowdhury', country: 'Bangladesh', role: 'Batsman', age: 27, power: 78, batting: 80, bowling: 30, fielding: 78, fitness: 85, form: 78 },
+            { name: 'Zakir Hasan', country: 'Bangladesh', role: 'Wicket Keeper', age: 25, power: 77, batting: 78, bowling: 20, fielding: 82, fitness: 88, form: 80 },
+            { name: 'Rishad Hossain', country: 'Bangladesh', role: 'Bowler', age: 21, power: 76, batting: 35, bowling: 82, fielding: 80, fitness: 90, form: 82 },
+            { name: 'Towhid Hridoy', country: 'Bangladesh', role: 'Batsman', age: 22, power: 82, batting: 84, bowling: 25, fielding: 78, fitness: 90, form: 86 },
+            { name: 'Tanzid Hasan Tamim', country: 'Bangladesh', role: 'Batsman', age: 21, power: 79, batting: 82, bowling: 20, fielding: 80, fitness: 90, form: 84 },
+            { name: 'Mahmudul Hasan Joy', country: 'Bangladesh', role: 'Batsman', age: 22, power: 78, batting: 80, bowling: 22, fielding: 78, fitness: 88, form: 82 },
+            { name: 'Parvez Hossain Emon', country: 'Bangladesh', role: 'Batsman', age: 21, power: 76, batting: 78, bowling: 20, fielding: 80, fitness: 90, form: 80 },
+            { name: 'Anamul Haque Bijoy', country: 'Bangladesh', role: 'Wicket Keeper', age: 31, power: 79, batting: 80, bowling: 20, fielding: 82, fitness: 82, form: 78 },
+            { name: 'Mominul Haque', country: 'Bangladesh', role: 'Batsman', age: 32, power: 82, batting: 84, bowling: 35, fielding: 80, fitness: 80, form: 80 },
+            { name: 'Nayeem Hasan', country: 'Bangladesh', role: 'Bowler', age: 23, power: 78, batting: 40, bowling: 84, fielding: 78, fitness: 88, form: 82 },
+            { name: 'Khaled Ahmed', country: 'Bangladesh', role: 'Bowler', age: 27, power: 77, batting: 30, bowling: 82, fielding: 76, fitness: 85, form: 80 },
+            { name: 'Tanvir Islam', country: 'Bangladesh', role: 'Bowler', age: 26, power: 76, batting: 35, bowling: 81, fielding: 78, fitness: 88, form: 80 },
+            { name: 'Ripon Mondol', country: 'Bangladesh', role: 'Bowler', age: 21, power: 74, batting: 32, bowling: 80, fielding: 78, fitness: 90, form: 78 },
+            { name: 'Shahadat Hossain', country: 'Bangladesh', role: 'Batsman', age: 20, power: 75, batting: 78, bowling: 25, fielding: 80, fitness: 90, form: 80 },
+            { name: 'Aliss Islam', country: 'Bangladesh', role: 'Bowler', age: 25, power: 75, batting: 35, bowling: 80, fielding: 78, fitness: 88, form: 78 },
+            { name: 'Sheikh Mahedi', country: 'Bangladesh', role: 'All-Rounder', age: 28, power: 77, batting: 76, bowling: 78, fielding: 80, fitness: 85, form: 80 },
+            { name: 'Naeem Islam', country: 'Bangladesh', role: 'All-Rounder', age: 37, power: 76, batting: 75, bowling: 76, fielding: 82, fitness: 78, form: 75 },
+            { name: 'Farhad Reza', country: 'Bangladesh', role: 'All-Rounder', age: 38, power: 75, batting: 76, bowling: 75, fielding: 80, fitness: 76, form: 74 },
+            { name: 'Raqibul Hasan', country: 'Bangladesh', role: 'Batsman', age: 36, power: 74, batting: 76, bowling: 25, fielding: 78, fitness: 78, form: 74 },
+            { name: 'Junaid Siddique', country: 'Bangladesh', role: 'Batsman', age: 35, power: 73, batting: 75, bowling: 25, fielding: 78, fitness: 78, form: 73 },
+            { name: 'Shahriar Nafees', country: 'Bangladesh', role: 'Batsman', age: 39, power: 74, batting: 76, bowling: 20, fielding: 76, fitness: 75, form: 72 },
+            { name: 'Mohammad Ashraful', country: 'Bangladesh', role: 'Batsman', age: 40, power: 76, batting: 78, bowling: 30, fielding: 78, fitness: 74, form: 72 },
+            { name: 'Aftab Ahmed', country: 'Bangladesh', role: 'Batsman', age: 43, power: 72, batting: 74, bowling: 35, fielding: 76, fitness: 72, form: 70 },
+            { name: 'Javed Omar', country: 'Bangladesh', role: 'Batsman', age: 46, power: 70, batting: 72, bowling: 20, fielding: 74, fitness: 70, form: 68 },
+            { name: 'Hannan Sarkar', country: 'Bangladesh', role: 'Batsman', age: 42, power: 71, batting: 73, bowling: 20, fielding: 75, fitness: 72, form: 70 },
+            { name: 'Manjural Islam', country: 'Bangladesh', role: 'Bowler', age: 41, power: 72, batting: 25, bowling: 75, fielding: 74, fitness: 72, form: 70 },
+            { name: 'Khaled Mashud', country: 'Bangladesh', role: 'Wicket Keeper', age: 47, power: 71, batting: 70, bowling: 20, fielding: 80, fitness: 70, form: 68 },
+            { name: 'Virat Kohli', country: 'India', role: 'Batsman', age: 36, power: 95, batting: 96, bowling: 25, fielding: 90, fitness: 92, form: 94 },
+            { name: 'Rohit Sharma', country: 'India', role: 'Batsman', age: 37, power: 93, batting: 94, bowling: 30, fielding: 85, fitness: 88, form: 90 },
+            { name: 'Jasprit Bumrah', country: 'India', role: 'Bowler', age: 30, power: 94, batting: 40, bowling: 96, fielding: 82, fitness: 90, form: 92 },
+            { name: 'Ravindra Jadeja', country: 'India', role: 'All-Rounder', age: 35, power: 92, batting: 85, bowling: 92, fielding: 95, fitness: 90, form: 90 },
+            { name: 'KL Rahul', country: 'India', role: 'Wicket Keeper', age: 32, power: 89, batting: 90, bowling: 20, fielding: 85, fitness: 88, form: 86 },
+            { name: 'Shubman Gill', country: 'India', role: 'Batsman', age: 25, power: 90, batting: 92, bowling: 25, fielding: 85, fitness: 92, form: 90 },
+            { name: 'Hardik Pandya', country: 'India', role: 'All-Rounder', age: 30, power: 91, batting: 88, bowling: 88, fielding: 86, fitness: 88, form: 88 },
+            { name: 'Rishabh Pant', country: 'India', role: 'Wicket Keeper', age: 26, power: 90, batting: 89, bowling: 20, fielding: 82, fitness: 88, form: 88 },
+            { name: 'Suryakumar Yadav', country: 'India', role: 'Batsman', age: 33, power: 91, batting: 93, bowling: 35, fielding: 88, fitness: 88, form: 90 },
+            { name: 'Mohammed Shami', country: 'India', role: 'Bowler', age: 34, power: 90, batting: 45, bowling: 93, fielding: 80, fitness: 85, form: 88 },
+            { name: 'Kuldeep Yadav', country: 'India', role: 'Bowler', age: 29, power: 88, batting: 40, bowling: 90, fielding: 82, fitness: 88, form: 88 },
+            { name: 'Axar Patel', country: 'India', role: 'All-Rounder', age: 30, power: 87, batting: 82, bowling: 88, fielding: 86, fitness: 90, form: 86 },
+            { name: 'Shreyas Iyer', country: 'India', role: 'Batsman', age: 29, power: 88, batting: 89, bowling: 30, fielding: 84, fitness: 88, form: 86 },
+            { name: 'Ishan Kishan', country: 'India', role: 'Wicket Keeper', age: 25, power: 86, batting: 87, bowling: 20, fielding: 82, fitness: 90, form: 84 },
+            { name: 'Yuzvendra Chahal', country: 'India', role: 'Bowler', age: 33, power: 87, batting: 35, bowling: 89, fielding: 80, fitness: 85, form: 86 },
+            { name: 'Sanju Samson', country: 'India', role: 'Wicket Keeper', age: 29, power: 87, batting: 88, bowling: 20, fielding: 84, fitness: 88, form: 85 },
+            { name: 'Ruturaj Gaikwad', country: 'India', role: 'Batsman', age: 27, power: 88, batting: 89, bowling: 25, fielding: 84, fitness: 90, form: 88 },
+            { name: 'Arshdeep Singh', country: 'India', role: 'Bowler', age: 25, power: 86, batting: 35, bowling: 88, fielding: 82, fitness: 90, form: 86 },
+            { name: 'Deepak Chahar', country: 'India', role: 'Bowler', age: 31, power: 84, batting: 55, bowling: 86, fielding: 82, fitness: 85, form: 82 },
+            { name: 'Bhuvneshwar Kumar', country: 'India', role: 'Bowler', age: 34, power: 85, batting: 50, bowling: 87, fielding: 82, fitness: 82, form: 82 },
+            { name: 'Washington Sundar', country: 'India', role: 'All-Rounder', age: 24, power: 85, batting: 80, bowling: 86, fielding: 86, fitness: 90, form: 86 },
+            { name: 'Shardul Thakur', country: 'India', role: 'All-Rounder', age: 32, power: 84, batting: 78, bowling: 85, fielding: 82, fitness: 85, form: 82 },
+            { name: 'Mukesh Kumar', country: 'India', role: 'Bowler', age: 30, power: 82, batting: 35, bowling: 85, fielding: 80, fitness: 88, form: 84 },
+            { name: 'Prasidh Krishna', country: 'India', role: 'Bowler', age: 28, power: 84, batting: 35, bowling: 86, fielding: 82, fitness: 88, form: 84 },
+            { name: 'Shivam Dube', country: 'India', role: 'All-Rounder', age: 30, power: 84, batting: 85, bowling: 78, fielding: 80, fitness: 86, form: 84 },
+            { name: 'Rinku Singh', country: 'India', role: 'Batsman', age: 26, power: 86, batting: 88, bowling: 25, fielding: 82, fitness: 90, form: 88 },
+            { name: 'Tilak Varma', country: 'India', role: 'Batsman', age: 21, power: 85, batting: 87, bowling: 30, fielding: 82, fitness: 92, form: 86 },
+            { name: 'Avesh Khan', country: 'India', role: 'Bowler', age: 27, power: 83, batting: 35, bowling: 85, fielding: 80, fitness: 88, form: 84 },
+            { name: 'Khaleel Ahmed', country: 'India', role: 'Bowler', age: 26, power: 82, batting: 30, bowling: 84, fielding: 80, fitness: 88, form: 82 },
+            { name: 'Ravi Bishnoi', country: 'India', role: 'Bowler', age: 23, power: 84, batting: 35, bowling: 86, fielding: 82, fitness: 90, form: 86 },
+            { name: 'Rahul Tripathi', country: 'India', role: 'Batsman', age: 33, power: 83, batting: 85, bowling: 25, fielding: 82, fitness: 86, form: 82 },
+            { name: 'Nitish Rana', country: 'India', role: 'Batsman', age: 30, power: 82, batting: 84, bowling: 35, fielding: 82, fitness: 86, form: 82 },
+            { name: 'Deepak Hooda', country: 'India', role: 'All-Rounder', age: 29, power: 81, batting: 82, bowling: 76, fielding: 82, fitness: 86, form: 80 },
+            { name: 'Shahbaz Ahmed', country: 'India', role: 'All-Rounder', age: 29, power: 81, batting: 80, bowling: 78, fielding: 84, fitness: 88, form: 82 },
+            { name: 'Babar Azam', country: 'Pakistan', role: 'Batsman', age: 29, power: 94, batting: 95, bowling: 25, fielding: 88, fitness: 90, form: 92 },
+            { name: 'Mohammad Rizwan', country: 'Pakistan', role: 'Wicket Keeper', age: 31, power: 91, batting: 92, bowling: 20, fielding: 88, fitness: 90, form: 90 },
+            { name: 'Shaheen Afridi', country: 'Pakistan', role: 'Bowler', age: 24, power: 93, batting: 45, bowling: 94, fielding: 82, fitness: 92, form: 90 },
+            { name: 'Shadab Khan', country: 'Pakistan', role: 'All-Rounder', age: 25, power: 90, batting: 82, bowling: 90, fielding: 88, fitness: 92, form: 88 },
+            { name: 'Fakhar Zaman', country: 'Pakistan', role: 'Batsman', age: 34, power: 89, batting: 90, bowling: 25, fielding: 82, fitness: 86, form: 86 },
+            { name: 'Haris Rauf', country: 'Pakistan', role: 'Bowler', age: 30, power: 90, batting: 40, bowling: 92, fielding: 82, fitness: 90, form: 88 },
+            { name: 'Hasan Ali', country: 'Pakistan', role: 'Bowler', age: 29, power: 87, batting: 50, bowling: 88, fielding: 84, fitness: 88, form: 85 },
+            { name: 'Imam-ul-Haq', country: 'Pakistan', role: 'Batsman', age: 28, power: 87, batting: 88, bowling: 20, fielding: 82, fitness: 88, form: 86 },
+            { name: 'Saud Shakeel', country: 'Pakistan', role: 'Batsman', age: 28, power: 86, batting: 87, bowling: 30, fielding: 82, fitness: 88, form: 86 },
+            { name: 'Salman Ali Agha', country: 'Pakistan', role: 'All-Rounder', age: 29, power: 85, batting: 85, bowling: 80, fielding: 82, fitness: 88, form: 84 },
+            { name: 'Mohammad Nawaz', country: 'Pakistan', role: 'All-Rounder', age: 30, power: 86, batting: 80, bowling: 86, fielding: 86, fitness: 90, form: 84 },
+            { name: 'Usama Mir', country: 'Pakistan', role: 'Bowler', age: 27, power: 84, batting: 35, bowling: 86, fielding: 82, fitness: 88, form: 84 },
+            { name: 'Iftikhar Ahmed', country: 'Pakistan', role: 'All-Rounder', age: 34, power: 85, batting: 84, bowling: 82, fielding: 84, fitness: 86, form: 82 },
+            { name: 'Mohammad Wasim', country: 'Pakistan', role: 'Bowler', age: 23, power: 84, batting: 45, bowling: 86, fielding: 82, fitness: 90, form: 86 },
+            { name: 'Naseem Shah', country: 'Pakistan', role: 'Bowler', age: 21, power: 89, batting: 40, bowling: 91, fielding: 82, fitness: 92, form: 88 },
+            { name: 'Abrar Ahmed', country: 'Pakistan', role: 'Bowler', age: 25, power: 86, batting: 35, bowling: 88, fielding: 80, fitness: 88, form: 86 },
+            { name: 'Sarfaraz Ahmed', country: 'Pakistan', role: 'Wicket Keeper', age: 37, power: 83, batting: 82, bowling: 20, fielding: 86, fitness: 80, form: 78 },
+            { name: 'Shan Masood', country: 'Pakistan', role: 'Batsman', age: 34, power: 85, batting: 86, bowling: 25, fielding: 82, fitness: 86, form: 84 },
+            { name: 'Saim Ayub', country: 'Pakistan', role: 'Batsman', age: 21, power: 85, batting: 86, bowling: 30, fielding: 84, fitness: 92, form: 86 },
+            { name: 'Abdullah Shafique', country: 'Pakistan', role: 'Batsman', age: 24, power: 84, batting: 85, bowling: 25, fielding: 82, fitness: 90, form: 84 },
+            { name: 'Kamran Ghulam', country: 'Pakistan', role: 'Batsman', age: 28, power: 82, batting: 84, bowling: 35, fielding: 80, fitness: 88, form: 82 },
+            { name: 'Mohammad Haris', country: 'Pakistan', role: 'Wicket Keeper', age: 22, power: 83, batting: 84, bowling: 20, fielding: 82, fitness: 92, form: 84 },
+            { name: 'Abbas Afridi', country: 'Pakistan', role: 'Bowler', age: 24, power: 82, batting: 40, bowling: 85, fielding: 80, fitness: 90, form: 82 },
+            { name: 'Aamer Jamal', country: 'Pakistan', role: 'All-Rounder', age: 27, power: 83, batting: 80, bowling: 82, fielding: 82, fitness: 88, form: 82 },
+            { name: 'Steve Smith', country: 'Australia', role: 'Batsman', age: 34, power: 93, batting: 95, bowling: 40, fielding: 92, fitness: 88, form: 90 },
+            { name: 'David Warner', country: 'Australia', role: 'Batsman', age: 37, power: 90, batting: 91, bowling: 25, fielding: 88, fitness: 86, form: 86 },
+            { name: 'Pat Cummins', country: 'Australia', role: 'Bowler', age: 31, power: 93, batting: 55, bowling: 94, fielding: 86, fitness: 90, form: 92 },
+            { name: 'Mitchell Starc', country: 'Australia', role: 'Bowler', age: 34, power: 92, batting: 50, bowling: 93, fielding: 84, fitness: 88, form: 90 },
+            { name: 'Glenn Maxwell', country: 'Australia', role: 'All-Rounder', age: 35, power: 92, batting: 90, bowling: 88, fielding: 90, fitness: 88, form: 88 },
+            { name: 'Marcus Stoinis', country: 'Australia', role: 'All-Rounder', age: 34, power: 89, batting: 86, bowling: 85, fielding: 86, fitness: 88, form: 86 },
+            { name: 'Travis Head', country: 'Australia', role: 'Batsman', age: 30, power: 91, batting: 92, bowling: 35, fielding: 86, fitness: 90, form: 90 },
+            { name: 'Alex Carey', country: 'Australia', role: 'Wicket Keeper', age: 32, power: 87, batting: 86, bowling: 20, fielding: 88, fitness: 88, form: 86 },
+            { name: 'Josh Hazlewood', country: 'Australia', role: 'Bowler', age: 33, power: 90, batting: 40, bowling: 92, fielding: 84, fitness: 88, form: 88 },
+            { name: 'Adam Zampa', country: 'Australia', role: 'Bowler', age: 32, power: 88, batting: 35, bowling: 90, fielding: 82, fitness: 88, form: 88 },
+            { name: 'Mitchell Marsh', country: 'Australia', role: 'All-Rounder', age: 32, power: 90, batting: 88, bowling: 86, fielding: 86, fitness: 88, form: 88 },
+            { name: 'Cameron Green', country: 'Australia', role: 'All-Rounder', age: 25, power: 89, batting: 87, bowling: 86, fielding: 88, fitness: 92, form: 88 },
+            { name: 'Marnus Labuschagne', country: 'Australia', role: 'Batsman', age: 29, power: 91, batting: 93, bowling: 45, fielding: 88, fitness: 90, form: 90 },
+            { name: 'Josh Inglis', country: 'Australia', role: 'Wicket Keeper', age: 29, power: 86, batting: 85, bowling: 20, fielding: 86, fitness: 90, form: 86 },
+            { name: 'Sean Abbott', country: 'Australia', role: 'Bowler', age: 32, power: 85, batting: 60, bowling: 86, fielding: 84, fitness: 88, form: 84 },
+            { name: 'Nathan Ellis', country: 'Australia', role: 'Bowler', age: 30, power: 85, batting: 45, bowling: 86, fielding: 84, fitness: 90, form: 86 },
+            { name: 'Ashton Agar', country: 'Australia', role: 'Bowler', age: 30, power: 84, batting: 60, bowling: 86, fielding: 86, fitness: 88, form: 82 },
+            { name: 'Matthew Wade', country: 'Australia', role: 'Wicket Keeper', age: 36, power: 84, batting: 82, bowling: 20, fielding: 86, fitness: 84, form: 82 },
+            { name: 'Aaron Finch', country: 'Australia', role: 'Batsman', age: 37, power: 85, batting: 86, bowling: 25, fielding: 86, fitness: 84, form: 80 },
+            { name: 'Kane Richardson', country: 'Australia', role: 'Bowler', age: 33, power: 84, batting: 40, bowling: 85, fielding: 84, fitness: 86, form: 82 },
+            { name: 'Jhye Richardson', country: 'Australia', role: 'Bowler', age: 27, power: 85, batting: 40, bowling: 86, fielding: 84, fitness: 88, form: 84 },
+            { name: 'Xavier Bartlett', country: 'Australia', role: 'Bowler', age: 24, power: 82, batting: 40, bowling: 84, fielding: 82, fitness: 90, form: 84 },
+            { name: 'Spencer Johnson', country: 'Australia', role: 'Bowler', age: 28, power: 83, batting: 38, bowling: 85, fielding: 82, fitness: 90, form: 84 },
+            { name: 'Tim David', country: 'Australia', role: 'Batsman', age: 28, power: 87, batting: 88, bowling: 30, fielding: 84, fitness: 90, form: 86 },
+            { name: 'Jake Fraser-McGurk', country: 'Australia', role: 'Batsman', age: 22, power: 85, batting: 86, bowling: 25, fielding: 82, fitness: 92, form: 86 },
+            { name: 'Jos Buttler', country: 'England', role: 'Wicket Keeper', age: 33, power: 93, batting: 94, bowling: 20, fielding: 90, fitness: 88, form: 90 },
+            { name: 'Ben Stokes', country: 'England', role: 'All-Rounder', age: 33, power: 93, batting: 90, bowling: 90, fielding: 90, fitness: 85, form: 88 },
+            { name: 'Jofra Archer', country: 'England', role: 'Bowler', age: 29, power: 92, batting: 45, bowling: 93, fielding: 86, fitness: 88, form: 88 },
+            { name: 'Jonny Bairstow', country: 'England', role: 'Wicket Keeper', age: 34, power: 89, batting: 90, bowling: 20, fielding: 86, fitness: 86, form: 84 },
+            { name: 'Moeen Ali', country: 'England', role: 'All-Rounder', age: 36, power: 88, batting: 85, bowling: 87, fielding: 86, fitness: 84, form: 82 },
+            { name: 'Chris Woakes', country: 'England', role: 'All-Rounder', age: 35, power: 88, batting: 82, bowling: 88, fielding: 86, fitness: 86, form: 84 },
+            { name: 'Liam Livingstone', country: 'England', role: 'All-Rounder', age: 30, power: 89, batting: 88, bowling: 85, fielding: 88, fitness: 90, form: 86 },
+            { name: 'Sam Curran', country: 'England', role: 'All-Rounder', age: 26, power: 89, batting: 85, bowling: 88, fielding: 86, fitness: 90, form: 88 },
+            { name: 'Adil Rashid', country: 'England', role: 'Bowler', age: 36, power: 88, batting: 35, bowling: 90, fielding: 82, fitness: 86, form: 86 },
+            { name: 'Mark Wood', country: 'England', role: 'Bowler', age: 34, power: 89, batting: 40, bowling: 92, fielding: 84, fitness: 88, form: 86 },
+            { name: 'Harry Brook', country: 'England', role: 'Batsman', age: 25, power: 90, batting: 91, bowling: 30, fielding: 86, fitness: 92, form: 90 },
+            { name: 'Dawid Malan', country: 'England', role: 'Batsman', age: 37, power: 88, batting: 89, bowling: 25, fielding: 84, fitness: 86, form: 84 },
+            { name: 'Jason Roy', country: 'England', role: 'Batsman', age: 34, power: 86, batting: 87, bowling: 25, fielding: 86, fitness: 86, form: 82 },
+            { name: 'Phil Salt', country: 'England', role: 'Wicket Keeper', age: 28, power: 87, batting: 88, bowling: 20, fielding: 84, fitness: 90, form: 86 },
+            { name: 'Will Jacks', country: 'England', role: 'All-Rounder', age: 25, power: 86, batting: 86, bowling: 82, fielding: 86, fitness: 90, form: 86 },
+            { name: 'Reece Topley', country: 'England', role: 'Bowler', age: 30, power: 86, batting: 40, bowling: 88, fielding: 84, fitness: 88, form: 84 },
+            { name: 'Matthew Potts', country: 'England', role: 'Bowler', age: 25, power: 84, batting: 45, bowling: 86, fielding: 82, fitness: 90, form: 84 },
+            { name: 'Brydon Carse', country: 'England', role: 'Bowler', age: 28, power: 84, batting: 55, bowling: 86, fielding: 82, fitness: 88, form: 84 },
+            { name: 'Chris Jordan', country: 'England', role: 'Bowler', age: 35, power: 85, batting: 60, bowling: 86, fielding: 90, fitness: 86, form: 82 },
+            { name: 'Tymal Mills', country: 'England', role: 'Bowler', age: 31, power: 85, batting: 35, bowling: 87, fielding: 82, fitness: 88, form: 84 },
+            { name: 'Quinton de Kock', country: 'South Africa', role: 'Wicket Keeper', age: 31, power: 92, batting: 93, bowling: 20, fielding: 88, fitness: 90, form: 90 },
+            { name: 'Temba Bavuma', country: 'South Africa', role: 'Batsman', age: 34, power: 87, batting: 88, bowling: 25, fielding: 88, fitness: 88, form: 86 },
+            { name: 'Kagiso Rabada', country: 'South Africa', role: 'Bowler', age: 29, power: 93, batting: 45, bowling: 94, fielding: 84, fitness: 92, form: 90 },
+            { name: 'Anrich Nortje', country: 'South Africa', role: 'Bowler', age: 30, power: 92, batting: 40, bowling: 93, fielding: 84, fitness: 92, form: 90 },
+            { name: 'Aiden Markram', country: 'South Africa', role: 'Batsman', age: 29, power: 90, batting: 91, bowling: 55, fielding: 90, fitness: 92, form: 88 },
+            { name: 'David Miller', country: 'South Africa', role: 'Batsman', age: 35, power: 89, batting: 90, bowling: 25, fielding: 88, fitness: 88, form: 86 },
+            { name: 'Heinrich Klaasen', country: 'South Africa', role: 'Wicket Keeper', age: 32, power: 90, batting: 91, bowling: 20, fielding: 86, fitness: 90, form: 88 },
+            { name: 'Rassie van der Dussen', country: 'South Africa', role: 'Batsman', age: 35, power: 89, batting: 90, bowling: 25, fielding: 88, fitness: 88, form: 86 },
+            { name: 'Lungi Ngidi', country: 'South Africa', role: 'Bowler', age: 28, power: 88, batting: 35, bowling: 90, fielding: 82, fitness: 90, form: 86 },
+            { name: 'Tabraiz Shamsi', country: 'South Africa', role: 'Bowler', age: 34, power: 87, batting: 35, bowling: 89, fielding: 82, fitness: 88, form: 86 },
+            { name: 'Tristan Stubbs', country: 'South Africa', role: 'Batsman', age: 23, power: 87, batting: 88, bowling: 30, fielding: 86, fitness: 92, form: 86 },
+            { name: 'Marco Jansen', country: 'South Africa', role: 'All-Rounder', age: 24, power: 89, batting: 82, bowling: 90, fielding: 86, fitness: 92, form: 88 },
+            { name: 'Gerald Coetzee', country: 'South Africa', role: 'Bowler', age: 23, power: 88, batting: 45, bowling: 90, fielding: 84, fitness: 92, form: 88 },
+            { name: 'Keshav Maharaj', country: 'South Africa', role: 'Bowler', age: 34, power: 86, batting: 55, bowling: 88, fielding: 86, fitness: 86, form: 84 },
+            { name: 'Reeza Hendricks', country: 'South Africa', role: 'Batsman', age: 34, power: 86, batting: 87, bowling: 25, fielding: 86, fitness: 88, form: 84 },
+            { name: 'Andile Phehlukwayo', country: 'South Africa', role: 'All-Rounder', age: 28, power: 85, batting: 80, bowling: 85, fielding: 86, fitness: 88, form: 82 },
+            { name: 'Lizaad Williams', country: 'South Africa', role: 'Bowler', age: 30, power: 84, batting: 40, bowling: 85, fielding: 82, fitness: 88, form: 82 },
+            { name: 'Bjorn Fortuin', country: 'South Africa', role: 'Bowler', age: 29, power: 83, batting: 50, bowling: 85, fielding: 84, fitness: 88, form: 82 },
+            { name: 'Ryan Rickelton', country: 'South Africa', role: 'Wicket Keeper', age: 28, power: 85, batting: 86, bowling: 20, fielding: 84, fitness: 90, form: 84 },
+            { name: 'Kane Williamson', country: 'New Zealand', role: 'Batsman', age: 34, power: 92, batting: 94, bowling: 40, fielding: 90, fitness: 86, form: 88 },
+            { name: 'Trent Boult', country: 'New Zealand', role: 'Bowler', age: 34, power: 91, batting: 50, bowling: 93, fielding: 86, fitness: 88, form: 90 },
+            { name: 'Tim Southee', country: 'New Zealand', role: 'Bowler', age: 35, power: 90, batting: 55, bowling: 92, fielding: 88, fitness: 86, form: 88 },
+            { name: 'Tom Latham', country: 'New Zealand', role: 'Wicket Keeper', age: 32, power: 88, batting: 89, bowling: 20, fielding: 88, fitness: 88, form: 86 },
+            { name: 'Devon Conway', country: 'New Zealand', role: 'Batsman', age: 32, power: 90, batting: 91, bowling: 25, fielding: 88, fitness: 90, form: 88 },
+            { name: 'Mitchell Santner', country: 'New Zealand', role: 'All-Rounder', age: 32, power: 89, batting: 84, bowling: 90, fielding: 90, fitness: 90, form: 88 },
+            { name: 'Glenn Phillips', country: 'New Zealand', role: 'All-Rounder', age: 27, power: 89, batting: 88, bowling: 82, fielding: 92, fitness: 92, form: 88 },
+            { name: 'Lockie Ferguson', country: 'New Zealand', role: 'Bowler', age: 33, power: 88, batting: 40, bowling: 90, fielding: 84, fitness: 90, form: 86 },
+            { name: 'Matt Henry', country: 'New Zealand', role: 'Bowler', age: 32, power: 88, batting: 45, bowling: 89, fielding: 86, fitness: 88, form: 86 },
+            { name: 'Rachin Ravindra', country: 'New Zealand', role: 'All-Rounder', age: 24, power: 89, batting: 88, bowling: 86, fielding: 86, fitness: 92, form: 90 },
+            { name: 'Daryl Mitchell', country: 'New Zealand', role: 'All-Rounder', age: 32, power: 89, batting: 88, bowling: 85, fielding: 88, fitness: 90, form: 88 },
+            { name: 'Jimmy Neesham', country: 'New Zealand', role: 'All-Rounder', age: 33, power: 87, batting: 86, bowling: 85, fielding: 88, fitness: 88, form: 84 },
+            { name: 'Ish Sodhi', country: 'New Zealand', role: 'Bowler', age: 31, power: 86, batting: 45, bowling: 88, fielding: 84, fitness: 88, form: 84 },
+            { name: 'Mark Chapman', country: 'New Zealand', role: 'Batsman', age: 30, power: 86, batting: 87, bowling: 35, fielding: 88, fitness: 90, form: 86 },
+            { name: 'Finn Allen', country: 'New Zealand', role: 'Batsman', age: 24, power: 87, batting: 88, bowling: 25, fielding: 86, fitness: 92, form: 86 },
+            { name: 'Nicholas Pooran', country: 'West Indies', role: 'Wicket Keeper', age: 28, power: 90, batting: 91, bowling: 20, fielding: 86, fitness: 90, form: 88 },
+            { name: 'Shimron Hetmyer', country: 'West Indies', role: 'Batsman', age: 27, power: 88, batting: 89, bowling: 25, fielding: 84, fitness: 90, form: 86 },
+            { name: 'Jason Holder', country: 'West Indies', role: 'All-Rounder', age: 32, power: 90, batting: 85, bowling: 90, fielding: 88, fitness: 88, form: 86 },
+            { name: 'Alzarri Joseph', country: 'West Indies', role: 'Bowler', age: 27, power: 88, batting: 40, bowling: 90, fielding: 84, fitness: 90, form: 86 },
+            { name: 'Shai Hope', country: 'West Indies', role: 'Batsman', age: 30, power: 88, batting: 89, bowling: 20, fielding: 86, fitness: 88, form: 86 },
+            { name: 'Rovman Powell', country: 'West Indies', role: 'Batsman', age: 30, power: 86, batting: 87, bowling: 35, fielding: 84, fitness: 90, form: 84 },
+            { name: 'Brandon King', country: 'West Indies', role: 'Batsman', age: 29, power: 86, batting: 87, bowling: 25, fielding: 84, fitness: 90, form: 84 },
+            { name: 'Kyle Mayers', country: 'West Indies', role: 'All-Rounder', age: 31, power: 86, batting: 85, bowling: 82, fielding: 86, fitness: 88, form: 84 },
+            { name: 'Obed McCoy', country: 'West Indies', role: 'Bowler', age: 27, power: 85, batting: 35, bowling: 87, fielding: 82, fitness: 90, form: 84 },
+            { name: 'Akeal Hosein', country: 'West Indies', role: 'Bowler', age: 31, power: 86, batting: 50, bowling: 88, fielding: 86, fitness: 88, form: 84 },
+            { name: 'Romario Shepherd', country: 'West Indies', role: 'All-Rounder', age: 29, power: 85, batting: 82, bowling: 85, fielding: 86, fitness: 90, form: 84 },
+            { name: 'Gudakesh Motie', country: 'West Indies', role: 'Bowler', age: 29, power: 84, batting: 45, bowling: 86, fielding: 84, fitness: 88, form: 82 },
+            { name: 'Sherfane Rutherford', country: 'West Indies', role: 'Batsman', age: 25, power: 85, batting: 86, bowling: 30, fielding: 84, fitness: 92, form: 84 },
+            { name: 'Keacy Carty', country: 'West Indies', role: 'Batsman', age: 22, power: 82, batting: 84, bowling: 25, fielding: 82, fitness: 90, form: 82 },
+            { name: 'Jayden Seales', country: 'West Indies', role: 'Bowler', age: 22, power: 85, batting: 35, bowling: 87, fielding: 82, fitness: 92, form: 86 },
+            { name: 'Dasun Shanaka', country: 'Sri Lanka', role: 'All-Rounder', age: 32, power: 87, batting: 85, bowling: 86, fielding: 86, fitness: 88, form: 84 },
+            { name: 'Wanindu Hasaranga', country: 'Sri Lanka', role: 'All-Rounder', age: 26, power: 90, batting: 82, bowling: 92, fielding: 90, fitness: 92, form: 88 },
+            { name: 'Kusal Mendis', country: 'Sri Lanka', role: 'Wicket Keeper', age: 29, power: 88, batting: 89, bowling: 20, fielding: 86, fitness: 88, form: 86 },
+            { name: 'Pathum Nissanka', country: 'Sri Lanka', role: 'Batsman', age: 26, power: 87, batting: 88, bowling: 25, fielding: 86, fitness: 90, form: 86 },
+            { name: 'Charith Asalanka', country: 'Sri Lanka', role: 'Batsman', age: 26, power: 86, batting: 87, bowling: 40, fielding: 86, fitness: 90, form: 86 },
+            { name: 'Maheesh Theekshana', country: 'Sri Lanka', role: 'Bowler', age: 23, power: 88, batting: 40, bowling: 90, fielding: 86, fitness: 92, form: 88 },
+            { name: 'Matheesha Pathirana', country: 'Sri Lanka', role: 'Bowler', age: 21, power: 88, batting: 35, bowling: 91, fielding: 84, fitness: 92, form: 88 },
+            { name: 'Dhananjaya de Silva', country: 'Sri Lanka', role: 'All-Rounder', age: 32, power: 87, batting: 86, bowling: 85, fielding: 88, fitness: 88, form: 84 },
+            { name: 'Angelo Mathews', country: 'Sri Lanka', role: 'All-Rounder', age: 37, power: 86, batting: 85, bowling: 82, fielding: 88, fitness: 82, form: 82 },
+            { name: 'Dushmantha Chameera', country: 'Sri Lanka', role: 'Bowler', age: 32, power: 85, batting: 40, bowling: 87, fielding: 84, fitness: 86, form: 82 },
+            { name: 'Lahiru Kumara', country: 'Sri Lanka', role: 'Bowler', age: 27, power: 84, batting: 35, bowling: 86, fielding: 82, fitness: 88, form: 82 },
+            { name: 'Kamindu Mendis', country: 'Sri Lanka', role: 'All-Rounder', age: 25, power: 85, batting: 84, bowling: 82, fielding: 88, fitness: 90, form: 84 },
+            { name: 'Avishka Fernando', country: 'Sri Lanka', role: 'Batsman', age: 26, power: 85, batting: 86, bowling: 25, fielding: 84, fitness: 90, form: 84 },
+            { name: 'Jeffrey Vandersay', country: 'Sri Lanka', role: 'Bowler', age: 34, power: 83, batting: 35, bowling: 85, fielding: 84, fitness: 86, form: 80 },
+            { name: 'Sadeera Samarawickrama', country: 'Sri Lanka', role: 'Wicket Keeper', age: 28, power: 84, batting: 85, bowling: 20, fielding: 84, fitness: 88, form: 82 },
+            { name: 'Rashid Khan', country: 'Afghanistan', role: 'Bowler', age: 26, power: 93, batting: 65, bowling: 96, fielding: 90, fitness: 92, form: 92 },
+            { name: 'Mohammad Nabi', country: 'Afghanistan', role: 'All-Rounder', age: 39, power: 89, batting: 85, bowling: 88, fielding: 88, fitness: 82, form: 84 },
+            { name: 'Rahmanullah Gurbaz', country: 'Afghanistan', role: 'Wicket Keeper', age: 22, power: 89, batting: 90, bowling: 20, fielding: 84, fitness: 92, form: 88 },
+            { name: 'Ibrahim Zadran', country: 'Afghanistan', role: 'Batsman', age: 22, power: 88, batting: 89, bowling: 25, fielding: 84, fitness: 92, form: 88 },
+            { name: 'Azmatullah Omarzai', country: 'Afghanistan', role: 'All-Rounder', age: 23, power: 88, batting: 85, bowling: 86, fielding: 86, fitness: 92, form: 88 },
+            { name: 'Mujeeb Ur Rahman', country: 'Afghanistan', role: 'Bowler', age: 23, power: 89, batting: 40, bowling: 91, fielding: 86, fitness: 92, form: 88 },
+            { name: 'Naveen-ul-Haq', country: 'Afghanistan', role: 'Bowler', age: 25, power: 87, batting: 45, bowling: 88, fielding: 84, fitness: 90, form: 86 },
+            { name: 'Fazalhaq Farooqi', country: 'Afghanistan', role: 'Bowler', age: 23, power: 86, batting: 35, bowling: 88, fielding: 84, fitness: 92, form: 86 },
+            { name: 'Noor Ahmad', country: 'Afghanistan', role: 'Bowler', age: 19, power: 86, batting: 30, bowling: 88, fielding: 86, fitness: 92, form: 86 },
+            { name: 'Gulbadin Naib', country: 'Afghanistan', role: 'All-Rounder', age: 33, power: 84, batting: 82, bowling: 82, fielding: 86, fitness: 86, form: 82 },
+            { name: 'Najibullah Zadran', country: 'Afghanistan', role: 'Batsman', age: 31, power: 86, batting: 87, bowling: 25, fielding: 84, fitness: 88, form: 84 },
+            { name: 'Hashmatullah Shahidi', country: 'Afghanistan', role: 'Batsman', age: 29, power: 85, batting: 86, bowling: 20, fielding: 84, fitness: 88, form: 84 },
+            { name: 'Ikram Alikhil', country: 'Afghanistan', role: 'Wicket Keeper', age: 23, power: 82, batting: 82, bowling: 20, fielding: 84, fitness: 90, form: 82 },
+            { name: 'Qais Ahmad', country: 'Afghanistan', role: 'Bowler', age: 24, power: 84, batting: 35, bowling: 86, fielding: 84, fitness: 90, form: 82 },
+            { name: 'Karim Janat', country: 'Afghanistan', role: 'All-Rounder', age: 25, power: 84, batting: 80, bowling: 84, fielding: 86, fitness: 90, form: 82 },
+            { name: 'Sikandar Raza', country: 'Zimbabwe', role: 'All-Rounder', age: 38, power: 88, batting: 86, bowling: 87, fielding: 88, fitness: 84, form: 86 },
+            { name: 'Sean Williams', country: 'Zimbabwe', role: 'All-Rounder', age: 37, power: 85, batting: 85, bowling: 82, fielding: 88, fitness: 82, form: 82 },
+            { name: 'Blessing Muzarabani', country: 'Zimbabwe', role: 'Bowler', age: 27, power: 85, batting: 35, bowling: 88, fielding: 82, fitness: 90, form: 84 },
+            { name: 'Craig Ervine', country: 'Zimbabwe', role: 'Batsman', age: 39, power: 83, batting: 85, bowling: 25, fielding: 84, fitness: 80, form: 80 },
+            { name: 'Wesley Madhevere', country: 'Zimbabwe', role: 'All-Rounder', age: 23, power: 81, batting: 82, bowling: 78, fielding: 86, fitness: 90, form: 80 },
+            { name: 'Paul Stirling', country: 'Ireland', role: 'Batsman', age: 33, power: 86, batting: 88, bowling: 45, fielding: 84, fitness: 86, form: 84 },
+            { name: 'Andrew Balbirnie', country: 'Ireland', role: 'Batsman', age: 33, power: 84, batting: 86, bowling: 25, fielding: 84, fitness: 86, form: 82 },
+            { name: 'Josh Little', country: 'Ireland', role: 'Bowler', age: 25, power: 85, batting: 35, bowling: 87, fielding: 82, fitness: 90, form: 86 },
+            { name: 'Curtis Campher', country: 'Ireland', role: 'All-Rounder', age: 25, power: 84, batting: 84, bowling: 84, fielding: 86, fitness: 90, form: 84 },
+            { name: 'Harry Tector', country: 'Ireland', role: 'Batsman', age: 24, power: 84, batting: 86, bowling: 30, fielding: 84, fitness: 90, form: 84 },
+            { name: 'Richie Berrington', country: 'Scotland', role: 'Batsman', age: 37, power: 83, batting: 85, bowling: 40, fielding: 86, fitness: 84, form: 82 },
+            { name: 'George Munsey', country: 'Scotland', role: 'Batsman', age: 31, power: 82, batting: 84, bowling: 35, fielding: 84, fitness: 86, form: 82 },
+            { name: 'Mark Watt', country: 'Scotland', role: 'Bowler', age: 27, power: 82, batting: 40, bowling: 85, fielding: 82, fitness: 88, form: 82 },
+            { name: 'Rohit Paudel', country: 'Nepal', role: 'Batsman', age: 21, power: 80, batting: 82, bowling: 35, fielding: 82, fitness: 90, form: 82 },
+            { name: 'Sandeep Lamichhane', country: 'Nepal', role: 'Bowler', age: 23, power: 84, batting: 35, bowling: 86, fielding: 82, fitness: 90, form: 84 }
+        ];
+
+        // ==================== GAME ENGINE ====================
+        class Game {
+            constructor() {
+                this.audio = new AudioEngine();
+                this.confetti = new ConfettiEngine();
+                this.teams = [];
+                this.players = [];
+                this.currentPlayerIndex = 0;
+                this.currentCategory = 'A+';
+                this.categories = ['A+', 'A', 'B', 'C', 'D'];
+                this.categoryIndex = 0;
+                this.auctionState = 'IDLE';
+                this.currentBid = 0;
+                this.highestBidder = null;
+                this.bidTimer = null;
+                this.history = [];
+                this.unsoldPlayers = [];
+                this.userXI = new Array(11).fill(null);
+                this.xiCaptain = null;
+                this.xiViceCaptain = null;
+                this.squadFilter = 'all';
+                this.userTeamName = 'My Team';
+                this.userOwnerName = 'You';
+                this.setupCompleteFlag = false;
+                this.initTeams();
+                this.initPlayers();
+                this.setupUI();
+                this.createParticles();
+            }
+
+            createParticles() {
+                const container = document.getElementById('bg-particles');
+                for (let i = 0; i < 30; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'particle';
+                    p.style.left = Math.random() * 100 + '%';
+                    p.style.animationDelay = Math.random() * 15 + 's';
+                    p.style.animationDuration = (10 + Math.random() * 10) + 's';
+                    container.appendChild(p);
+                }
+            }
+
+            initTeams() {
+                const teamNames = [
+                    { name: 'My Team', color: '#0ea5e9', isUser: true },
+                    { name: 'Mumbai Strikers', color: '#3b82f6', isUser: false },
+                    { name: 'Delhi Dynamos', color: '#ef4444', isUser: false },
+                    { name: 'Chennai Kings', color: '#f59e0b', isUser: false },
+                    { name: 'Kolkata Knights', color: '#8b5cf6', isUser: false },
+                    { name: 'Bangalore Bulls', color: '#10b981', isUser: false },
+                    { name: 'Hyderabad Hawks', color: '#f97316', isUser: false }
+                ];
+                this.teams = teamNames.map(t => ({ ...t, budget: 50.0, players: [], rating: 0, spent: 0 }));
+            }
+
+            initPlayers() {
+                this.players = PLAYER_POOL.map((p, idx) => {
+                    let category, basePrice;
+                    if (p.power >= 90) { category = 'A+'; basePrice = 2.0; }
+                    else if (p.power >= 82) { category = 'A'; basePrice = 1.0; }
+                    else if (p.power >= 75) { category = 'B'; basePrice = 0.5; }
+                    else if (p.power >= 70) { category = 'C'; basePrice = 0.25; }
+                    else { category = 'D'; basePrice = 0.1; }
+                    basePrice = Math.round(basePrice * 100) / 100;
+                    return { id: idx, ...p, category, basePrice, sold: false, soldPrice: 0, soldTo: null, initials: p.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() };
+                });
+                const catOrder = { 'A+': 0, 'A': 1, 'B': 2, 'C': 3, 'D': 4 };
+                this.players.sort((a, b) => {
+                    if (catOrder[a.category] !== catOrder[b.category]) return catOrder[a.category] - catOrder[b.category];
+                    return b.power - a.power;
+                });
+            }
+
+            setupUI() {
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+                        document.getElementById(`screen-${tab.dataset.screen}`).classList.remove('hidden');
+                        if (tab.dataset.screen === 'squad') this.renderSquad();
+                        if (tab.dataset.screen === 'xi') this.renderXI();
+                        if (tab.dataset.screen === 'stats') this.renderStats();
+                        if (tab.dataset.screen === 'unsold') this.renderUnsold();
+                        if (tab.dataset.screen === 'hof') this.renderHOF();
+                    });
+                });
+            }
+
+            setTheme(theme) {
+                document.body.setAttribute('data-theme', theme);
+                document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+                document.querySelector(`.theme-${theme}`).classList.add('active');
+            }
+
+            toggleSound() {
+                this.audio.enabled = !this.audio.enabled;
+                const icon = document.getElementById('sound-icon');
+                const toggle = document.getElementById('sound-toggle');
+                if (this.audio.enabled) { icon.className = 'fas fa-volume-up'; toggle.classList.remove('muted'); }
+                else { icon.className = 'fas fa-volume-mute'; toggle.classList.add('muted'); }
+            }
+
+            setupComplete() {
+                const teamName = document.getElementById('setup-team-name').value.trim();
+                const ownerName = document.getElementById('setup-owner-name').value.trim();
+                if (!teamName) { alert('Please enter your team name!'); return; }
+                if (!ownerName) { alert('Please enter owner name!'); return; }
+                this.userTeamName = teamName;
+                this.userOwnerName = ownerName;
+                this.teams[0].name = teamName;
+                this.setupCompleteFlag = true;
+                document.getElementById('setup-modal').classList.remove('active');
+                document.body.classList.remove('modal-open');
+                this.showPlayerForReview();
+                this.renderTeamsOverview();
+                this.renderAuctionProgress();
+                this.updateHeaderStats();
+            }
+
+            showPlayerForReview() {
+                const player = this.getCurrentPlayer();
+                if (!player) { this.endAuction(); return; }
+                this.renderCurrentPlayer(player);
+                this.auctionState = 'IDLE';
+                this.currentBid = player.basePrice;
+                this.highestBidder = null;
+                this.renderCurrentBid();
+                this.renderAuctionStatus('IDLE');
+                document.getElementById('result-area').classList.add('hidden');
+                document.getElementById('bid-controls').classList.add('hidden');
+                document.getElementById('next-player-btn').classList.add('hidden');
+                document.getElementById('start-bidding-btn').classList.remove('hidden');
+                document.getElementById('skip-player-btn').classList.remove('hidden');
+            }
+
+            startBiddingCurrent() {
+                const player = this.getCurrentPlayer();
+                if (!player) return;
+                this.audio.startBid();
+                this.auctionState = 'BIDDING';
+                this.currentBid = player.basePrice;
+                this.highestBidder = null;
+                document.getElementById('start-bidding-btn').classList.add('hidden');
+                document.getElementById('skip-player-btn').classList.add('hidden');
+                document.getElementById('bid-controls').classList.remove('hidden');
+                this.renderAuctionStatus('BIDDING');
+                this.startBidTimer();
+                this.renderTeamsOverview();
+            }
+
+            skipPlayer() {
+                const player = this.getCurrentPlayer();
+                if (!player) return;
+                this.audio.skip();
+                this.auctionState = 'AI_AUCTION';
+                document.getElementById('start-bidding-btn').classList.add('hidden');
+                document.getElementById('skip-player-btn').classList.add('hidden');
+                document.getElementById('bid-controls').classList.add('hidden');
+                this.renderAuctionStatus('AI_AUCTION');
+                this.runAIAuctionOnly(player);
+            }
+
+            runAIAuctionOnly(player) {
+                this.audio.aiAuction();
+                let aiBidCount = 0;
+                const maxAiBids = 8 + Math.floor(Math.random() * 6);
+                const aiInterval = setInterval(() => {
+                    if (aiBidCount >= maxAiBids) {
+                        clearInterval(aiInterval);
+                        this.finalizeAIAuction(player);
+                        return;
+                    }
+                    let anyBid = false;
+                    this.teams.forEach(team => {
+                        if (team.isUser) return;
+                        if (team.budget < this.currentBid + 0.1) return;
+                        if (team.players.length >= 24) return;
+                        const interest = this.calculateAIInterest(team, player);
+                        if (interest > 0 && interest >= this.currentBid + 0.1) {
+                            const increment = this.currentBid > 10 ? 0.5 : (this.currentBid > 5 ? 0.2 : 0.1);
+                            const bidAmount = Math.round((this.currentBid + increment) * 100) / 100;
+                            if (bidAmount <= interest && bidAmount <= team.budget) {
+                                this.currentBid = bidAmount;
+                                this.highestBidder = team.name;
+                                this.audio.bid();
+                                this.renderCurrentBid();
+                                this.renderTeamsOverview();
+                                anyBid = true;
+                            }
+                        }
+                    });
+                    if (!anyBid) {
+                        clearInterval(aiInterval);
+                        this.finalizeAIAuction(player);
+                        return;
+                    }
+                    aiBidCount++;
+                }, 400 + Math.random() * 600);
+            }
+
+            finalizeAIAuction(player) {
+                this.audio.hammer();
+                let resultHTML = '';
+                if (this.highestBidder) {
+                    const team = this.teams.find(t => t.name === this.highestBidder);
+                    if (team && team.budget >= this.currentBid && team.players.length < 24) {
+                        player.sold = true;
+                        player.soldPrice = this.currentBid;
+                        player.soldTo = this.highestBidder;
+                        team.budget -= this.currentBid;
+                        team.spent += this.currentBid;
+                        team.players.push(player);
+                        team.rating = this.calculateTeamRating(team);
+                        this.history.unshift({ player: player.name, team: this.highestBidder, price: this.currentBid, category: player.category, status: 'sold' });
+                        resultHTML = `<div class="result-box sold-box"><h3>🎉 SOLD to AI!</h3><p><strong>${player.name}</strong> goes to <strong style="color: ${team.color}">${this.highestBidder}</strong></p><div class="price-tag">₹${this.currentBid.toFixed(2)} Cr</div></div>`;
+                    } else {
+                        this.unsoldPlayers.push(player);
+                        resultHTML = `<div class="result-box unsold-box"><h3>❌ UNSOLD</h3><p><strong>${player.name}</strong> - No valid AI bids</p><div class="price-tag">Base: ₹${player.basePrice.toFixed(2)} Cr</div></div>`;
+                    }
+                } else {
+                    this.unsoldPlayers.push(player);
+                    resultHTML = `<div class="result-box unsold-box"><h3>❌ UNSOLD</h3><p><strong>${player.name}</strong> - No AI interest</p><div class="price-tag">Base: ₹${player.basePrice.toFixed(2)} Cr</div></div>`;
+                }
+                document.getElementById('result-area').innerHTML = resultHTML;
+                document.getElementById('result-area').classList.remove('hidden');
+                this.renderAuctionStatus(this.highestBidder ? 'SOLD' : 'UNSOLD');
+                this.renderHistory();
+                this.renderTopPurchases();
+                this.renderTeamsOverview();
+                this.renderAuctionProgress();
+                this.updateHeaderStats();
+                const hammer = document.getElementById('hammer-animation');
+                hammer.classList.add('active');
+                setTimeout(() => hammer.classList.remove('active'), 1200);
+                document.getElementById('next-player-btn').classList.remove('hidden');
+            }
+
+            startBidTimer() {
+                if (this.bidTimer) clearTimeout(this.bidTimer);
+                this.bidTimer = setTimeout(() => this.goingOnce(), 2500);
+            }
+
+            goingOnce() {
+                if (this.auctionState !== 'BIDDING') return;
+                this.auctionState = 'GOING_ONCE';
+                this.audio.goingOnce();
+                this.renderAuctionStatus('GOING_ONCE');
+                this.bidTimer = setTimeout(() => this.goingTwice(), 1500);
+            }
+
+            goingTwice() {
+                if (this.auctionState !== 'GOING_ONCE') return;
+                this.auctionState = 'GOING_TWICE';
+                this.audio.goingTwice();
+                this.renderAuctionStatus('GOING_TWICE');
+                this.bidTimer = setTimeout(() => this.sold(), 1500);
+            }
+
+            sold() {
+                if (this.auctionState !== 'GOING_TWICE') return;
+                this.auctionState = 'SOLD';
+                this.audio.hammer();
+                const player = this.getCurrentPlayer();
+                let resultHTML = '';
+                if (this.highestBidder) {
+                    const team = this.teams.find(t => t.name === this.highestBidder);
+                    if (team && team.budget >= this.currentBid && team.players.length < 24) {
+                        player.sold = true;
+                        player.soldPrice = this.currentBid;
+                        player.soldTo = this.highestBidder;
+                        team.budget -= this.currentBid;
+                        team.spent += this.currentBid;
+                        team.players.push(player);
+                        team.rating = this.calculateTeamRating(team);
+                        this.history.unshift({ player: player.name, team: this.highestBidder, price: this.currentBid, category: player.category, status: 'sold' });
+                        if (team.isUser) { this.confetti.burst(); this.audio.win(); }
+                        resultHTML = `<div class="result-box sold-box"><h3>🎉 SOLD!</h3><p><strong>${player.name}</strong> goes to <strong style="color: ${team.color}">${this.highestBidder}</strong></p><div class="price-tag">₹${this.currentBid.toFixed(2)} Cr</div></div>`;
+                    } else {
+                        this.unsoldPlayers.push(player);
+                        resultHTML = `<div class="result-box unsold-box"><h3>❌ UNSOLD</h3><p><strong>${player.name}</strong> - Bidder couldn't complete</p><div class="price-tag">Base: ₹${player.basePrice.toFixed(2)} Cr</div></div>`;
+                    }
+                } else {
+                    this.unsoldPlayers.push(player);
+                    resultHTML = `<div class="result-box unsold-box"><h3>❌ UNSOLD</h3><p><strong>${player.name}</strong> - No bids received</p><div class="price-tag">Base: ₹${player.basePrice.toFixed(2)} Cr</div></div>`;
+                }
+                document.getElementById('result-area').innerHTML = resultHTML;
+                document.getElementById('result-area').classList.remove('hidden');
+                this.renderAuctionStatus(this.highestBidder ? 'SOLD' : 'UNSOLD');
+                this.renderHistory();
+                this.renderTopPurchases();
+                this.renderTeamsOverview();
+                this.renderAuctionProgress();
+                this.updateHeaderStats();
+                const hammer = document.getElementById('hammer-animation');
+                hammer.classList.add('active');
+                setTimeout(() => hammer.classList.remove('active'), 1200);
+                document.getElementById('bid-controls').classList.add('hidden');
+                document.getElementById('start-bidding-btn').classList.add('hidden');
+                document.getElementById('skip-player-btn').classList.add('hidden');
+                document.getElementById('next-player-btn').classList.remove('hidden');
+            }
+
+            nextPlayer() {
+                this.currentPlayerIndex++;
+                this.nextPlayerOrCategory();
+            }
+
+            nextPlayerOrCategory() {
+                while (this.currentPlayerIndex < this.players.length) {
+                    const p = this.players[this.currentPlayerIndex];
+                    if (!p.sold && p.category === this.currentCategory) { this.showPlayerForReview(); return; }
+                    this.currentPlayerIndex++;
+                }
+                this.showSegmentComplete();
+            }
+
+            showSegmentComplete() {
+                const user = this.teams[0];
+                document.getElementById('segment-title').textContent = `${this.currentCategory} Category Complete!`;
+                document.getElementById('segment-desc').textContent = `All ${this.currentCategory} players have been auctioned.`;
+                document.getElementById('segment-wallet').textContent = `₹${user.budget.toFixed(1)} Cr`;
+                document.getElementById('segment-players').textContent = user.players.length;
+                document.getElementById('segment-spent').textContent = `₹${user.spent.toFixed(1)} Cr`;
+                document.getElementById('segment-modal').classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+
+            closeSegmentModal() {
+                document.getElementById('segment-modal').classList.remove('active');
+                document.body.classList.remove('modal-open');
+                this.categoryIndex++;
+                if (this.categoryIndex < this.categories.length) {
+                    this.currentCategory = this.categories[this.categoryIndex];
+                    this.currentPlayerIndex = 0;
+                    this.showPlayerForReview();
+                } else { this.endAuction(); }
+            }
+
+            placeBid(amount) {
+                if (this.auctionState !== 'BIDDING' && this.auctionState !== 'GOING_ONCE' && this.auctionState !== 'GOING_TWICE') return;
+                const userTeam = this.teams[0];
+                const newBid = Math.round((this.currentBid + amount) * 100) / 100;
+                if (userTeam.budget < newBid || userTeam.players.length >= 24) {
+                    const btn = event.target;
+                    btn.classList.add('shake');
+                    setTimeout(() => btn.classList.remove('shake'), 400);
+                    return;
+                }
+                this.currentBid = newBid;
+                this.highestBidder = userTeam.name;
+                if (this.auctionState === 'GOING_ONCE' || this.auctionState === 'GOING_TWICE') {
+                    this.auctionState = 'BIDDING';
+                    this.renderAuctionStatus('BIDDING');
+                }
+                this.audio.bid();
+                const bidEl = document.getElementById('current-bid');
+                bidEl.classList.add('bid-up');
+                setTimeout(() => bidEl.classList.remove('bid-up'), 500);
+                this.renderCurrentBid();
+                this.startBidTimer();
+                this.renderTeamsOverview();
+            }
+
+            placeCustomBid() {
+                const input = document.getElementById('custom-bid');
+                const amount = parseFloat(input.value);
+                if (amount > 0) this.placeBid(amount - this.currentBid);
+                input.value = '';
+            }
+
+            aiBid() {
+                if (this.auctionState !== 'BIDDING' && this.auctionState !== 'GOING_ONCE' && this.auctionState !== 'GOING_TWICE') return;
+                const player = this.getCurrentPlayer();
+                if (!player) return;
+                this.teams.forEach(team => {
+                    if (team.isUser) return;
+                    if (team.budget < this.currentBid + 0.1) return;
+                    if (team.players.length >= 24) return;
+                    const interest = this.calculateAIInterest(team, player);
+                    if (interest > 0 && interest >= this.currentBid + 0.1) {
+                        const increment = this.currentBid > 10 ? 0.5 : (this.currentBid > 5 ? 0.2 : 0.1);
+                        const bidAmount = Math.round((this.currentBid + increment) * 100) / 100;
+                        if (bidAmount <= interest && bidAmount <= team.budget) {
+                            this.currentBid = bidAmount;
+                            this.highestBidder = team.name;
+                            this.audio.bid();
+                            if (this.auctionState === 'GOING_ONCE' || this.auctionState === 'GOING_TWICE') {
+                                this.auctionState = 'BIDDING';
+                                this.renderAuctionStatus('BIDDING');
+                            }
+                            this.renderCurrentBid();
+                            this.startBidTimer();
+                            this.renderTeamsOverview();
+                        }
+                    }
+                });
+            }
+
+            calculateAIInterest(team, player) {
+                const roleCounts = { 'Batsman': 0, 'Bowler': 0, 'All-Rounder': 0, 'Wicket Keeper': 0 };
+                team.players.forEach(p => roleCounts[p.role]++);
+                const idealSquad = { 'Batsman': 7, 'Bowler': 7, 'All-Rounder': 5, 'Wicket Keeper': 2 };
+                const roleNeed = Math.max(0, idealSquad[player.role] - roleCounts[player.role]);
+                const remainingSlots = 24 - team.players.length;
+                if (remainingSlots <= 0) return 0;
+                if (roleNeed === 0 && team.players.length > 15) return 0;
+                const budgetRemaining = team.budget;
+                let maxSpendRatio = 0;
+                switch(player.category) {
+                    case 'A+': maxSpendRatio = 0.20; break;
+                    case 'A': maxSpendRatio = 0.15; break;
+                    case 'B': maxSpendRatio = 0.10; break;
+                    case 'C': maxSpendRatio = 0.06; break;
+                    case 'D': maxSpendRatio = 0.04; break;
+                }
+                if (budgetRemaining < 10) maxSpendRatio *= 0.5;
+                else if (budgetRemaining < 20) maxSpendRatio *= 0.7;
+                else if (budgetRemaining < 30) maxSpendRatio *= 0.85;
+                if (remainingSlots <= 6) maxSpendRatio *= 0.6;
+                if (remainingSlots <= 3) maxSpendRatio *= 0.4;
+                let value = player.power / 100;
+                if (player.form > 85) value += 0.08;
+                if (player.form < 75) value -= 0.15;
+                if (roleNeed > 0) value += 0.12;
+                const totalBatsmen = roleCounts['Batsman'] + roleCounts['All-Rounder'];
+                const totalBowlers = roleCounts['Bowler'] + roleCounts['All-Rounder'];
+                if (player.role === 'Batsman' && totalBatsmen < 8) value += 0.03;
+                if (player.role === 'Bowler' && totalBowlers < 8) value += 0.03;
+                if (player.role === 'Wicket Keeper' && roleCounts['Wicket Keeper'] === 0) value += 0.15;
+                const maxBid = team.budget * maxSpendRatio * value;
+                const randomFactor = 0.80 + Math.random() * 0.25;
+                return Math.max(0, maxBid * randomFactor);
+            }
+
+            calculateTeamRating(team) {
+                if (team.players.length === 0) return 0;
+                const total = team.players.reduce((sum, p) => sum + p.power, 0);
+                return (total / team.players.length).toFixed(1);
+            }
+
+            endAuction() {
+                this.auctionState = 'ENDED';
+                document.getElementById('auction-status').textContent = 'Auction Completed!';
+                document.getElementById('bid-controls').classList.add('hidden');
+                document.getElementById('start-bidding-btn').classList.add('hidden');
+                document.getElementById('next-player-btn').classList.add('hidden');
+                document.getElementById('skip-player-btn').classList.add('hidden');
+                this.renderHOF();
+                setTimeout(() => alert('🏏 Auction Complete! Check the Hall of Fame and manage your squad.'), 500);
+            }
+
+            getCurrentPlayer() {
+                if (this.currentPlayerIndex < this.players.length) return this.players[this.currentPlayerIndex];
+                return null;
+            }
+
+            renderCurrentPlayer(player) {
+                document.getElementById('player-category').textContent = `${player.category} Category`;
+                document.getElementById('player-category').className = `category-badge badge-${player.category.toLowerCase().replace('+', '-plus')}`;
+                document.getElementById('player-name').textContent = player.name;
+                document.getElementById('player-country').textContent = player.country;
+                document.getElementById('player-role').textContent = player.role;
+                document.getElementById('player-age').textContent = player.age;
+                document.getElementById('player-base').textContent = `₹${player.basePrice.toFixed(2)} Cr`;
+                document.getElementById('player-initials').textContent = player.initials;
+                document.getElementById('player-flag').textContent = COUNTRIES[player.country] || '🏳️';
+                const ratings = [
+                    { label: 'Power', value: player.power, class: this.getRatingClass(player.power) },
+                    { label: 'Batting', value: player.batting, class: this.getRatingClass(player.batting) },
+                    { label: 'Bowling', value: player.bowling, class: this.getRatingClass(player.bowling) },
+                    { label: 'Fielding', value: player.fielding, class: this.getRatingClass(player.fielding) },
+                    { label: 'Fitness', value: player.fitness, class: this.getRatingClass(player.fitness) },
+                    { label: 'Form', value: player.form, class: this.getRatingClass(player.form) }
+                ];
+                document.getElementById('player-ratings').innerHTML = ratings.map(r => `
+                    <div class="rating-item"><div class="rating-value ${r.class}">${r.value}</div><div class="rating-label">${r.label}</div></div>
+                `).join('');
+                this.renderCurrentBid();
+            }
+
+            getRatingClass(val) {
+                if (val >= 85) return 'rating-excellent';
+                if (val >= 75) return 'rating-good';
+                if (val >= 65) return 'rating-average';
+                return 'rating-poor';
+            }
+
+            renderCurrentBid() {
+                document.getElementById('current-bid').textContent = `₹${this.currentBid.toFixed(2)} Cr`;
+                document.getElementById('highest-bidder').textContent = this.highestBidder || 'None';
+            }
+
+            renderAuctionStatus(status) {
+                const el = document.getElementById('auction-status');
+                const messages = {
+                    'IDLE': '👀 Review Player — Click Start Bidding',
+                    'BIDDING': '🔥 Live Bidding Active',
+                    'GOING_ONCE': '⏰ Going Once...',
+                    'GOING_TWICE': '⏰ Going Twice...',
+                    'SOLD': '🎉 SOLD!',
+                    'UNSOLD': '❌ UNSOLD',
+                    'AI_AUCTION': '🤖 AI Auction Running...',
+                    'ENDED': 'Auction Completed'
+                };
+                el.textContent = messages[status] || status;
+                el.className = `auction-status status-${status.toLowerCase().replace('_', '-')}`;
+            }
+
+            renderTeamsOverview() {
+                const container = document.getElementById('teams-overview');
+                container.innerHTML = this.teams.map(team => `
+                    <div class="team-row ${team.isUser ? 'user-team' : ''}">
+                        <div class="team-info"><div class="team-color" style="background: ${team.color}; color: ${team.color}"></div><span class="team-name">${team.name}</span></div>
+                        <div style="text-align: right;"><div class="team-budget">₹${team.budget.toFixed(1)} Cr</div><div class="team-count">${team.players.length}/24</div></div>
+                    </div>
+                `).join('');
+            }
+
+            renderAuctionProgress() {
+                const container = document.getElementById('auction-progress');
+                const categories = ['A+', 'A', 'B', 'C', 'D'];
+                const totalByCat = {};
+                const soldByCat = {};
+                categories.forEach(c => {
+                    totalByCat[c] = this.players.filter(p => p.category === c).length;
+                    soldByCat[c] = this.players.filter(p => p.category === c && p.sold).length;
+                });
+                container.innerHTML = categories.map(c => {
+                    const pct = totalByCat[c] > 0 ? (soldByCat[c] / totalByCat[c]) * 100 : 0;
+                    const isActive = c === this.currentCategory;
+                    return `
+                        <div class="progress-container">
+                            <div class="progress-header"><span style="${isActive ? 'color: var(--text-primary); font-weight: 800;' : ''}">${c} Category</span><span>${soldByCat[c]}/${totalByCat[c]}</span></div>
+                            <div class="progress-bar"><div class="progress-fill fill-${c.toLowerCase().replace('+', '-plus')}" style="width: ${pct}%"></div></div>
+                        </div>`;
+                }).join('');
+            }
+
+            renderHistory() {
+                const container = document.getElementById('auction-history');
+                container.innerHTML = this.history.slice(0, 20).map(h => {
+                    if (h.status === 'unsold') {
+                        return `<div class="history-item slide-in">
+                            <div class="history-dot" style="background: var(--accent-red)"></div>
+                            <div class="history-info"><div class="history-name">${h.player}</div><div class="history-team">${h.category} Category</div></div>
+                            <div class="history-status status-unsold-badge">Unsold</div>
+                        </div>`;
+                    }
+                    const team = this.teams.find(t => t.name === h.team);
+                    return `<div class="history-item slide-in">
+                        <div class="history-dot" style="background: ${team?.color || '#666'}"></div>
+                        <div class="history-info"><div class="history-name">${h.player}</div><div class="history-team">${h.team}</div></div>
+                        <div class="history-price">₹${h.price.toFixed(1)} Cr</div>
+                    </div>`;
+                }).join('');
+            }
+
+            renderTopPurchases() {
+                const container = document.getElementById('top-purchases');
+                const top = [...this.history].filter(h => h.status !== 'unsold').sort((a, b) => b.price - a.price).slice(0, 5);
+                container.innerHTML = top.map((h, i) => `<div class="history-item">
+                    <div style="font-size: 12px; font-weight: 900; color: var(--accent-gold); width: 24px;">#${i+1}</div>
+                    <div class="history-info"><div class="history-name">${h.player}</div><div class="history-team">${h.team}</div></div>
+                    <div class="history-price">₹${h.price.toFixed(1)} Cr</div>
+                </div>`).join('');
+            }
+
+            renderUnsold() {
+                const container = document.getElementById('unsold-list');
+                document.getElementById('unsold-count').textContent = `${this.unsoldPlayers.length} players`;
+                container.innerHTML = this.unsoldPlayers.map(p => this.renderPlayerCard(p, true)).join('');
+            }
+
+            renderPlayerCard(player, isUnsold = false) {
+                const flag = COUNTRIES[player.country] || '🏳️';
+                return `
+                    <div class="player-card" style="position: relative;">
+                        <div class="player-card-header"><div class="player-card-avatar">${player.initials}</div><div class="player-card-flag">${flag}</div></div>
+                        <div class="player-card-body"><h4>${player.name}</h4><p>${player.country} • ${player.role}</p>
+                        <div class="player-card-stats">
+                            <div class="card-stat"><div class="card-stat-value ${this.getRatingClass(player.power)}">${player.power}</div><div class="card-stat-label">PWR</div></div>
+                            <div class="card-stat"><div class="card-stat-value">${player.age}</div><div class="card-stat-label">Age</div></div>
+                            <div class="card-stat"><div class="card-stat-value" style="color: var(--accent-gold)">₹${player.basePrice}</div><div class="card-stat-label">Base</div></div>
+                        </div></div>
+                        ${isUnsold ? '' : `<div class="sold-overlay">SOLD</div>`}
+                    </div>`;
+            }
+
+            renderStats() {
+                const sold = this.players.filter(p => p.sold);
+                const totalSpent = sold.reduce((sum, p) => sum + p.soldPrice, 0);
+                const avgPrice = sold.length > 0 ? totalSpent / sold.length : 0;
+                document.getElementById('stats-grid').innerHTML = `
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-gavel"></i></div><div class="stat-content"><h3>${sold.length}</h3><p>Players Sold</p></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-rupee-sign"></i></div><div class="stat-content"><h3>₹${totalSpent.toFixed(1)} Cr</h3><p>Total Spent</p></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-content"><h3>₹${avgPrice.toFixed(1)} Cr</h3><p>Average Price</p></div></div>
+                    <div class="stat-card"><div class="stat-icon"><i class="fas fa-list"></i></div><div class="stat-content"><h3>${this.unsoldPlayers.length}</h3><p>Unsold Players</p></div></div>`;
+                document.getElementById('expensive-players').innerHTML = [...sold].sort((a, b) => b.soldPrice - a.soldPrice).slice(0, 6).map(p => this.renderPlayerCardSmall(p, true)).join('');
+                document.getElementById('bargain-players').innerHTML = [...sold].sort((a, b) => (a.basePrice - a.soldPrice) - (b.basePrice - b.soldPrice)).slice(0, 6).map(p => this.renderPlayerCardSmall(p, true)).join('');
+            }
+
+            renderPlayerCardSmall(player, showPrice = false) {
+                const flag = COUNTRIES[player.country] || '🏳️';
+                return `
+                    <div class="player-card">
+                        <div class="player-card-header"><div class="player-card-avatar">${player.initials}</div><div class="player-card-flag">${flag}</div></div>
+                        <div class="player-card-body"><h4>${player.name}</h4><p>${player.soldTo || player.country}</p>
+                        <div class="player-card-stats">
+                            <div class="card-stat"><div class="card-stat-value ${this.getRatingClass(player.power)}">${player.power}</div><div class="card-stat-label">PWR</div></div>
+                            ${showPrice ? `<div class="card-stat"><div class="card-stat-value" style="color: var(--accent-gold)">₹${player.soldPrice.toFixed(1)}</div><div class="card-stat-label">Price</div></div>` : ''}
+                        </div></div>
+                    </div>`;
+            }
+
+            renderSquad() {
+                const userTeam = this.teams[0];
+                let players = userTeam.players;
+                if (this.squadFilter !== 'all') players = players.filter(p => p.role === this.squadFilter);
+                document.getElementById('squad-grid').innerHTML = players.map(p => `
+                    <div class="player-card">
+                        <div class="player-card-header"><div class="player-card-avatar">${p.initials}</div><div class="player-card-flag">${COUNTRIES[p.country] || '🏳️'}</div></div>
+                        <div class="player-card-body"><h4>${p.name}</h4><p>${p.role} • ${p.country}</p>
+                        <div class="player-card-stats">
+                            <div class="card-stat"><div class="card-stat-value ${this.getRatingClass(p.power)}">${p.power}</div><div class="card-stat-label">PWR</div></div>
+                            <div class="card-stat"><div class="card-stat-value" style="color: var(--accent-gold)">₹${p.soldPrice.toFixed(1)}</div><div class="card-stat-label">Price</div></div>
+                            <div class="card-stat"><div class="card-stat-value">${p.age}</div><div class="card-stat-label">Age</div></div>
+                        </div></div>
+                    </div>`).join('');
+            }
+
+            filterSquad(role) {
+                this.squadFilter = role;
+                document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+                this.renderSquad();
+            }
+
+            // ==================== BEST XI - FIXED DRAG & DROP ====================
+            renderXI() {
+                const userTeam = this.teams[0];
+                const slots = document.getElementById('xi-slots');
+                const labels = ['Batsman', 'Batsman', 'Batsman', 'Batsman', 'All-Rounder', 'All-Rounder', 'Wicket Keeper', 'Bowler', 'Bowler', 'Bowler', 'Bowler'];
+
+                slots.innerHTML = this.userXI.map((player, idx) => {
+                    if (player) {
+                        const isCaptain = this.xiCaptain === idx;
+                        const isVice = this.xiViceCaptain === idx;
+                        return `
+                            <div class="xi-slot filled" data-index="${idx}" onclick="game.removeFromXI(${idx})" style="cursor: pointer;">
+                                <div class="xi-player-card">
+                                    <div class="xi-avatar">${player.initials}</div>
+                                    <div class="xi-name">${player.name}</div>
+                                    <div class="xi-role">${player.role}</div>
+                                    ${isCaptain ? '<div class="captain-badge">Captain</div>' : ''}
+                                    ${isVice ? '<div class="vice-badge">Vice</div>' : ''}
+                                </div>
+                                <div class="xi-actions" onclick="event.stopPropagation()">
+                                    <button class="xi-action-btn" onclick="game.setCaptain(${idx})">C</button>
+                                    <button class="xi-action-btn" onclick="game.setViceCaptain(${idx})">VC</button>
+                                    <button class="xi-action-btn remove" onclick="game.removeFromXI(${idx}); event.stopPropagation();">✕</button>
+                                </div>
+                            </div>`;
+                    } else {
+                        return `
+                            <div class="xi-slot" data-index="${idx}">
+                                <div class="slot-label">${labels[idx] || 'Player'}</div>
+                                <div class="slot-hint"><i class="fas fa-plus"></i></div>
+                            </div>`;
+                    }
+                }).join('');
+
+                const available = userTeam.players.filter(p => !this.userXI.includes(p));
+                document.getElementById('xi-available').innerHTML = available.map(p => `
+                    <div class="xi-available-item" onclick="game.addToXI(${p.id})" style="cursor: pointer;">
+                        <div class="avail-avatar">${p.initials}</div>
+                        <div class="avail-info">
+                            <div class="avail-name">${p.name}</div>
+                            <div class="avail-meta">${p.role} • ${p.country}</div>
+                        </div>
+                        <div class="avail-power">${p.power}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('xi-count').textContent = `${this.userXI.filter(p => p !== null).length}/11`;
+                this.calculateXIStats();
+            }
+
+            addToXI(playerId) {
+                const emptyIndex = this.userXI.findIndex(p => p === null);
+                if (emptyIndex === -1) {
+                    alert('XI is full! Remove a player first.');
+                    return;
+                }
+                const player = this.teams[0].players.find(p => p.id === playerId);
+                if (player) {
+                    this.userXI[emptyIndex] = player;
+                    this.renderXI();
+                }
+            }
+
+            removeFromXI(index) {
+                this.userXI[index] = null;
+                if (this.xiCaptain === index) this.xiCaptain = null;
+                if (this.xiViceCaptain === index) this.xiViceCaptain = null;
+                this.renderXI();
+            }
+
+            setCaptain(index) {
+                this.xiCaptain = index;
+                if (this.xiViceCaptain === index) this.xiViceCaptain = null;
+                this.renderXI();
+            }
+
+            setViceCaptain(index) {
+                this.xiViceCaptain = index;
+                if (this.xiCaptain === index) this.xiCaptain = null;
+                this.renderXI();
+            }
+
+            autoSelectXI() {
+                const userTeam = this.teams[0];
+                const sorted = [...userTeam.players].sort((a, b) => b.power - a.power);
+                this.userXI = new Array(11).fill(null);
+                this.xiCaptain = null;
+                this.xiViceCaptain = null;
+                const requirements = { 'Wicket Keeper': 1, 'Batsman': 4, 'All-Rounder': 2, 'Bowler': 3 };
+                const filled = { 'Wicket Keeper': 0, 'Batsman': 0, 'All-Rounder': 0, 'Bowler': 0 };
+                let idx = 0;
+                for (const player of sorted) {
+                    if (idx >= 11) break;
+                    if (filled[player.role] < (requirements[player.role] || 0)) {
+                        this.userXI[idx] = player;
+                        filled[player.role]++;
+                        idx++;
+                    }
+                }
+                for (const player of sorted) {
+                    if (idx >= 11) break;
+                    if (!this.userXI.includes(player)) {
+                        this.userXI[idx] = player;
+                        idx++;
+                    }
+                }
+                const best = this.userXI.filter(p => p !== null).sort((a, b) => b.power - a.power);
+                if (best.length > 0) {
+                    const capIdx = this.userXI.indexOf(best[0]);
+                    this.xiCaptain = capIdx;
+                }
+                if (best.length > 1) {
+                    const viceIdx = this.userXI.indexOf(best[1]);
+                    if (viceIdx !== this.xiCaptain) this.xiViceCaptain = viceIdx;
+                }
+                this.renderXI();
+            }
+
+            clearXI() {
+                this.userXI = new Array(11).fill(null);
+                this.xiCaptain = null;
+                this.xiViceCaptain = null;
+                this.renderXI();
+            }
+
+            calculateXIStats() {
+                const filled = this.userXI.filter(p => p !== null);
+                if (filled.length === 0) {
+                    document.getElementById('xi-rating').textContent = '0.0';
+                    document.getElementById('xi-chemistry').textContent = '0';
+                    return;
+                }
+                const avgRating = filled.reduce((sum, p) => sum + p.power, 0) / filled.length;
+                document.getElementById('xi-rating').textContent = avgRating.toFixed(1);
+                let chemistry = filled.length * 5;
+                const countries = new Set(filled.map(p => p.country));
+                chemistry += Math.min(countries.size * 2, 20);
+                const roles = {};
+                filled.forEach(p => roles[p.role] = (roles[p.role] || 0) + 1);
+                if (roles['Wicket Keeper'] >= 1) chemistry += 10;
+                if (roles['Batsman'] >= 4) chemistry += 10;
+                if (roles['Bowler'] >= 3) chemistry += 10;
+                if (roles['All-Rounder'] >= 2) chemistry += 10;
+                if (this.xiCaptain !== null) chemistry += 15;
+                if (this.xiViceCaptain !== null) chemistry += 10;
+                document.getElementById('xi-chemistry').textContent = Math.min(chemistry, 100);
+            }
+
+            renderHOF() {
+                const sorted = [...this.teams].sort((a, b) => b.rating - a.rating);
+                document.getElementById('hof-table-body').innerHTML = sorted.map((team, i) => `
+                    <tr><td style="font-weight: 900; color: ${i < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'}; font-size: 16px;">#${i+1}</td>
+                    <td><div style="display: flex; align-items: center; gap: 10px;"><div style="width: 12px; height: 12px; border-radius: 50%; background: ${team.color}; box-shadow: 0 0 8px ${team.color};"></div><span style="font-weight: 700;">${team.name}</span></div></td>
+                    <td>${team.players.length}</td><td style="font-weight: 700;">₹${team.spent.toFixed(1)} Cr</td>
+                    <td style="color: var(--accent-emerald); font-weight: 900;">₹${team.budget.toFixed(1)} Cr</td>
+                    <td style="font-weight: 800;">${team.rating}</td><td style="font-weight: 900; color: var(--accent-cyan); font-size: 16px;">${(team.rating * 10 + team.players.length * 2).toFixed(0)}</td></tr>
+                `).join('');
+            }
+
+            updateHeaderStats() {
+                const user = this.teams[0];
+                document.getElementById('user-budget').textContent = `₹${user.budget.toFixed(1)} Cr`;
+                document.getElementById('user-squad').textContent = `${user.players.length}/24`;
+                document.getElementById('user-rating').textContent = user.rating;
+            }
+        }
+
+        const game = new Game();
+
+        setInterval(() => {
+            if (game.auctionState === 'BIDDING' || game.auctionState === 'GOING_ONCE' || game.auctionState === 'GOING_TWICE') {
+                game.aiBid();
+            }
+        }, 1000 + Math.random() * 1000);
+    </script>
+    <script>document.body.classList.add('modal-open');</script>
+</body>
+</html>

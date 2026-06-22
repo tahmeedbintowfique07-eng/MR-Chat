@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0e27">
+<title>Math Arena — HSC Battle</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#0a0e27;color:#fff}
+body.light{background:#f0f4f8;color:#0f172a}
+
+#loader{position:fixed;inset:0;z-index:9999;background:#0a0e27;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:lf 0.5s ease 2s forwards}
+body.light #loader{background:#f0f4f8}
+@keyframes lf{to{opacity:0;visibility:hidden}}
+#loader h1{font-size:2.2rem;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,#6366f1,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+#loader p{color:#94a3b8;font-size:0.95rem;margin-bottom:24px}
+#loader .bar{width:180px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden}
+body.light #loader .bar{background:rgba(0,0,0,0.1)}
+#loader .bar div{height:100%;width:0;background:linear-gradient(90deg,#6366f1,#ec4899);border-radius:2px;animation:lb 2s ease-out forwards}
+@keyframes lb{to{width:100%}}
+
+#app{position:relative;width:100%;height:100%;overflow:hidden}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:20px 16px 90px 16px;opacity:0;pointer-events:none;transform:translateX(20px);transition:opacity 0.3s ease,transform 0.3s ease;-webkit-overflow-scrolling:touch}
+.screen.active{opacity:1;pointer-events:auto;transform:translateX(0)}
+.screen::-webkit-scrollbar{display:none}
+
+.glass{background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px}
+body.light .glass{background:rgba(255,255,255,0.7);border-color:rgba(0,0,0,0.05);box-shadow:0 4px 20px rgba(0,0,0,0.08)}
+
+h1{font-size:1.6rem;font-weight:800;margin-bottom:4px}
+h2{font-size:1.25rem;font-weight:700;margin-bottom:16px}
+h3{font-size:1.05rem;font-weight:700;margin-bottom:12px}
+.tg{background:linear-gradient(135deg,#6366f1,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tgold{color:#ffd700}
+.tfire{color:#ff6b35}
+.tgreen{color:#10b981}
+.tblue{color:#6366f1}
+.muted{color:#94a3b8}
+body.light .muted{color:#64748b}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:14px 20px;border:none;border-radius:12px;font-weight:700;font-size:0.95rem;cursor:pointer;transition:transform 0.15s;-webkit-appearance:none}
+.btn:active{transform:scale(0.97)}
+.btn-pri{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;box-shadow:0 4px 20px rgba(99,102,241,0.35)}
+.btn-sec{background:rgba(255,255,255,0.08);color:#fff;border:1px solid rgba(255,255,255,0.12)}
+body.light .btn-sec{background:rgba(0,0,0,0.05);color:#0f172a;border-color:rgba(0,0,0,0.08)}
+.btn-suc{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.btn-dan{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+.btn-gold{background:linear-gradient(135deg,#ffd700,#f59e0b);color:#1a1a1a}
+.btn-block{width:100%}
+.btn-lg{padding:16px 24px;font-size:1.05rem;border-radius:14px}
+
+.input{width:100%;padding:14px 16px;margin-bottom:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;color:#fff;font-size:1rem;outline:none}
+body.light .input{background:rgba(0,0,0,0.03);color:#0f172a;border-color:rgba(0,0,0,0.08)}
+.input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.2)}
+
+.card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer;transition:transform 0.15s}
+body.light .card{background:rgba(255,255,255,0.6);border-color:rgba(0,0,0,0.05)}
+.card:active{transform:scale(0.98)}
+.card.lock{opacity:0.45;pointer-events:none}
+
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:0.7rem;font-weight:700}
+.b-easy{background:rgba(16,185,129,0.15);color:#10b981}
+.b-med{background:rgba(245,158,11,0.15);color:#f59e0b}
+.b-hard{background:rgba(239,68,68,0.15);color:#ef4444}
+.b-exp{background:rgba(139,92,246,0.15);color:#8b5cf6}
+.b-adm{background:rgba(236,72,153,0.15);color:#ec4899}
+
+.pbg{width:100%;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden}
+body.light .pbg{background:rgba(0,0,0,0.06)}
+.pfill{height:100%;border-radius:3px;background:linear-gradient(90deg,#6366f1,#ec4899);transition:width 0.4s ease}
+
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,39,0.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-around;padding:10px 0 24px;z-index:100}
+body.light .nav{background:rgba(240,244,248,0.85);border-color:rgba(0,0,0,0.05)}
+.nitem{display:flex;flex-direction:column;align-items:center;gap:3px;color:#64748b;font-size:0.65rem;font-weight:600;cursor:pointer;padding:4px 12px;transition:color 0.2s}
+.nitem.act{color:#6366f1}
+.nitem svg{width:22px;height:22px}
+
+.game-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-top:8px}
+.timer-wrap{position:relative;width:56px;height:56px;display:flex;align-items:center;justify-content:center}
+.timer-wrap svg{position:absolute;inset:0;transform:rotate(-90deg)}
+.timer-wrap circle{fill:none;stroke-width:4}
+.tbg{stroke:rgba(255,255,255,0.1)}
+body.light .tbg{stroke:rgba(0,0,0,0.1)}
+.tbar{stroke:#6366f1;stroke-linecap:round;transition:stroke-dashoffset 0.3s}
+.ttxt{font-weight:800;font-size:0.85rem;position:relative;z-index:2}
+
+.qbox{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:16px}
+body.light .qbox{background:rgba(255,255,255,0.7);border-color:rgba(0,0,0,0.05)}
+.qtxt{font-size:1.15rem;font-weight:700;line-height:1.5;margin-bottom:16px}
+
+.opt{width:100%;padding:14px 16px;margin-bottom:10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;color:#fff;font-size:1rem;text-align:left;cursor:pointer;transition:all 0.2s;-webkit-appearance:none}
+body.light .opt{background:rgba(255,255,255,0.6);color:#0f172a;border-color:rgba(0,0,0,0.06)}
+.opt:active{transform:scale(0.98)}
+.opt.cor{background:rgba(16,185,129,0.15)!important;border-color:#10b981!important;color:#10b981!important}
+.opt.wrg{background:rgba(239,68,68,0.15)!important;border-color:#ef4444!important;color:#ef4444!important}
+.opt.dis{pointer-events:none;opacity:0.7}
+
+.expl{display:none;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:16px;margin-top:12px}
+body.light .expl{background:rgba(16,185,129,0.05)}
+.ext{color:#10b981;font-weight:700;margin-bottom:6px}
+.exd{font-size:0.9rem;line-height:1.6;color:#94a3b8}
+body.light .exd{color:#475569}
+
+.res-hero{text-align:center;padding:30px 0}
+.res-tro{font-size:4.5rem;margin-bottom:12px}
+.res-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:20px 0}
+.res-cell{background:rgba(255,255,255,0.05);border-radius:12px;padding:14px;text-align:center}
+body.light .res-cell{background:rgba(255,255,255,0.6)}
+
+.lb-row{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,0.05);border-radius:12px;padding:12px;margin-bottom:8px;border:1px solid rgba(255,255,255,0.06)}
+body.light .lb-row{background:rgba(255,255,255,0.6);border-color:rgba(0,0,0,0.05)}
+.lb-rank{font-weight:800;font-size:1.1rem;width:28px;text-align:center}
+.lb-rank.gold{color:#ffd700}
+.lb-rank.sil{color:#c0c0c0}
+.lb-rank.bro{color:#cd7f32}
+.lb-av{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-weight:700;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-title{font-size:0.7rem;color:#64748b}
+.lb-score{font-weight:800;color:#6366f1;font-size:0.95rem}
+
+.ach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ach-card{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:16px;text-align:center;opacity:0.45;transition:opacity 0.3s}
+body.light .ach-card{background:rgba(255,255,255,0.6);border-color:rgba(0,0,0,0.05)}
+.ach-card.unl{opacity:1;border-color:rgba(245,158,11,0.3)}
+.ach-icon{font-size:2.2rem;margin-bottom:6px}
+.ach-name{font-weight:700;font-size:0.82rem;margin-bottom:3px}
+.ach-desc{font-size:0.72rem;color:#64748b}
+
+#toasts{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:5000;display:flex;flex-direction:column;gap:8px;pointer-events:none;width:90%;max-width:360px}
+.toast{background:rgba(30,41,59,0.95);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;font-weight:700;font-size:0.9rem;box-shadow:0 8px 32px rgba(0,0,0,0.3);animation:ti 0.3s ease,to 0.3s ease 2.5s forwards;display:flex;align-items:center;gap:8px}
+body.light .toast{background:rgba(255,255,255,0.95);border-color:rgba(0,0,0,0.06)}
+@keyframes ti{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes to{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-20px)}}
+
+.modal{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity 0.3s}
+.modal.show{opacity:1;pointer-events:auto}
+.modal-box{background:rgba(30,41,59,0.95);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:24px;width:100%;max-width:340px;transform:scale(0.9);transition:transform 0.3s}
+body.light .modal-box{background:rgba(255,255,255,0.95);border-color:rgba(0,0,0,0.06)}
+.modal.show .modal-box{transform:scale(1)}
+
+.wheel-wrap{position:relative;width:260px;height:260px;margin:20px auto}
+.wheel{width:100%;height:100%;border-radius:50%;background:conic-gradient(#6366f1 0deg 60deg,#8b5cf6 60deg 120deg,#ec4899 120deg 180deg,#f59e0b 180deg 240deg,#10b981 240deg 300deg,#ef4444 300deg 360deg);transition:transform 4s cubic-bezier(0.17,0.67,0.12,0.99);box-shadow:0 0 30px rgba(0,0,0,0.3)}
+.wheel-cen{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;background:#0a0e27;border-radius:50%;border:3px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1.4rem;z-index:2}
+body.light .wheel-cen{background:#f0f4f8;border-color:rgba(0,0,0,0.08)}
+.wheel-arr{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:14px solid transparent;border-right:14px solid transparent;border-top:22px solid #ffd700;z-index:3}
+
+@keyframes shk{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shk{animation:shk 0.4s ease-in-out}
+
+.flex{display:flex}
+.between{justify-content:space-between;align-items:center}
+.g2{gap:8px}
+.g3{gap:12px}
+.mb1{margin-bottom:8px}
+.mb2{margin-bottom:16px}
+.mb3{margin-bottom:24px}
+.mt2{margin-top:16px}
+.tc{text-align:center}
+.w100{width:100%}
+.small{font-size:0.8rem;color:#94a3b8}
+body.light .small{color:#64748b}
+
+#error-box{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10000;background:#ef4444;color:#fff;padding:20px;border-radius:12px;max-width:80%;display:none;font-size:0.9rem}
+</style>
+</head>
+<body>
+<div id="error-box"></div>
+<div id="loader">
+  <h1>Math Arena</h1>
+  <p>HSC Battle Edition</p>
+  <div class="bar"><div></div></div>
+</div>
+<div id="toasts"></div>
+<div id="app">
+
+<div class="screen active" id="scr-auth">
+  <div style="max-width:380px;margin:0 auto;padding-top:50px;text-align:center;">
+    <div style="font-size:3.5rem;margin-bottom:8px">&#x2694;&#xFE0F;</div>
+    <h1 class="tg" style="font-size:2.2rem;margin-bottom:6px">Math Arena</h1>
+    <p class="muted" style="margin-bottom:40px">Master HSC Mathematics<br>One Battle at a Time</p>
+    <div class="glass" style="padding:20px;margin-bottom:16px">
+      <input type="text" class="input" id="inp-name" placeholder="Enter your warrior name" maxlength="20">
+      <select class="input" id="inp-class" style="margin-bottom:0">
+        <option value="">Select your path...</option>
+        <option value="geometry">&#x1F3AF; Geometry Specialist</option>
+        <option value="calculus">&#x1F4C8; Calculus Master</option>
+        <option value="algebra">&#x1F522; Algebra Wizard</option>
+        <option value="all">&#x1F31F; All-Rounder</option>
+      </select>
+    </div>
+    <button class="btn btn-pri btn-lg btn-block" id="btn-login">Enter Arena</button>
+    <p class="small" style="margin-top:16px">No signup required. Play instantly.</p>
+  </div>
+</div>
+
+<div class="screen" id="scr-dash">
+  <div class="flex between mb1">
+    <div>
+      <div class="small">Welcome back,</div>
+      <h1 id="dash-name" style="font-size:1.4rem">Warrior</h1>
+      <div id="dash-title" style="color:#6366f1;font-weight:700;font-size:0.85rem;margin-top:2px">Math Novice</div>
+    </div>
+    <div id="dash-avatar" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem">W</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+    <div class="glass" style="text-align:center;padding:14px 8px">
+      <div id="dash-level" style="font-size:1.4rem;font-weight:800" class="tg">1</div>
+      <div class="small">Level</div>
+    </div>
+    <div class="glass" style="text-align:center;padding:14px 8px">
+      <div id="dash-coins" style="font-size:1.4rem;font-weight:800" class="tgold">0</div>
+      <div class="small">Coins</div>
+    </div>
+    <div class="glass" style="text-align:center;padding:14px 8px">
+      <div id="dash-rank" style="font-size:1.4rem;font-weight:800" class="tblue">#--</div>
+      <div class="small">Rank</div>
+    </div>
+  </div>
+  <div class="glass mb2">
+    <div class="flex between mb1">
+      <span style="font-weight:700;font-size:0.9rem">XP Progress</span>
+      <span class="small" id="dash-xp-text">0 / 100 XP</span>
+    </div>
+    <div class="pbg"><div class="pfill" id="dash-xp-bar" style="width:0%"></div></div>
+  </div>
+  <div class="flex between mb2">
+    <h2>Battle Topics</h2>
+    <span class="small" id="dash-progress">0% Complete</span>
+  </div>
+  <div id="topic-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px"></div>
+  <div class="flex between mb2">
+    <h2>Daily Challenge</h2>
+    <span class="badge b-med">Active</span>
+  </div>
+  <div class="glass" style="cursor:pointer" id="card-daily">
+    <div class="flex between" style="gap:12px">
+      <div style="font-size:2.2rem">&#x1F4C5;</div>
+      <div style="flex:1">
+        <div style="font-weight:700;margin-bottom:3px">Today's Challenge</div>
+        <div class="small">Solve 5 Expert questions in under 3 min</div>
+      </div>
+      <div class="tgold" style="font-weight:800">+500</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="scr-topic">
+  <div class="flex between mb3" style="gap:12px">
+    <button class="btn btn-sec" style="padding:8px 12px" id="btn-topic-back">&#x2190;</button>
+    <div style="flex:1">
+      <h2 id="topic-name" style="margin-bottom:2px">Topic</h2>
+      <div class="small" id="topic-desc">Description</div>
+    </div>
+  </div>
+  <div class="glass mb3">
+    <div class="flex between mb1">
+      <span style="font-weight:700">Topic Mastery</span>
+      <span class="small" id="topic-mastery-text">0%</span>
+    </div>
+    <div class="pbg"><div class="pfill" id="topic-mastery-bar" style="width:0%"></div></div>
+  </div>
+  <h3 class="mb2">Select Difficulty</h3>
+  <div id="diff-list" style="margin-bottom:20px"></div>
+  <h3 class="mb2">Game Modes</h3>
+  <div id="mode-list"></div>
+</div>
+
+<div class="screen" id="scr-game">
+  <div class="game-top">
+    <button class="btn btn-sec" style="padding:6px 10px;font-size:0.8rem" id="btn-pause">&#x23F8;&#xFE0F;</button>
+    <div class="flex" style="gap:14px;align-items:center">
+      <div id="game-combo" style="font-weight:800;font-size:1.2rem;color:#ff6b35">0 &#x1F525;</div>
+      <div class="timer-wrap">
+        <svg width="56" height="56" viewBox="0 0 56 56"><circle class="tbg" cx="28" cy="28" r="24"></circle><circle class="tbar" id="timer-circle" cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"></circle></svg>
+        <div class="ttxt" id="timer-text">30</div>
+      </div>
+    </div>
+  </div>
+  <div class="flex between mb1" style="font-size:0.85rem">
+    <span class="small" id="game-topic-label">Topic</span>
+    <span style="color:#6366f1;font-weight:800" id="game-score">Score: 0</span>
+  </div>
+  <div class="qbox" id="q-box">
+    <div class="qtxt" id="q-text">Loading...</div>
+  </div>
+  <div id="options"></div>
+  <div class="expl" id="explanation">
+    <div class="ext">&#x2713; Correct Answer</div>
+    <div class="exd" id="ex-text"></div>
+    <button class="btn btn-pri btn-block mt2" id="btn-next">Next Question &#x2192;</button>
+  </div>
+</div>
+
+<div class="screen" id="scr-result">
+  <div class="res-hero">
+    <div class="res-tro" id="res-trophy">&#x1F3C6;</div>
+    <h1 id="res-title">Victory!</h1>
+    <div class="small" id="res-sub">Great performance</div>
+  </div>
+  <div class="res-grid">
+    <div class="res-cell"><div class="small">Score</div><div id="res-score" style="font-size:1.5rem;font-weight:800" class="tg">0</div></div>
+    <div class="res-cell"><div class="small">Accuracy</div><div id="res-acc" style="font-size:1.5rem;font-weight:800" class="tgreen">0%</div></div>
+    <div class="res-cell"><div class="small">Best Combo</div><div id="res-combo" style="font-size:1.5rem;font-weight:800" class="tfire">0</div></div>
+    <div class="res-cell"><div class="small">Time</div><div id="res-time" style="font-size:1.5rem;font-weight:800" class="tblue">0s</div></div>
+  </div>
+  <div class="glass mb2">
+    <div class="flex between mb1"><span style="font-weight:700">XP Earned</span><span class="tgold" style="font-weight:800" id="res-xp">+0</span></div>
+    <div class="flex between"><span style="font-weight:700">Coins Earned</span><span class="tgold" style="font-weight:800" id="res-coins">+0</span></div>
+    <div id="res-newtitle" style="display:none;margin-top:12px;padding:12px;background:rgba(255,215,0,0.1);border-radius:12px;border:1px solid rgba(255,215,0,0.25);text-align:center">
+      <div style="font-size:1.4rem">&#x1F396;&#xFE0F;</div>
+      <div style="font-weight:800;color:#ffd700">New Title!</div>
+      <div class="small" id="res-newtitle-name">Title</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-sec btn-block" id="btn-res-dash">Dashboard</button>
+    <button class="btn btn-pri btn-block" id="btn-res-replay">Play Again</button>
+  </div>
+</div>
+
+<div class="screen" id="scr-lb">
+  <h1 class="mb3">&#x1F3C6; Leaderboard</h1>
+  <div class="glass mb3" style="display:flex;gap:6px;padding:10px">
+    <button class="btn btn-pri" style="flex:1;padding:8px;font-size:0.8rem" id="lb-global">Global</button>
+    <button class="btn btn-sec" style="flex:1;padding:8px;font-size:0.8rem" id="lb-weekly">Weekly</button>
+    <button class="btn btn-sec" style="flex:1;padding:8px;font-size:0.8rem" id="lb-friends">Friends</button>
+  </div>
+  <div id="lb-list"></div>
+</div>
+
+<div class="screen" id="scr-profile">
+  <h1 class="mb3">&#x1F4CA; Analytics</h1>
+  <div class="glass tc mb3">
+    <div id="prof-avatar" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.6rem;margin:0 auto 10px">W</div>
+    <h2 id="prof-name" style="margin-bottom:4px">Warrior</h2>
+    <div id="prof-title" style="color:#6366f1;font-weight:700;margin-bottom:4px">Math Novice</div>
+    <div class="small" id="prof-joined">Joined today</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+    <div class="glass tc" style="padding:12px 6px"><div id="prof-games" style="font-size:1.3rem;font-weight:800" class="tg">0</div><div class="small">Battles</div></div>
+    <div class="glass tc" style="padding:12px 6px"><div id="prof-acc" style="font-size:1.3rem;font-weight:800" class="tgreen">0%</div><div class="small">Accuracy</div></div>
+    <div class="glass tc" style="padding:12px 6px"><div id="prof-streak" style="font-size:1.3rem;font-weight:800" class="tfire">0</div><div class="small">Best Streak</div></div>
+  </div>
+  <h3 class="mb2">Topic Performance</h3>
+  <div class="glass mb3"><div style="display:flex;align-items:flex-end;justify-content:space-around;height:120px;gap:6px;padding-top:10px" id="prof-chart"></div></div>
+  <h3 class="mb2">Weak Areas</h3>
+  <div id="prof-weak" class="mb3"></div>
+</div>
+
+<div class="screen" id="scr-ach">
+  <h1 class="mb3">&#x1F396;&#xFE0F; Achievements</h1>
+  <div class="ach-grid" id="ach-grid"></div>
+</div>
+
+<div class="screen" id="scr-rewards">
+  <h1 style="margin-bottom:4px">&#x1F3B0; Lucky Spin</h1>
+  <div class="small mb3">Test your luck and win rewards!</div>
+  <div class="wheel-wrap">
+    <div class="wheel-arr"></div>
+    <div class="wheel" id="wheel"></div>
+    <div class="wheel-cen">&#x1F3B0;</div>
+  </div>
+  <div class="tc mb3">
+    <div class="small mb1">Spins today: <span id="spins-left" style="color:#6366f1;font-weight:800">3</span></div>
+    <button class="btn btn-gold btn-lg" style="min-width:180px" id="btn-spin">SPIN (50 &#x1FA99;)</button>
+  </div>
+  <div class="glass">
+    <h3 style="margin-bottom:12px">Rewards</h3>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;font-size:0.85rem">
+      <div class="flex" style="gap:8px;align-items:center"><span style="font-size:1.4rem">&#x1FA99;</span><div><div style="font-weight:700">100-500 Coins</div><div class="small">Common</div></div></div>
+      <div class="flex" style="gap:8px;align-items:center"><span style="font-size:1.4rem">&#x2B50;</span><div><div style="font-weight:700">50-200 XP</div><div class="small">Common</div></div></div>
+      <div class="flex" style="gap:8px;align-items:center"><span style="font-size:1.4rem">&#x1F48E;</span><div><div style="font-weight:700">XP Boost</div><div class="small">Rare</div></div></div>
+      <div class="flex" style="gap:8px;align-items:center"><span style="font-size:1.4rem">&#x1F451;</span><div><div style="font-weight:700">Special Title</div><div class="small">Legendary</div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="scr-settings">
+  <h1 class="mb3">&#x2699;&#xFE0F; Settings</h1>
+  <div class="glass mb2">
+    <div class="flex between mb2">
+      <div><div style="font-weight:700">Dark Mode</div><div class="small">Toggle theme</div></div>
+      <button class="btn btn-sec" style="padding:6px 12px" id="btn-theme">&#x1F319;</button>
+    </div>
+    <div class="flex between mb2">
+      <div><div style="font-weight:700">Sound</div><div class="small">Game sounds</div></div>
+      <button class="btn btn-sec" style="padding:6px 12px" id="btn-sound">&#x1F50A;</button>
+    </div>
+    <div class="flex between">
+      <div><div style="font-weight:700">Haptic</div><div class="small">Vibration</div></div>
+      <button class="btn btn-sec" style="padding:6px 12px" id="btn-haptic">&#x1F4F3;</button>
+    </div>
+  </div>
+  <div class="glass mb2">
+    <h3 style="margin-bottom:10px">Account</h3>
+    <div style="font-size:0.88rem;line-height:1.7;margin-bottom:14px">
+      <div><strong>Player:</strong> <span id="set-name">Warrior</span></div>
+      <div><strong>Title:</strong> <span id="set-title">Math Novice</span></div>
+      <div><strong>Playtime:</strong> <span id="set-time">0h 0m</span></div>
+    </div>
+    <button class="btn btn-dan btn-block" id="btn-reset">Reset All Progress</button>
+  </div>
+  <div class="tc small" style="margin-top:20px">Math Arena HSC Edition v1.0<br>Built for Bangladesh HSC Students &#x1F1E7;&#x1F1E9;</div>
+</div>
+
+</div>
+
+<nav class="nav" id="nav" style="display:none">
+  <div class="nitem act" data-nav="dash" id="nav-dash">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Home
+  </div>
+  <div class="nitem" data-nav="lb" id="nav-lb">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>Rank
+  </div>
+  <div class="nitem" data-nav="rewards" id="nav-rewards">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Spin
+  </div>
+  <div class="nitem" data-nav="ach" id="nav-ach">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>Badges
+  </div>
+  <div class="nitem" data-nav="profile" id="nav-profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Stats
+  </div>
+</nav>
+
+<div class="modal" id="modal-pause">
+  <div class="modal-box tc">
+    <div style="font-size:2.8rem;margin-bottom:12px">&#x23F8;&#xFE0F;</div>
+    <h2 style="margin-bottom:16px">Paused</h2>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-pri btn-block" id="btn-resume">Resume</button>
+      <button class="btn btn-sec btn-block" id="btn-restart">Restart</button>
+      <button class="btn btn-dan btn-block" id="btn-quit">Quit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  function showError(msg) {
+    var el = document.getElementById('error-box');
+    if (el) { el.textContent = msg; el.style.display = 'block'; }
+  }
+
+  try {
+
+    // ===== QUESTION BANK =====
+    var QB = {
+      topics: {
+        straight_line: {
+          name: "Straight Line", icon: "1", desc: "Coordinate Geometry", color: "#6366f1",
+          questions: [
+            { id:1, topic:"straight_line", diff:"easy", q:"Find the distance between (0,0) and (3,4).", opts:["3","4","5","7"], ans:2, ex:"Distance = sqrt(3^2 + 4^2) = sqrt(25) = 5", time:30, xp:10, coins:5 },
+            { id:2, topic:"straight_line", diff:"easy", q:"Slope of line through (1,2) and (3,6) is:", opts:["1","2","3","4"], ans:1, ex:"m = (6-2)/(3-1) = 4/2 = 2", time:30, xp:10, coins:5 },
+            { id:3, topic:"straight_line", diff:"easy", q:"Line parallel to x-axis through (2,3) is:", opts:["x=2","y=3","x=3","y=2"], ans:1, ex:"Parallel to x-axis means constant y. So y=3", time:30, xp:10, coins:5 },
+            { id:4, topic:"straight_line", diff:"easy", q:"Midpoint of (2,4) and (6,8) is:", opts:["(4,6)","(3,4)","(4,8)","(5,6)"], ans:0, ex:"Midpoint = ((2+6)/2, (4+8)/2) = (4,6)", time:30, xp:10, coins:5 },
+            { id:5, topic:"straight_line", diff:"medium", q:"Perpendicular to 2x+3y=5 through (1,1):", opts:["3x-2y=1","2x-3y=-1","3x+2y=5","x-y=0"], ans:0, ex:"Slope of given = -2/3. Perpendicular slope = 3/2. Equation: y-1 = 3/2(x-1) -> 3x-2y=1", time:45, xp:20, coins:10 },
+            { id:6, topic:"straight_line", diff:"medium", q:"Distance from (1,2) to 3x+4y+5=0:", opts:["16/5","3","5","15/4"], ans:0, ex:"|3(1)+4(2)+5|/sqrt(9+16) = |3+8+5|/5 = 16/5", time:45, xp:20, coins:10 },
+            { id:7, topic:"straight_line", diff:"medium", q:"Angle between 3x+y=7 and x+2y=9:", opts:["30 deg","45 deg","60 deg","90 deg"], ans:1, ex:"m1=-3, m2=-1/2. tan(theta) = |(-3+0.5)/(1+1.5)| = 1. So theta=45 deg", time:60, xp:25, coins:12 },
+            { id:8, topic:"straight_line", diff:"hard", q:"Distance between parallel lines 3x+4y+7=0 and 3x+4y+5=0:", opts:["2/5","7/5","2","12/5"], ans:0, ex:"|7-5|/sqrt(9+16) = 2/5", time:45, xp:35, coins:18 },
+            { id:9, topic:"straight_line", diff:"hard", q:"Bisector of angle between x+y=1 and x-y=3:", opts:["x=2","y=-1","x+y=2","x=1"], ans:0, ex:"Angle bisectors: (x+y-1)/sqrt(2) = +/-(x-y-3)/sqrt(2). Taking -ve: x+y-1 = -x+y+3 -> x=2", time:60, xp:40, coins:20 },
+            { id:10, topic:"straight_line", diff:"expert", q:"Line through (3,-2) with slope m forms triangle area 25. Find m.", opts:["2/3","4/3","-2/3","-4/3"], ans:1, ex:"Line: y+2=m(x-3). Intercepts give area 25. Solving: m=4/3", time:90, xp:60, coins:30 },
+            { id:11, topic:"straight_line", diff:"admission", q:"If ax+2y+1=0, bx+3y+1=0, cx+4y+1=0 are concurrent, a,b,c are in:", opts:["AP","GP","HP","None"], ans:0, ex:"Determinant=0 gives 2b=a+c. So a,b,c in AP.", time:120, xp:100, coins:50 }
+          ]
+        },
+        circle: {
+          name: "Circle", icon: "2", desc: "Circle equations & properties", color: "#ec4899",
+          questions: [
+            { id:20, topic:"circle", diff:"easy", q:"Center of x^2+y^2=25 is:", opts:["(1,1)","(0,0)","(5,5)","(-5,-5)"], ans:1, ex:"x^2+y^2=r^2 has center at origin (0,0)", time:30, xp:10, coins:5 },
+            { id:21, topic:"circle", diff:"easy", q:"Radius of x^2+y^2-6x-8y=0:", opts:["3","4","5","10"], ans:2, ex:"Complete squares: (x-3)^2+(y-4)^2=25. Radius=5", time:30, xp:10, coins:5 },
+            { id:22, topic:"circle", diff:"easy", q:"Circle center (2,-3), radius 4:", opts:["(x-2)^2+(y+3)^2=4","(x-2)^2+(y+3)^2=16","(x+2)^2+(y-3)^2=16","x^2+y^2=16"], ans:1, ex:"(x-h)^2+(y-k)^2=r^2 -> (x-2)^2+(y+3)^2=16", time:30, xp:10, coins:5 },
+            { id:23, topic:"circle", diff:"medium", q:"Tangent to x^2+y^2=25 at (3,4):", opts:["3x+4y=25","3x-4y=25","4x+3y=25","x+y=7"], ans:0, ex:"Tangent at (x1,y1): xx1+yy1=r^2 -> 3x+4y=25", time:45, xp:20, coins:10 },
+            { id:24, topic:"circle", diff:"medium", q:"Condition for y=mx+c to be tangent to x^2+y^2=a^2:", opts:["c^2=a^2(1+m^2)","c=a","c=am","c^2=a^2m^2"], ans:0, ex:"Perpendicular from center = radius: |c|/sqrt(1+m^2)=a -> c^2=a^2(1+m^2)", time:45, xp:25, coins:12 },
+            { id:25, topic:"circle", diff:"hard", q:"Length of tangent from (6,8) to x^2+y^2=25:", opts:["5","sqrt(75)","10","sqrt(100)"], ans:1, ex:"Length = sqrt(6^2+8^2-25) = sqrt(36+64-25) = sqrt(75)", time:45, xp:35, coins:18 },
+            { id:26, topic:"circle", diff:"hard", q:"Radical axis of x^2+y^2=4 and x^2+y^2-6x+8=0:", opts:["x=2","x=4/3","3x=4","y=0"], ans:0, ex:"S1-S2=0: 6x-8-4=0 -> 6x=12 -> x=2", time:60, xp:40, coins:20 },
+            { id:27, topic:"circle", diff:"expert", q:"Two circles x^2+y^2=4 and x^2+y^2-6x+8=0 intersect orthogonally. Common chord length:", opts:["sqrt(7)","2sqrt(7)","4","sqrt(14)"], ans:1, ex:"After calculation, common chord = 2sqrt(7)", time:90, xp:60, coins:30 },
+            { id:28, topic:"circle", diff:"admission", q:"If x^2+y^2+2ax+c=0 and x^2+y^2+2by+c=0 touch externally, then:", opts:["1/a^2+1/b^2=1/c^2","a^2+b^2=c^2","1/a^2+1/b^2=1/c","a^2+b^2=c"], ans:0, ex:"Distance between centers = r1+r2. After algebra: 1/a^2+1/b^2=1/c^2", time:120, xp:100, coins:50 }
+          ]
+        },
+        differentiation: {
+          name: "Differentiation", icon: "3", desc: "Limits & Derivatives", color: "#10b981",
+          questions: [
+            { id:40, topic:"differentiation", diff:"easy", q:"d/dx(x^5) =", opts:["5x^4","x^4","5x^6","x^5"], ans:0, ex:"Power rule: d/dx(x^n)=nx^(n-1). So 5x^4", time:30, xp:10, coins:5 },
+            { id:41, topic:"differentiation", diff:"easy", q:"d/dx(sin x) =", opts:["cos x","-cos x","-sin x","tan x"], ans:0, ex:"Standard derivative: d/dx(sin x)=cos x", time:30, xp:10, coins:5 },
+            { id:42, topic:"differentiation", diff:"easy", q:"d/dx(e^x) =", opts:["e^x","xe^(x-1)","ln x","x"], ans:0, ex:"d/dx(e^x)=e^x", time:30, xp:10, coins:5 },
+            { id:43, topic:"differentiation", diff:"easy", q:"d/dx(ln x) =", opts:["1/x","x","e^x","ln x"], ans:0, ex:"d/dx(ln x)=1/x", time:30, xp:10, coins:5 },
+            { id:44, topic:"differentiation", diff:"medium", q:"d/dx(x^2 sin x) =", opts:["2x sin x + x^2 cos x","2x cos x","x^2 cos x + 2x sin x","2x sin x - x^2 cos x"], ans:0, ex:"Product rule: u=x^2, v=sin x. u'v+uv' = 2x sin x + x^2 cos x", time:45, xp:20, coins:10 },
+            { id:45, topic:"differentiation", diff:"medium", q:"d/dx(x^3+2x^2-5x+1) =", opts:["3x^2+4x-5","3x^2+2x-5","x^2+2x-5","3x^2+4x+1"], ans:0, ex:"Differentiate term by term: 3x^2+4x-5", time:45, xp:20, coins:10 },
+            { id:46, topic:"differentiation", diff:"medium", q:"d/dx(sin^2 x) =", opts:["sin 2x","2 sin x","cos^2 x","-sin 2x"], ans:0, ex:"Chain rule: 2 sin x cos x = sin 2x", time:45, xp:25, coins:12 },
+            { id:47, topic:"differentiation", diff:"hard", q:"d/dx(tan^-1 x) =", opts:["1/(1+x^2)","1/(1-x^2)","sec^2 x","1/sqrt(1-x^2)"], ans:0, ex:"Standard: d/dx(tan^-1 x)=1/(1+x^2)", time:45, xp:35, coins:18 },
+            { id:48, topic:"differentiation", diff:"hard", q:"If y=x^x, then dy/dx =", opts:["x^x(1+ln x)","x*x^(x-1)","x^x ln x","x^x/x"], ans:0, ex:"ln y=x ln x -> (1/y)dy/dx=ln x+1 -> dy/dx=x^x(1+ln x)", time:60, xp:40, coins:20 },
+            { id:49, topic:"differentiation", diff:"expert", q:"d/dx[ln{(x-1)/(x+1)}] =", opts:["2/(x^2-1)","2/(x^2+1)","1/(x^2-1)","2x/(x^2-1)"], ans:0, ex:"ln(x-1)-ln(x+1) -> 1/(x-1)-1/(x+1) = 2/(x^2-1)", time:90, xp:60, coins:30 },
+            { id:50, topic:"differentiation", diff:"admission", q:"If x=a(theta-sin theta), y=a(1-cos theta), dy/dx at theta=pi/2:", opts:["1","0","infinity","-1"], ans:0, ex:"dx/dtheta=a(1-cos theta), dy/dtheta=a sin theta. dy/dx=sin theta/(1-cos theta). At pi/2: 1/1=1", time:120, xp:100, coins:50 }
+          ]
+        },
+        integration: {
+          name: "Integration", icon: "4", desc: "Integrals & Applications", color: "#8b5cf6",
+          questions: [
+            { id:60, topic:"integration", diff:"easy", q:"integral of x^3 dx =", opts:["x^4/4+C","x^4+C","3x^2+C","x^3/3+C"], ans:0, ex:"integral of x^n dx = x^(n+1)/(n+1)+C. So x^4/4+C", time:30, xp:10, coins:5 },
+            { id:61, topic:"integration", diff:"easy", q:"integral of sin x dx =", opts:["cos x+C","-cos x+C","sin x+C","-sin x+C"], ans:1, ex:"integral of sin x dx = -cos x+C", time:30, xp:10, coins:5 },
+            { id:62, topic:"integration", diff:"easy", q:"integral of e^x dx =", opts:["e^x+C","xe^(x-1)+C","ln x+C","e^x/x+C"], ans:0, ex:"integral of e^x dx = e^x+C", time:30, xp:10, coins:5 },
+            { id:63, topic:"integration", diff:"easy", q:"integral of (1/x) dx =", opts:["ln|x|+C","x+C","1/x^2+C","e^x+C"], ans:0, ex:"integral of (1/x)dx = ln|x|+C", time:30, xp:10, coins:5 },
+            { id:64, topic:"integration", diff:"medium", q:"integral of (3x^2+2x) dx =", opts:["x^3+x^2+C","x^3+2x^2+C","6x+2+C","x^2+x+C"], ans:0, ex:"integral of 3x^2=x^3, integral of 2x=x^2. So x^3+x^2+C", time:45, xp:20, coins:10 },
+            { id:65, topic:"integration", diff:"medium", q:"integral from 0 to 1 of x^2 dx =", opts:["1/3","1/2","1","2/3"], ans:0, ex:"[x^3/3]_0^1 = 1/3-0 = 1/3", time:45, xp:20, coins:10 },
+            { id:66, topic:"integration", diff:"medium", q:"integral of tan x dx =", opts:["ln|sec x|+C","ln|cos x|+C","sec^2 x+C","-ln|cos x|+C"], ans:3, ex:"integral of tan x dx = -ln|cos x|+C = ln|sec x|+C", time:45, xp:25, coins:12 },
+            { id:67, topic:"integration", diff:"hard", q:"integral of x e^x dx =", opts:["e^x(x-1)+C","xe^x+C","e^x(x+1)+C","x^2 e^x/2+C"], ans:0, ex:"By parts: u=x, dv=e^x dx. integral of xe^x = xe^x - e^x + C = e^x(x-1)+C", time:60, xp:35, coins:18 },
+            { id:68, topic:"integration", diff:"hard", q:"integral of dx/(x^2+9) =", opts:["(1/3)tan^-1(x/3)+C","tan^-1(x/3)+C","(1/3)ln|x^2+9|+C","3tan^-1(x/3)+C"], ans:0, ex:"integral of dx/(x^2+a^2)=(1/a)tan^-1(x/a)+C. a=3, so (1/3)tan^-1(x/3)+C", time:60, xp:40, coins:20 },
+            { id:69, topic:"integration", diff:"expert", q:"integral from 0 to pi/2 of sin^2 x dx =", opts:["pi/4","pi/2","1","0"], ans:0, ex:"sin^2 x=(1-cos2x)/2. integral=(1/2)[x-sin2x/2]_0^(pi/2)=pi/4", time:90, xp:60, coins:30 },
+            { id:70, topic:"integration", diff:"admission", q:"integral from 0 to infinity of e^-x x^5 dx =", opts:["120","24","720","5"], ans:0, ex:"Gamma function Gamma(6)=5!=120", time:120, xp:100, coins:50 }
+          ]
+        },
+        matrix: {
+          name: "Matrix", icon: "5", desc: "Matrix operations & algebra", color: "#f59e0b",
+          questions: [
+            { id:80, topic:"matrix", diff:"easy", q:"If A=[[1,2],[3,4]], trace(A)=", opts:["5","4","10","7"], ans:0, ex:"Trace = sum of diagonal = 1+4 = 5", time:30, xp:10, coins:5 },
+            { id:81, topic:"matrix", diff:"easy", q:"Order of [[1,2,3],[4,5,6]] is:", opts:["2x3","3x2","2x2","3x3"], ans:0, ex:"2 rows, 3 columns -> 2x3", time:30, xp:10, coins:5 },
+            { id:82, topic:"matrix", diff:"easy", q:"A is 2x3, B is 3x2. AB is:", opts:["2x2","3x3","2x3","Not possible"], ans:0, ex:"AB exists: rows of A, cols of B -> 2x2", time:30, xp:10, coins:5 },
+            { id:83, topic:"matrix", diff:"medium", q:"If A=[[1,2],[3,4]], A^2=", opts:["[[7,10],[15,22]]","[[1,4],[9,16]]","[[5,5],[7,7]]","[[2,4],[6,8]]"], ans:0, ex:"Row1: [1*1+2*3, 1*2+2*4]=[7,10]. Row2: [3*1+4*3, 3*2+4*4]=[15,22]", time:60, xp:20, coins:10 },
+            { id:84, topic:"matrix", diff:"medium", q:"Inverse of [[2,0],[0,3]] is:", opts:["[[1/2,0],[0,1/3]]","[[2,0],[0,3]]","[[3,0],[0,2]]","[[1/3,0],[0,1/2]]"], ans:0, ex:"Diagonal matrix inverse has reciprocal diagonals", time:45, xp:25, coins:12 },
+            { id:85, topic:"matrix", diff:"hard", q:"If A=[[1,2],[3,4]], A^-1=", opts:["[[-2,1],[1.5,-0.5]]","[[4,-2],[-3,1]]","[[-4,2],[3,-1]]","[[0.5,-0.25],[-0.75,0.25]]"], ans:0, ex:"det(A)=4-6=-2. A^-1=(1/-2)[[4,-2],[-3,1]]=[[-2,1],[1.5,-0.5]]", time:60, xp:35, coins:18 },
+            { id:86, topic:"matrix", diff:"hard", q:"Rank of [[1,2,3],[2,4,6],[1,1,1]] is:", opts:["2","1","3","0"], ans:0, ex:"R2=2*R1, so dependent. R1 and R3 independent. Rank=2", time:60, xp:40, coins:20 },
+            { id:87, topic:"matrix", diff:"expert", q:"If A is orthogonal, A^-1=", opts:["A^T","A","-A","A^2"], ans:0, ex:"For orthogonal matrix: A^-1 = A^T", time:45, xp:60, coins:30 },
+            { id:88, topic:"matrix", diff:"admission", q:"Characteristic equation of A=[[1,2],[2,1]] is:", opts:["lambda^2-2lambda-3=0","lambda^2-2lambda+3=0","lambda^2+2lambda-3=0","lambda^2-3lambda+2=0"], ans:0, ex:"|A-lambda*I|=(1-lambda)^2-4=lambda^2-2lambda-3=0", time:120, xp:100, coins:50 }
+          ]
+        },
+        determinant: {
+          name: "Determinant", icon: "6", desc: "Determinants & applications", color: "#06b6d4",
+          questions: [
+            { id:100, topic:"determinant", diff:"easy", q:"|2 3| = ?\n|1 4|", opts:["5","11","-5","8"], ans:0, ex:"2*4 - 3*1 = 8-3 = 5", time:30, xp:10, coins:5 },
+            { id:101, topic:"determinant", diff:"easy", q:"Two identical rows -> determinant:", opts:["0","1","2","Undefined"], ans:0, ex:"Property: identical rows -> det=0", time:30, xp:10, coins:5 },
+            { id:102, topic:"determinant", diff:"easy", q:"|1 0| = ?\n|0 1|", opts:["1","0","2","-1"], ans:0, ex:"1*1 - 0*0 = 1", time:30, xp:10, coins:5 },
+            { id:103, topic:"determinant", diff:"medium", q:"|1 2 3|\n|4 5 6| = ?\n|7 8 9|", opts:["0","45","-45","30"], ans:0, ex:"Rows in AP -> det=0", time:45, xp:20, coins:10 },
+            { id:104, topic:"determinant", diff:"medium", q:"D=0 and Dx!=0 -> system has:", opts:["No solution","Unique","Infinite","One"], ans:0, ex:"D=0 and Dx!=0 -> inconsistent (no solution)", time:45, xp:25, coins:12 },
+            { id:105, topic:"determinant", diff:"hard", q:"Area of triangle (0,0),(4,0),(0,3):", opts:["6","12","3","24"], ans:0, ex:"Area = 1/2|0(0-3)-0(4-0)+1(12-0)| = 1/2|12| = 6", time:60, xp:35, coins:18 },
+            { id:106, topic:"determinant", diff:"hard", q:"|a b c|\n|a^2 b^2 c^2| = ?\n|a^3 b^3 c^3|", opts:["abc(a-b)(b-c)(c-a)","(a-b)(b-c)(c-a)","abc","(a+b+c)(a-b)(b-c)(c-a)"], ans:0, ex:"Vandermonde-type determinant = abc(a-b)(b-c)(c-a)", time:90, xp:40, coins:20 },
+            { id:107, topic:"determinant", diff:"expert", q:"omega is cube root of unity. |1 omega omega^2|\n|omega omega^2 1| = ?\n|omega^2 1 omega|", opts:["0","1","omega","3"], ans:0, ex:"C1+C2+C3=0 (since 1+omega+omega^2=0). So det=0", time:90, xp:60, coins:30 },
+            { id:108, topic:"determinant", diff:"admission", q:"Roots of |x 1 1|\n|1 x 1| = 0\n|1 1 x|", opts:["1,1,-2","1,-1,2","-1,-1,2","1,1,2"], ans:0, ex:"Add rows to R1: (x+2) factor out. (x+2)(x-1)^2=0 -> x=1,1,-2", time:120, xp:100, coins:50 }
+          ]
+        }
+      },
+      get: function(topic, diff, count) {
+        var all = this.topics[topic] ? this.topics[topic].questions : [];
+        if (diff) all = all.filter(function(q){ return q.diff === diff; });
+        var shuffled = all.slice().sort(function(){ return Math.random()-0.5; });
+        return shuffled.slice(0, count || 5);
+      },
+      getBoss: function(topic) {
+        var all = this.topics[topic] ? this.topics[topic].questions : [];
+        var hard = all.filter(function(q){ return q.diff === 'hard' || q.diff === 'expert' || q.diff === 'admission'; });
+        return hard.slice().sort(function(){ return Math.random()-0.5; }).slice(0, 5);
+      }
+    };
+
+    // ===== STATE =====
+    var S = {
+      player: {
+        name: '', cls: '', level: 1, xp: 0, coins: 100, streak: 0, maxStreak: 0,
+        totalCorrect: 0, totalWrong: 0, totalTime: 0, gamesPlayed: 0,
+        titles: ['Math Novice'], achievements: [], unlockedTopics: ['straight_line'],
+        topicMastery: {}, daily: { done: false, date: '' }, spins: 3, lastSpin: '',
+        theme: 'dark', sound: true, haptic: true, joinDate: ''
+      },
+      session: {
+        topic: '', diff: '', mode: '', questions: [], idx: 0, score: 0, combo: 0,
+        maxCombo: 0, correct: 0, wrong: 0, start: 0, timer: null, timeLeft: 0,
+        paused: false, answers: [], times: [], opponent: 0
+      },
+      lb: [
+        {name:"Rahim", title:"Calculus Wizard", score:15420, av:"R"},
+        {name:"Fatima", title:"HSC Grandmaster", score:14800, av:"F"},
+        {name:"Karim", title:"Matrix Expert", score:13200, av:"K"},
+        {name:"Nadia", title:"Math Warrior", score:12500, av:"N"},
+        {name:"Hasan", title:"Circle Master", score:11800, av:"H"},
+        {name:"Tania", title:"Determinant King", score:10900, av:"T"},
+        {name:"Ali", title:"Math Warrior", score:10200, av:"A"},
+        {name:"Sara", title:"Calculus Wizard", score:9800, av:"S"},
+        {name:"Jamal", title:"Matrix Expert", score:9100, av:"J"},
+        {name:"Lina", title:"Math Novice", score:8500, av:"L"}
+      ]
+    };
+
+    var storageOK = false;
+    try {
+      var test = '__test__';
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      storageOK = true;
+    } catch(e) { storageOK = false; }
+
+    function loadState() {
+      if (!storageOK) return;
+      try {
+        var raw = localStorage.getItem('mathArena');
+        if (raw) {
+          var parsed = JSON.parse(raw);
+          if (parsed.player) {
+            for (var key in parsed.player) {
+              if (S.player.hasOwnProperty(key)) S.player[key] = parsed.player[key];
+            }
+          }
+          if (parsed.lb) S.lb = parsed.lb;
+        }
+      } catch(e) {}
+      var today = new Date().toDateString();
+      if (S.player.lastSpin !== today) { S.player.spins = 3; S.player.lastSpin = today; }
+      if (S.player.daily.date !== today) { S.player.daily = { done: false, date: today }; }
+      if (!S.player.joinDate) S.player.joinDate = new Date().toISOString();
+      saveState();
+    }
+
+    function saveState() {
+      if (!storageOK) return;
+      try { localStorage.setItem('mathArena', JSON.stringify({ player: S.player, lb: S.lb })); } catch(e) {}
+    }
+
+    // ===== UI =====
+    var currentScreen = 'auth';
+
+    function showScreen(name) {
+      var screens = document.querySelectorAll('.screen');
+      for (var i = 0; i < screens.length; i++) screens[i].classList.remove('active');
+      var target = document.getElementById('scr-' + name);
+      if (target) target.classList.add('active');
+      currentScreen = name;
+
+      var navs = document.querySelectorAll('.nitem');
+      for (var i = 0; i < navs.length; i++) navs[i].classList.remove('act');
+      var n = document.getElementById('nav-' + name);
+      if (n) n.classList.add('act');
+
+      if (name === 'dash') renderDash();
+      if (name === 'lb') renderLB('global');
+      if (name === 'profile') renderProfile();
+      if (name === 'ach') renderAch();
+      if (name === 'rewards') renderRewards();
+      if (name === 'settings') renderSettings();
+    }
+
+    function toast(msg, icon) {
+      var c = document.getElementById('toasts');
+      if (!c) return;
+      var d = document.createElement('div');
+      d.className = 'toast';
+      d.innerHTML = '<span>' + (icon || '*') + '</span> ' + msg;
+      c.appendChild(d);
+      setTimeout(function(){ d.remove(); }, 3000);
+    }
+
+    // ===== DASHBOARD =====
+    function renderDash() {
+      var p = S.player;
+      if (!p.unlockedTopics) p.unlockedTopics = ['straight_line'];
+      if (!p.topicMastery) p.topicMastery = {};
+      if (!p.titles) p.titles = ['Math Novice'];
+
+      var elName = document.getElementById('dash-name');
+      var elTitle = document.getElementById('dash-title');
+      var elAvatar = document.getElementById('dash-avatar');
+      if (elName) elName.textContent = p.name || 'Warrior';
+      if (elTitle) elTitle.textContent = p.titles[p.titles.length-1] || 'Math Novice';
+      if (elAvatar) elAvatar.textContent = (p.name || 'W')[0].toUpperCase();
+
+      var elLevel = document.getElementById('dash-level');
+      var elCoins = document.getElementById('dash-coins');
+      var elRank = document.getElementById('dash-rank');
+      if (elLevel) elLevel.textContent = p.level;
+      if (elCoins) elCoins.textContent = p.coins;
+
+      var scores = S.lb.map(function(l){ return l.score; });
+      var myScore = p.xp + p.totalCorrect * 100;
+      scores.push(myScore);
+      scores.sort(function(a,b){ return b-a; });
+      var rank = scores.indexOf(myScore) + 1;
+      if (elRank) elRank.textContent = rank ? '#' + rank : '#--';
+
+      var need = p.level * 100;
+      var pct = Math.min(100, Math.round((p.xp / need) * 100));
+      var elXpText = document.getElementById('dash-xp-text');
+      var elXpBar = document.getElementById('dash-xp-bar');
+      if (elXpText) elXpText.textContent = p.xp + ' / ' + need + ' XP';
+      if (elXpBar) elXpBar.style.width = pct + '%';
+
+      var keys = Object.keys(QB.topics);
+      var unlocked = p.unlockedTopics.length;
+      var elProgress = document.getElementById('dash-progress');
+      if (elProgress) elProgress.textContent = Math.round((unlocked / keys.length) * 100) + '% Complete';
+
+      var grid = document.getElementById('topic-list');
+      if (!grid) return;
+      grid.innerHTML = '';
+      for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var t = QB.topics[key];
+        var isUnlocked = p.unlockedTopics.indexOf(key) !== -1;
+        var mastery = p.topicMastery[key] || 0;
+        var div = document.createElement('div');
+        div.className = 'card' + (isUnlocked ? '' : ' lock');
+        div.innerHTML = '<div style="font-size:1.8rem;margin-bottom:6px">' + t.icon + '</div>' +
+          '<div style="font-weight:700;font-size:0.9rem;margin-bottom:3px">' + t.name + '</div>' +
+          '<div style="font-size:0.75rem;color:#64748b">' + (isUnlocked ? mastery + '% mastered' : 'Locked') + '</div>' +
+          (isUnlocked ? '<div class="pbg" style="margin-top:8px;height:4px"><div class="pfill" style="width:' + mastery + '%"></div></div>' : '');
+        if (isUnlocked) {
+          div.addEventListener('click', (function(k){ return function(){ S.session.topic = k; renderTopic(k); showScreen('topic'); }; })(key));
+        }
+        grid.appendChild(div);
+      }
+    }
+
+    function renderTopic(key) {
+      var t = QB.topics[key];
+      var elName = document.getElementById('topic-name');
+      var elDesc = document.getElementById('topic-desc');
+      if (elName) elName.textContent = t.name;
+      if (elDesc) elDesc.textContent = t.desc;
+
+      var p = S.player;
+      if (!p.topicMastery) p.topicMastery = {};
+      var mastery = p.topicMastery[key] || 0;
+      var elMText = document.getElementById('topic-mastery-text');
+      var elMBar = document.getElementById('topic-mastery-bar');
+      if (elMText) elMText.textContent = mastery + '%';
+      if (elMBar) elMBar.style.width = mastery + '%';
+
+      var diffs = ['easy','medium','hard','expert','admission'];
+      var labels = {easy:'Easy', medium:'Medium', hard:'Hard', expert:'Expert', admission:'Admission'};
+      var badges = {easy:'b-easy', medium:'b-med', hard:'b-hard', expert:'b-exp', admission:'b-adm'};
+      var list = document.getElementById('diff-list');
+      if (list) {
+        list.innerHTML = '';
+        for (var i = 0; i < diffs.length; i++) {
+          var d = diffs[i];
+          var locked = i > 0 && p.unlockedTopics.indexOf(key + '_' + d) === -1;
+          var div = document.createElement('div');
+          div.className = 'card' + (locked ? ' lock' : '');
+          div.style.cursor = locked ? 'not-allowed' : 'pointer';
+          div.innerHTML = '<div style="display:flex;align-items:center;gap:12px">' +
+            '<div style="width:40px;height:40px;border-radius:10px;background:' + t.color + '22;display:flex;align-items:center;justify-content:center;font-weight:800;color:' + t.color + '">' + (i+1) + '</div>' +
+            '<div style="flex:1">' +
+              '<div style="font-weight:700">' + labels[d] + ' <span class="badge ' + badges[d] + '">' + labels[d] + '</span></div>' +
+              '<div style="font-size:0.8rem;color:#64748b">' + (locked ? 'Complete previous to unlock' : '5 questions') + '</div>' +
+            '</div>' +
+            '<div style="color:#64748b">' + (locked ? 'X' : '->') + '</div>' +
+          '</div>';
+          if (!locked) {
+            div.addEventListener('click', (function(diff){ return function(){ S.session.diff = diff; startGame('practice'); }; })(d));
+          }
+          list.appendChild(div);
+        }
+      }
+
+      var modes = [
+        {icon:'1', name:'Practice Mode', desc:'Learn at your own pace', color:'#6366f1', mode:'practice'},
+        {icon:'2', name:'Timed Challenge', desc:'Beat the clock', color:'#f59e0b', mode:'timed'},
+        {icon:'3', name:'Endless Survival', desc:'3 lives, increasing difficulty', color:'#ef4444', mode:'endless'},
+        {icon:'4', name:'Boss Battle', desc:'Defeat the Math Titan', color:'#ec4899', mode:'boss'}
+      ];
+      var mlist = document.getElementById('mode-list');
+      if (mlist) {
+        mlist.innerHTML = '';
+        for (var i = 0; i < modes.length; i++) {
+          var m = modes[i];
+          var div = document.createElement('div');
+          div.className = 'card';
+          div.innerHTML = '<div style="display:flex;align-items:center;gap:12px">' +
+            '<div style="width:48px;height:48px;border-radius:12px;background:' + m.color + '22;display:flex;align-items:center;justify-content:center;font-size:1.6rem">' + m.icon + '</div>' +
+            '<div style="flex:1">' +
+              '<div style="font-weight:700">' + m.name + '</div>' +
+              '<div style="font-size:0.8rem;color:#64748b">' + m.desc + '</div>' +
+            '</div>' +
+            '<div style="color:#64748b">-></div>' +
+          '</div>';
+          div.addEventListener('click', (function(mode){ return function(){ startGame(mode); }; })(m.mode));
+          mlist.appendChild(div);
+        }
+      }
+    }
+
+    // ===== AUTH =====
+    function doLogin() {
+      try {
+        var nameInput = document.getElementById('inp-name');
+        var clsInput = document.getElementById('inp-class');
+        if (!nameInput || !clsInput) { toast('Form error!', '!'); return; }
+
+        var name = nameInput.value.trim();
+        var cls = clsInput.value;
+        if (!name) { toast('Enter your warrior name!', '!'); return; }
+        if (!cls) { toast('Select your path!', '!'); return; }
+
+        S.player.name = name;
+        S.player.cls = cls;
+        S.player.joinDate = new Date().toISOString();
+        saveState();
+
+        var nav = document.getElementById('nav');
+        if (nav) nav.style.display = 'flex';
+        showScreen('dash');
+        toast('Welcome to the Arena, ' + name + '!', '*');
+      } catch(e) {
+        showError('Login error: ' + e.message);
+      }
+    }
+
+    // ===== GAME =====
+    function startGame(mode) {
+      var topic = S.session.topic || 'straight_line';
+      var diff = S.session.diff || 'easy';
+      var se = S.session;
+      se.mode = mode;
+      se.topic = topic;
+      se.diff = diff;
+      se.score = 0; se.combo = 0; se.maxCombo = 0; se.correct = 0; se.wrong = 0;
+      se.idx = 0; se.answers = []; se.times = []; se.opponent = 0; se.paused = false;
+      se.start = Date.now();
+
+      var questions = [];
+      if (mode === 'boss') questions = QB.getBoss(topic);
+      else if (mode === 'daily') questions = QB.get(topic, 'expert', 5);
+      else if (mode === 'endless') {
+        questions = QB.get(topic, 'easy', 3).concat(QB.get(topic, 'medium', 3)).concat(QB.get(topic, 'hard', 2));
+      } else {
+        questions = QB.get(topic, diff, 5);
+      }
+      se.questions = questions;
+
+      showScreen('game');
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      var se = S.session;
+      if (se.idx >= se.questions.length) { endGame(); return; }
+
+      var q = se.questions[se.idx];
+      se.timeLeft = q.time;
+
+      var elTopic = document.getElementById('game-topic-label');
+      var elScore = document.getElementById('game-score');
+      var elCombo = document.getElementById('game-combo');
+      var elQText = document.getElementById('q-text');
+      var elExpl = document.getElementById('explanation');
+
+      if (elTopic) elTopic.textContent = QB.topics[q.topic].name + ' * ' + q.diff.charAt(0).toUpperCase() + q.diff.slice(1);
+      if (elScore) elScore.textContent = 'Score: ' + se.score;
+      if (elCombo) elCombo.textContent = se.combo + ' 🔥';
+      if (elQText) elQText.textContent = q.q;
+      if (elExpl) elExpl.style.display = 'none';
+
+      var opts = document.getElementById('options');
+      if (opts) {
+        opts.innerHTML = '';
+        for (var i = 0; i < q.opts.length; i++) {
+          var btn = document.createElement('button');
+          btn.className = 'opt';
+          btn.innerHTML = '<span style="font-weight:800;margin-right:8px;color:#6366f1">' + String.fromCharCode(65+i) + '.</span> ' + q.opts[i];
+          btn.addEventListener('click', (function(idx){ return function(e){ answerQuestion(idx, e); }; })(i));
+          opts.appendChild(btn);
+        }
+      }
+
+      updateTimer();
+      se.timer = setInterval(function(){ tickTimer(); }, 1000);
+    }
+
+    function tickTimer() {
+      if (S.session.paused) return;
+      S.session.timeLeft--;
+      updateTimer();
+      if (S.session.timeLeft <= 0) answerQuestion(-1, null);
+    }
+
+    function updateTimer() {
+      var se = S.session;
+      var q = se.questions[se.idx];
+      var total = q ? q.time : 30;
+      var left = se.timeLeft;
+      var pct = left / total;
+      var circ = 2 * Math.PI * 24;
+      var offset = circ - pct * circ;
+      var elCircle = document.getElementById('timer-circle');
+      var elText = document.getElementById('timer-text');
+      if (elCircle) elCircle.style.strokeDashoffset = offset;
+      if (elText) elText.textContent = left;
+      if (elCircle) elCircle.style.stroke = left <= 5 ? '#ef4444' : left <= 10 ? '#f59e0b' : '#6366f1';
+    }
+
+    function answerQuestion(ans, ev) {
+      clearInterval(S.session.timer);
+      var se = S.session;
+      var q = se.questions[se.idx];
+      var timeTaken = q.time - se.timeLeft;
+      se.times.push(timeTaken);
+
+      var isCorrect = ans === q.ans;
+      var btns = document.querySelectorAll('.opt');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.add('dis');
+        if (i === q.ans) btns[i].classList.add('cor');
+        else if (i === ans && !isCorrect) btns[i].classList.add('wrg');
+      }
+
+      if (isCorrect) {
+        se.correct++;
+        se.combo++;
+        if (se.combo > se.maxCombo) se.maxCombo = se.combo;
+
+        var mult = 1;
+        var msg = 'Correct!';
+        if (se.combo >= 20) { mult = 3; msg = 'LEGENDARY!'; }
+        else if (se.combo >= 10) { mult = 2; msg = 'UNSTOPPABLE!'; }
+        else if (se.combo >= 5) { mult = 1.5; msg = 'ON FIRE!'; }
+        else if (se.combo >= 3) { msg = 'Great!'; }
+
+        var timeBonus = Math.floor((se.timeLeft / q.time) * 10);
+        var points = Math.floor((q.xp + timeBonus) * mult);
+        se.score += points;
+
+        var xpGain = Math.floor(q.xp * mult);
+        var coinGain = Math.floor(q.coins * mult);
+        S.player.xp += xpGain;
+        S.player.coins += coinGain;
+        S.player.totalCorrect++;
+
+        toast(msg + ' +' + points + ' pts', 'OK');
+        checkLevelUp();
+      } else {
+        se.wrong++;
+        se.combo = 0;
+        S.player.totalWrong++;
+        var qbox = document.getElementById('q-box');
+        if (qbox) { qbox.classList.add('shk'); setTimeout(function(){ qbox.classList.remove('shk'); }, 400); }
+        toast(ans === -1 ? "Time's up!" : 'Wrong!', 'X');
+      }
+
+      se.answers.push(isCorrect);
+      var elExText = document.getElementById('ex-text');
+      var elExpl = document.getElementById('explanation');
+      if (elExText) elExText.textContent = q.ex;
+      if (elExpl) elExpl.style.display = 'block';
+
+      var elScore = document.getElementById('game-score');
+      var elCombo = document.getElementById('game-combo');
+      if (elScore) elScore.textContent = 'Score: ' + se.score;
+      if (elCombo) elCombo.textContent = se.combo + ' 🔥';
+
+      if (se.mode === 'timed' || se.mode === 'practice') {
+        var aiAcc = se.diff === 'easy' ? 0.8 : se.diff === 'medium' ? 0.7 : 0.6;
+        if (Math.random() < aiAcc) se.opponent += Math.floor(q.xp * 0.8);
+      }
+
+      saveState();
+    }
+
+    function nextQuestion() {
+      S.session.idx++;
+      loadQuestion();
+    }
+
+    function checkLevelUp() {
+      var p = S.player;
+      var need = p.level * 100;
+      if (p.xp >= need) {
+        p.level++;
+        p.xp -= need;
+        toast('Level Up! Level ' + p.level + '!', 'UP');
+
+        var unlocks = [
+          {lvl:2, topic:'circle', name:'Circle'},
+          {lvl:3, topic:'differentiation', name:'Differentiation'},
+          {lvl:4, topic:'integration', name:'Integration'},
+          {lvl:5, topic:'matrix', name:'Matrix'},
+          {lvl:6, topic:'determinant', name:'Determinant'}
+        ];
+        for (var i = 0; i < unlocks.length; i++) {
+          var u = unlocks[i];
+          if (p.level >= u.lvl && p.unlockedTopics.indexOf(u.topic) === -1) {
+            p.unlockedTopics.push(u.topic);
+            toast('Unlocked: ' + u.name + '!', 'UNLOCK');
+          }
+        }
+      }
+    }
+
+    function endGame() {
+      var se = S.session;
+      var p = S.player;
+      var totalTime = Math.floor((Date.now() - se.start) / 1000);
+      p.totalTime += totalTime;
+      p.gamesPlayed++;
+
+      var total = se.correct + se.wrong;
+      var accuracy = total > 0 ? Math.round((se.correct / total) * 100) : 0;
+
+      var key = se.topic;
+      if (!p.topicMastery) p.topicMastery = {};
+      var currentMastery = p.topicMastery[key] || 0;
+      var newMastery = Math.min(100, currentMastery + (accuracy > 80 ? 10 : accuracy > 60 ? 5 : 2));
+      p.topicMastery[key] = newMastery;
+
+      var newTitles = [];
+      if (newMastery >= 50 && p.titles.indexOf('Circle Master') === -1 && key === 'circle') newTitles.push('Circle Master');
+      if (newMastery >= 50 && p.titles.indexOf('Calculus Wizard') === -1 && (key === 'differentiation' || key === 'integration')) newTitles.push('Calculus Wizard');
+      if (newMastery >= 50 && p.titles.indexOf('Matrix Expert') === -1 && key === 'matrix') newTitles.push('Matrix Expert');
+      if (newMastery >= 50 && p.titles.indexOf('Determinant King') === -1 && key === 'determinant') newTitles.push('Determinant King');
+      if (p.totalCorrect >= 100 && p.titles.indexOf('Math Warrior') === -1) newTitles.push('Math Warrior');
+      if (p.level >= 10 && p.titles.indexOf('HSC Grandmaster') === -1) newTitles.push('HSC Grandmaster');
+      if (p.totalCorrect >= 1000 && p.titles.indexOf('Mathematical Legend') === -1) newTitles.push('Mathematical Legend');
+
+      for (var i = 0; i < newTitles.length; i++) {
+        if (p.titles.indexOf(newTitles[i]) === -1) p.titles.push(newTitles[i]);
+      }
+
+      var achs = [
+        {id:'first_win', name:'First Win', cond: function(){ return p.gamesPlayed >= 1; }},
+        {id:'correct_100', name:'Century', cond: function(){ return p.totalCorrect >= 100; }},
+        {id:'correct_1000', name:'Grandmaster', cond: function(){ return p.totalCorrect >= 1000; }},
+        {id:'speed_demon', name:'Speed Demon', cond: function(){ return se.times.filter(function(t){ return t < 10; }).length >= 5; }},
+        {id:'combo_20', name:'Fire Starter', cond: function(){ return se.maxCombo >= 20; }},
+        {id:'perfect', name:'Perfect Game', cond: function(){ return accuracy === 100 && total >= 5; }},
+        {id:'boss', name:'Boss Slayer', cond: function(){ return se.mode === 'boss' && accuracy >= 60; }}
+      ];
+
+      var newAchs = [];
+      for (var i = 0; i < achs.length; i++) {
+        if (p.achievements.indexOf(achs[i].id) === -1 && achs[i].cond()) {
+          p.achievements.push(achs[i].id);
+          newAchs.push(achs[i].name);
+        }
+      }
+
+      if (se.mode === 'daily') {
+        p.daily.done = true;
+        p.coins += 500;
+        toast('Daily Challenge Complete! +500 coins', 'DAILY');
+      }
+
+      var myScore = p.xp + p.totalCorrect * 100;
+      var found = false;
+      for (var i = 0; i < S.lb.length; i++) {
+        if (S.lb[i].name === p.name) { S.lb[i].score = myScore; found = true; break; }
+      }
+      if (!found) S.lb.push({name: p.name, title: p.titles[p.titles.length-1], score: myScore, av: p.name[0].toUpperCase()});
+      S.lb.sort(function(a,b){ return b.score - a.score; });
+
+      saveState();
+
+      var elScore = document.getElementById('res-score');
+      var elAcc = document.getElementById('res-acc');
+      var elCombo = document.getElementById('res-combo');
+      var elTime = document.getElementById('res-time');
+      var elXp = document.getElementById('res-xp');
+      var elCoins = document.getElementById('res-coins');
+
+      if (elScore) elScore.textContent = se.score;
+      if (elAcc) elAcc.textContent = accuracy + '%';
+      if (elCombo) elCombo.textContent = se.maxCombo;
+      if (elTime) elTime.textContent = totalTime + 's';
+      if (elXp) elXp.textContent = '+' + se.score;
+      if (elCoins) elCoins.textContent = '+' + Math.floor(se.score / 10);
+
+      var trophy = 'TROPHY', title = 'Victory!', sub = 'Great performance';
+      if (accuracy === 100) { trophy = 'DIAMOND'; title = 'PERFECT!'; sub = 'Flawless!'; }
+      else if (accuracy >= 80) { trophy = 'GOLD'; title = 'Excellent!'; sub = 'Outstanding!'; }
+      else if (accuracy >= 60) { trophy = 'SILVER'; title = 'Good Job!'; sub = 'Keep practicing!'; }
+      else { trophy = 'BRONZE'; title = 'Completed!'; sub = 'Try again!'; }
+
+      if (se.mode === 'boss') {
+        if (accuracy >= 60) { trophy = 'CROWN'; title = 'BOSS DEFEATED!'; sub = 'The Titan falls!'; }
+        else { trophy = 'SKULL'; title = 'Defeated...'; sub = 'Too strong!'; }
+      }
+
+      var elTrophy = document.getElementById('res-trophy');
+      var elTitle = document.getElementById('res-title');
+      var elSub = document.getElementById('res-sub');
+      if (elTrophy) elTrophy.textContent = trophy;
+      if (elTitle) elTitle.textContent = title;
+      if (elSub) elSub.textContent = sub;
+
+      var tbox = document.getElementById('res-newtitle');
+      if (tbox) {
+        if (newTitles.length > 0) {
+          var elTName = document.getElementById('res-newtitle-name');
+          if (elTName) elTName.textContent = newTitles[0];
+          tbox.style.display = 'block';
+        } else {
+          tbox.style.display = 'none';
+        }
+      }
+
+      showScreen('result');
+    }
+
+    function pauseGame() {
+      S.session.paused = true;
+      clearInterval(S.session.timer);
+      var modal = document.getElementById('modal-pause');
+      if (modal) modal.classList.add('show');
+    }
+
+    function resumeGame() {
+      S.session.paused = false;
+      var modal = document.getElementById('modal-pause');
+      if (modal) modal.classList.remove('show');
+      S.session.timer = setInterval(function(){ tickTimer(); }, 1000);
+    }
+
+    function restartGame() {
+      var modal = document.getElementById('modal-pause');
+      if (modal) modal.classList.remove('show');
+      startGame(S.session.mode);
+    }
+
+    function quitGame() {
+      var modal = document.getElementById('modal-pause');
+      if (modal) modal.classList.remove('show');
+      showScreen('dash');
+    }
+
+    function replayGame() {
+      startGame(S.session.mode);
+    }
+
+    // ===== LEADERBOARD =====
+    function renderLB(type) {
+      var list = document.getElementById('lb-list');
+      if (!list) return;
+      list.innerHTML = '';
+      var entries = S.lb.slice();
+
+      if (type === 'weekly') entries = entries.sort(function(){ return Math.random()-0.5; }).slice(0, 10);
+      else if (type === 'friends') entries = entries.slice(0, 5);
+
+      var p = S.player;
+      var myScore = p.xp + p.totalCorrect * 100;
+      var playerEntry = {name: p.name, title: p.titles[p.titles.length-1], score: myScore, av: p.name[0].toUpperCase(), isPlayer: true};
+
+      var hasPlayer = false;
+      for (var i = 0; i < entries.length; i++) if (entries[i].name === p.name) hasPlayer = true;
+      if (!hasPlayer) entries.push(playerEntry);
+      entries.sort(function(a,b){ return b.score - a.score; });
+
+      for (var i = 0; i < Math.min(entries.length, 10); i++) {
+        var e = entries[i];
+        var div = document.createElement('div');
+        div.className = 'lb-row' + (e.isPlayer ? ' glass' : '');
+        if (e.isPlayer) div.style.border = '1px solid rgba(99,102,241,0.3)';
+        var rankClass = i === 0 ? 'gold' : i === 1 ? 'sil' : i === 2 ? 'bro' : '';
+        div.innerHTML = '<div class="lb-rank ' + rankClass + '">' + (i+1) + '</div>' +
+          '<div class="lb-av" style="background:' + (e.isPlayer ? 'linear-gradient(135deg,#6366f1,#ec4899)' : 'linear-gradient(135deg,#64748b,#475569)') + ';">' + e.av + '</div>' +
+          '<div class="lb-info"><div class="lb-name">' + e.name + (e.isPlayer ? ' (You)' : '') + '</div><div class="lb-title">' + e.title + '</div></div>' +
+          '<div class="lb-score">' + e.score.toLocaleString() + '</div>';
+        list.appendChild(div);
+      }
+    }
+
+    // ===== PROFILE =====
+    function renderProfile() {
+      var p = S.player;
+      if (!p.topicMastery) p.topicMastery = {};
+
+      var elAvatar = document.getElementById('prof-avatar');
+      var elName = document.getElementById('prof-name');
+      var elTitle = document.getElementById('prof-title');
+      if (elAvatar) elAvatar.textContent = (p.name || 'W')[0].toUpperCase();
+      if (elName) elName.textContent = p.name || 'Warrior';
+      if (elTitle) elTitle.textContent = p.titles[p.titles.length-1] || 'Math Novice';
+
+      var joinDate = p.joinDate ? new Date(p.joinDate) : new Date();
+      var days = Math.floor((Date.now() - joinDate.getTime()) / (1000*60*60*24));
+      var elJoined = document.getElementById('prof-joined');
+      if (elJoined) elJoined.textContent = days === 0 ? 'Joined today' : 'Joined ' + days + ' days ago';
+
+      var elGames = document.getElementById('prof-games');
+      if (elGames) elGames.textContent = p.gamesPlayed;
+
+      var total = p.totalCorrect + p.totalWrong;
+      var acc = total > 0 ? Math.round((p.totalCorrect / total) * 100) : 0;
+      var elAcc = document.getElementById('prof-acc');
+      if (elAcc) elAcc.textContent = acc + '%';
+      var elStreak = document.getElementById('prof-streak');
+      if (elStreak) elStreak.textContent = p.maxStreak || 0;
+
+      var chart = document.getElementById('prof-chart');
+      if (chart) {
+        chart.innerHTML = '';
+        var keys = Object.keys(QB.topics);
+        for (var i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var t = QB.topics[key];
+          var m = p.topicMastery[key] || 0;
+          var div = document.createElement('div');
+          div.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;gap:6px';
+          div.innerHTML = '<div style="width:100%;max-width:36px;height:' + Math.max(m, 4) + 'px;background:linear-gradient(to top,' + t.color + ',' + t.color + '88);border-radius:3px 3px 0 0;transition:height 0.5s"></div>' +
+            '<div style="font-size:0.65rem;color:#64748b;text-align:center">' + t.name.split(' ')[0] + '</div>';
+          chart.appendChild(div);
+        }
+      }
+
+      var weak = document.getElementById('prof-weak');
+      if (weak) {
+        weak.innerHTML = '';
+        var weakTopics = [];
+        var keys = Object.keys(QB.topics);
+        for (var i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var m = p.topicMastery[key] || 0;
+          if (m < 40) weakTopics.push({key: key, val: m});
+        }
+        weakTopics.sort(function(a,b){ return a.val - b.val; });
+
+        if (weakTopics.length === 0) {
+          weak.innerHTML = '<div class="glass tc" style="padding:20px;color:#64748b">No weak areas! Great!</div>';
+        } else {
+          for (var i = 0; i < weakTopics.length; i++) {
+            var wt = weakTopics[i];
+            var t = QB.topics[wt.key];
+            var div = document.createElement('div');
+            div.className = 'glass';
+            div.style.cssText = 'padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center';
+            div.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">' + t.icon + '</span><div><div style="font-weight:700">' + t.name + '</div><div style="font-size:0.75rem;color:#64748b">Mastery: ' + wt.val + '%</div></div></div>' +
+              '<button class="btn btn-pri" style="padding:6px 12px;font-size:0.75rem" data-topic="' + wt.key + '">Practice</button>';
+            div.querySelector('button').addEventListener('click', function(){ 
+              S.session.topic = this.getAttribute('data-topic'); 
+              renderTopic(S.session.topic); 
+              showScreen('topic'); 
+            });
+            weak.appendChild(div);
+          }
+        }
+      }
+    }
+
+    // ===== ACHIEVEMENTS =====
+    function renderAch() {
+      var grid = document.getElementById('ach-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      var p = S.player;
+      var achs = [
+        {id:'first_win', name:'First Blood', desc:'Complete first battle', icon:'SWORD'},
+        {id:'correct_100', name:'Century', desc:'100 correct answers', icon:'100'},
+        {id:'correct_1000', name:'Grandmaster', desc:'1000 correct answers', icon:'CROWN'},
+        {id:'speed_demon', name:'Speed Demon', desc:'5 questions under 10s', icon:'BOLT'},
+        {id:'combo_20', name:'Fire Starter', desc:'20x combo', icon:'FIRE'},
+        {id:'perfect', name:'Perfectionist', desc:'100% accuracy', icon:'DIAMOND'},
+        {id:'boss', name:'Boss Slayer', desc:'Defeat a Boss', icon:'MONSTER'},
+        {id:'level_10', name:'Veteran', desc:'Reach Level 10', icon:'STAR'}
+      ];
+
+      for (var i = 0; i < achs.length; i++) {
+        var a = achs[i];
+        var unlocked = p.achievements.indexOf(a.id) !== -1;
+        var div = document.createElement('div');
+        div.className = 'ach-card' + (unlocked ? ' unl' : '');
+        div.innerHTML = '<div class="ach-icon">' + a.icon + '</div><div class="ach-name">' + a.name + '</div><div class="ach-desc">' + a.desc + '</div>' +
+          (unlocked ? '<div style="margin-top:6px;font-size:0.7rem;color:#10b981;font-weight:700">OK Unlocked</div>' : '<div style="margin-top:6px;font-size:0.7rem;color:#64748b">Locked</div>');
+        grid.appendChild(div);
+      }
+    }
+
+    // ===== REWARDS =====
+    var spinning = false;
+    function renderRewards() {
+      var p = S.player;
+      var elSpins = document.getElementById('spins-left');
+      var elBtn = document.getElementById('btn-spin');
+      if (elSpins) elSpins.textContent = p.spins;
+      if (elBtn) {
+        elBtn.disabled = p.spins <= 0 || p.coins < 50;
+        elBtn.textContent = p.spins <= 0 ? 'No spins' : p.coins < 50 ? 'Need 50 coins' : 'SPIN (50 COINS)';
+      }
+    }
+
+    function doSpin() {
+      var p = S.player;
+      if (spinning || p.spins <= 0 || p.coins < 50) return;
+      spinning = true;
+      p.coins -= 50;
+      p.spins--;
+      saveState();
+      renderRewards();
+
+      var wheel = document.getElementById('wheel');
+      if (wheel) {
+        var rot = (5 + Math.random() * 5) * 360 + Math.random() * 360;
+        wheel.style.transform = 'rotate(' + rot + 'deg)';
+      }
+
+      setTimeout(function(){
+        spinning = false;
+        var norm = rot % 360;
+        var reward, val = 0;
+        if (norm < 60) { reward = 'coins'; val = 100 + Math.floor(Math.random() * 400); p.coins += val; toast('Won ' + val + ' coins!', 'WIN'); }
+        else if (norm < 120) { reward = 'xp'; val = 50 + Math.floor(Math.random() * 150); p.xp += val; toast('Won ' + val + ' XP!', 'WIN'); }
+        else if (norm < 180) { reward = 'coins'; val = 200 + Math.floor(Math.random() * 300); p.coins += val; toast('Won ' + val + ' coins!', 'WIN'); }
+        else if (norm < 240) { reward = 'xp'; val = 100 + Math.floor(Math.random() * 100); p.xp += val; toast('Won ' + val + ' XP!', 'WIN'); }
+        else if (norm < 300) { reward = 'boost'; toast('Double XP Boost!', 'WIN'); }
+        else { reward = 'title'; toast('Title Fragment!', 'WIN'); }
+        saveState();
+        renderRewards();
+      }, 4000);
+    }
+
+    // ===== SETTINGS =====
+    function renderSettings() {
+      var p = S.player;
+      var elName = document.getElementById('set-name');
+      var elTitle = document.getElementById('set-title');
+      var elTime = document.getElementById('set-time');
+      if (elName) elName.textContent = p.name;
+      if (elTitle) elTitle.textContent = p.titles[p.titles.length-1];
+      var h = Math.floor(p.totalTime / 3600);
+      var m = Math.floor((p.totalTime % 3600) / 60);
+      if (elTime) elTime.textContent = h + 'h ' + m + 'm';
+
+      var elTheme = document.getElementById('btn-theme');
+      var elSound = document.getElementById('btn-sound');
+      var elHaptic = document.getElementById('btn-haptic');
+      if (elTheme) elTheme.textContent = p.theme === 'dark' ? 'MOON' : 'SUN';
+      if (elSound) elSound.textContent = p.sound ? 'ON' : 'OFF';
+      if (elHaptic) elHaptic.textContent = p.haptic ? 'ON' : 'OFF';
+    }
+
+    function toggleTheme() {
+      var p = S.player;
+      p.theme = p.theme === 'dark' ? 'light' : 'dark';
+      document.body.className = p.theme === 'light' ? 'light' : '';
+      var el = document.getElementById('btn-theme');
+      if (el) el.textContent = p.theme === 'dark' ? 'MOON' : 'SUN';
+      saveState();
+      toast(p.theme === 'dark' ? 'Dark mode' : 'Light mode', p.theme === 'dark' ? 'MOON' : 'SUN');
+    }
+
+    function toggleSound() {
+      S.player.sound = !S.player.sound;
+      var el = document.getElementById('btn-sound');
+      if (el) el.textContent = S.player.sound ? 'ON' : 'OFF';
+      saveState();
+      toast(S.player.sound ? 'Sound on' : 'Muted', 'SOUND');
+    }
+
+    function toggleHaptic() {
+      S.player.haptic = !S.player.haptic;
+      var el = document.getElementById('btn-haptic');
+      if (el) el.textContent = S.player.haptic ? 'ON' : 'OFF';
+      saveState();
+      toast(S.player.haptic ? 'Haptic on' : 'Haptic off', 'VIBRATE');
+    }
+
+    function resetData() {
+      if (confirm('Erase ALL progress?')) {
+        localStorage.removeItem('mathArena');
+        location.reload();
+      }
+    }
+
+    // ===== EVENT BINDING =====
+    function bindEvents() {
+      var btnLogin = document.getElementById('btn-login');
+      if (btnLogin) btnLogin.addEventListener('click', doLogin);
+
+      var cardDaily = document.getElementById('card-daily');
+      if (cardDaily) cardDaily.addEventListener('click', function(){ 
+        if (S.player.daily.done) { toast('Daily done! Come back tomorrow.', 'DAILY'); return; }
+        startGame('daily'); 
+      });
+
+      var btnTopicBack = document.getElementById('btn-topic-back');
+      if (btnTopicBack) btnTopicBack.addEventListener('click', function(){ showScreen('dash'); });
+
+      var btnPause = document.getElementById('btn-pause');
+      if (btnPause) btnPause.addEventListener('click', pauseGame);
+      var btnNext = document.getElementById('btn-next');
+      if (btnNext) btnNext.addEventListener('click', nextQuestion);
+
+      var btnResume = document.getElementById('btn-resume');
+      if (btnResume) btnResume.addEventListener('click', resumeGame);
+      var btnRestart = document.getElementById('btn-restart');
+      if (btnRestart) btnRestart.addEventListener('click', restartGame);
+      var btnQuit = document.getElementById('btn-quit');
+      if (btnQuit) btnQuit.addEventListener('click', quitGame);
+
+      var btnResDash = document.getElementById('btn-res-dash');
+      if (btnResDash) btnResDash.addEventListener('click', function(){ showScreen('dash'); });
+      var btnResReplay = document.getElementById('btn-res-replay');
+      if (btnResReplay) btnResReplay.addEventListener('click', replayGame);
+
+      var lbGlobal = document.getElementById('lb-global');
+      if (lbGlobal) lbGlobal.addEventListener('click', function(){ renderLB('global'); });
+      var lbWeekly = document.getElementById('lb-weekly');
+      if (lbWeekly) lbWeekly.addEventListener('click', function(){ renderLB('weekly'); });
+      var lbFriends = document.getElementById('lb-friends');
+      if (lbFriends) lbFriends.addEventListener('click', function(){ renderLB('friends'); });
+
+      var btnSpin = document.getElementById('btn-spin');
+      if (btnSpin) btnSpin.addEventListener('click', doSpin);
+
+      var btnTheme = document.getElementById('btn-theme');
+      if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
+      var btnSound = document.getElementById('btn-sound');
+      if (btnSound) btnSound.addEventListener('click', toggleSound);
+      var btnHaptic = document.getElementById('btn-haptic');
+      if (btnHaptic) btnHaptic.addEventListener('click', toggleHaptic);
+      var btnReset = document.getElementById('btn-reset');
+      if (btnReset) btnReset.addEventListener('click', resetData);
+
+      var navItems = document.querySelectorAll('.nitem');
+      for (var i = 0; i < navItems.length; i++) {
+        navItems[i].addEventListener('click', (function(nav){ 
+          return function(){ showScreen(nav); }; 
+        })(navItems[i].getAttribute('data-nav')));
+      }
+    }
+
+    // ===== INIT =====
+    function init() {
+      loadState();
+      if (S.player.theme === 'light') document.body.className = 'light';
+
+      bindEvents();
+
+      if (S.player.name) {
+        var nav = document.getElementById('nav');
+        if (nav) nav.style.display = 'flex';
+        showScreen('dash');
+      }
+
+      setTimeout(function(){
+        var loader = document.getElementById('loader');
+        if (loader) { loader.style.opacity = '0'; loader.style.pointerEvents = 'none'; }
+      }, 2500);
+    }
+
+    // Prevent double-tap zoom
+    var lastTouch = 0;
+    document.addEventListener('touchend', function(e) {
+      var now = Date.now();
+      if (now - lastTouch <= 300) e.preventDefault();
+      lastTouch = now;
+    }, false);
+
+    // Global error handler
+    window.onerror = function(msg, url, line) {
+      showError('Error: ' + msg + ' (line ' + line + ')');
+      return true;
+    };
+
+    // Start
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+  } catch(e) {
+    showError('Fatal error: ' + e.message);
+  }
+})();
+</script>
+</body>
+</html>

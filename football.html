@@ -1,0 +1,2219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>World Cup Penalty Tournament</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #050505;
+    color: #fff;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    touch-action: manipulation;
+}
+
+/* ===== STADIUM ATMOSPHERE ===== */
+.stadium-bg {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: 
+        radial-gradient(ellipse at 20% 50%, rgba(0, 60, 0, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 50%, rgba(0, 60, 0, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 100%, rgba(0, 40, 0, 0.25) 0%, transparent 60%),
+        linear-gradient(to bottom, #060606 0%, #0a120a 50%, #060606 100%);
+    z-index: -3;
+}
+.spotlight {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.15;
+    z-index: -2;
+    pointer-events: none;
+}
+.spotlight-1 { width: 300px; height: 300px; background: #fff; top: -100px; left: 20%; animation: spotMove1 10s infinite alternate; }
+.spotlight-2 { width: 400px; height: 400px; background: #ffd700; top: -150px; right: 20%; animation: spotMove2 12s infinite alternate; }
+.spotlight-3 { width: 250px; height: 250px; background: #fff; bottom: 20%; left: 50%; transform: translateX(-50%); animation: spotPulse 8s infinite; }
+@keyframes spotMove1 { from { transform: translateX(0) translateY(0); } to { transform: translateX(50px) translateY(30px); } }
+@keyframes spotMove2 { from { transform: translateX(0) translateY(0); } to { transform: translateX(-40px) translateY(20px); } }
+@keyframes spotPulse { 0%, 100% { opacity: 0.1; } 50% { opacity: 0.2; } }
+
+.crowd {
+    position: fixed;
+    bottom: 0; left: 0; width: 100%; height: 35%;
+    background: radial-gradient(ellipse at 50% 100%, rgba(0,0,0,0.9) 0%, transparent 70%);
+    z-index: -1;
+    overflow: hidden;
+}
+.crowd-particle {
+    position: absolute;
+    width: 3px; height: 3px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    animation: crowdCheer 0.8s infinite alternate;
+}
+@keyframes crowdCheer {
+    from { transform: translateY(0) scale(1); opacity: 0.15; }
+    to { transform: translateY(-8px) scale(1.2); opacity: 0.35; }
+}
+
+/* ===== GLASSMORPHISM ===== */
+.glass {
+    background: rgba(20, 20, 20, 0.45);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+    border-radius: 20px;
+}
+.glass-gold {
+    border-color: rgba(255, 215, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,215,0,0.08), 0 0 20px rgba(255,215,0,0.05);
+}
+
+/* ===== SCREENS ===== */
+.screen {
+    display: none;
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.screen.active { display: flex; }
+
+/* ===== MENU ===== */
+.menu-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    text-align: center;
+    gap: 30px;
+    padding: 20px;
+}
+.trophy-icon {
+    font-size: 120px;
+    filter: drop-shadow(0 0 30px rgba(255,215,0,0.4));
+    animation: trophyFloat 4s ease-in-out infinite;
+}
+@keyframes trophyFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
+}
+.menu-title {
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 40px rgba(255,215,0,0.2);
+}
+.menu-subtitle {
+    font-size: 18px;
+    letter-spacing: 12px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-top: -10px;
+}
+.btn-gold {
+    padding: 18px 60px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #0a0a0a;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+    margin-top: 20px;
+}
+.btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(255,215,0,0.5);
+}
+.btn-gold:active { transform: translateY(0); }
+.btn-secondary {
+    padding: 12px 40px;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.2);
+}
+
+/* ===== TEAM SELECT ===== */
+.select-header {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin: 30px 0;
+    text-align: center;
+    background: linear-gradient(90deg, #fff, #ccc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    width: 100%;
+    padding: 0 20px;
+    margin-bottom: 40px;
+}
+.team-card {
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.team-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,215,0,0.3);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 20px rgba(255,215,0,0.08);
+}
+.team-flag {
+    font-size: 48px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+.team-info h3 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+.team-info p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 1px;
+}
+.team-rating {
+    margin-left: auto;
+    font-size: 28px;
+    font-weight: 900;
+    color: #ffd700;
+}
+
+/* ===== BRACKET ===== */
+.bracket-screen { padding: 40px 20px; }
+.bracket-header {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    text-align: center;
+}
+.bracket-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 30px;
+    max-width: 1100px;
+    width: 100%;
+    align-items: center;
+}
+.bracket-round {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.bracket-round-title {
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 10px;
+}
+.bracket-match {
+    padding: 16px;
+    position: relative;
+    transition: all 0.3s;
+}
+.bracket-match.active {
+    border-color: rgba(255,215,0,0.3);
+    box-shadow: 0 0 20px rgba(255,215,0,0.08);
+}
+.bracket-team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+.bracket-team.winner { color: #ffd700; }
+.bracket-team.loser { opacity: 0.4; }
+.bracket-team-flag { font-size: 20px; }
+.bracket-score {
+    margin-left: auto;
+    font-weight: 900;
+    font-size: 16px;
+    min-width: 24px;
+    text-align: center;
+}
+.bracket-vs {
+    text-align: center;
+    font-size: 10px;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 2px;
+    padding: 4px 0;
+}
+
+/* ===== MATCH SCREEN - NEW TOUCH GOAL SYSTEM ===== */
+.match-screen {
+    padding: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+}
+.match-header {
+    width: 100%;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    z-index: 10;
+    flex-shrink: 0;
+}
+.match-team-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.match-team-display .flag { font-size: 28px; }
+.match-team-display .name { font-size: 14px; font-weight: 700; letter-spacing: 1px; }
+.scoreboard-main {
+    font-size: 40px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 4px;
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    min-width: 100px;
+    text-align: center;
+}
+.round-indicator {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ===== INTERACTIVE GOAL AREA ===== */
+.goal-area-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    position: relative;
+    flex-shrink: 0;
+    padding: 0 16px;
+}
+.goal-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 1.3;
+    background: linear-gradient(180deg, #1a3a1a 0%, #0d2a0d 100%);
+    border-radius: 8px 8px 0 0;
+    border: 3px solid rgba(255,255,255,0.15);
+    border-bottom: none;
+    overflow: hidden;
+    cursor: pointer;
+}
+.goal-net {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+        linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+/* Goal Zones - 5 clickable areas */
+.goal-zones {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+.goal-zone {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+.goal-zone:hover {
+    background: rgba(255,215,0,0.08);
+    border-color: rgba(255,215,0,0.2);
+}
+.goal-zone:active {
+    background: rgba(255,215,0,0.15);
+}
+.goal-zone .zone-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    pointer-events: none;
+    text-align: center;
+    line-height: 1.3;
+}
+.goal-zone:hover .zone-label {
+    color: rgba(255,215,0,0.6);
+}
+.goal-zone.disabled {
+    pointer-events: none;
+    opacity: 0.3;
+}
+.goal-zone.disabled:hover {
+    background: transparent;
+}
+
+/* Zone flash on tap */
+.zone-flash {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,215,0,0.3);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.1s;
+}
+.goal-zone.tapped .zone-flash {
+    opacity: 1;
+    animation: zoneFlash 0.4s ease-out forwards;
+}
+@keyframes zoneFlash {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* Goalkeeper in goal */
+.goalkeeper-sprite {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 36px;
+    height: 50px;
+    background: linear-gradient(to bottom, #444, #222);
+    border-radius: 8px 8px 4px 4px;
+    border: 2px solid rgba(255,255,255,0.15);
+    z-index: 5;
+    transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    pointer-events: none;
+}
+.goalkeeper-sprite::before {
+    content: '';
+    position: absolute;
+    top: 6px; left: 50%; transform: translateX(-50%);
+    width: 14px; height: 14px;
+    background: #555;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+}
+.goalkeeper-sprite.dive-left { transform: translateX(-120px) rotate(-30deg); }
+.goalkeeper-sprite.dive-right { transform: translateX(120px) rotate(30deg); }
+.goalkeeper-sprite.dive-tl { transform: translateX(-80px) translateY(-60px) rotate(-20deg); }
+.goalkeeper-sprite.dive-tr { transform: translateX(80px) translateY(-60px) rotate(20deg); }
+.goalkeeper-sprite.dive-center { transform: translateX(-50%) scale(0.85); }
+
+/* Ball on penalty spot */
+.penalty-spot-area {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 80px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.penalty-line {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 1px;
+}
+.penalty-spot {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+}
+.match-ball {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 28px;
+    background: radial-gradient(circle at 30% 30%, #fff, #ddd, #999);
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    z-index: 10;
+    transition: none;
+}
+
+/* Ball kick animations to each zone */
+.match-ball.kick-tl { animation: ballKickTL 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.match-ball.kick-tr { animation: ballKickTR 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.match-ball.kick-bl { animation: ballKickBL 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.match-ball.kick-br { animation: ballKickBR 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.match-ball.kick-center { animation: ballKickCenter 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+
+@keyframes ballKickTL {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    40% { transform: translate(-50%, -50%) translateY(-40px) scale(0.9); }
+    100% { transform: translate(-50%, -50%) translateX(-120px) translateY(-220px) scale(0.4); opacity: 0.7; }
+}
+@keyframes ballKickTR {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    40% { transform: translate(-50%, -50%) translateY(-40px) scale(0.9); }
+    100% { transform: translate(-50%, -50%) translateX(120px) translateY(-220px) scale(0.4); opacity: 0.7; }
+}
+@keyframes ballKickBL {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) translateX(-120px) translateY(-60px) scale(0.5); opacity: 0.7; }
+}
+@keyframes ballKickBR {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) translateX(120px) translateY(-60px) scale(0.5); opacity: 0.7; }
+}
+@keyframes ballKickCenter {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-50%, -50%) translateY(-200px) scale(0.4); opacity: 0.7; }
+}
+
+/* Result text overlay */
+.result-text {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+    text-shadow: 0 0 40px currentColor;
+    white-space: nowrap;
+}
+.result-text.show {
+    animation: resultPop 1.5s ease-out forwards;
+}
+.result-text.goal { color: #00ff88; }
+.result-text.save { color: #ffaa00; }
+.result-text.miss { color: #ff4444; }
+
+@keyframes resultPop {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    40% { transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+}
+
+.camera-shake {
+    animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+    0%, 100% { transform: translate(0, 0); }
+    20% { transform: translate(-8px, -4px); }
+    40% { transform: translate(8px, 4px); }
+    60% { transform: translate(-4px, 8px); }
+    80% { transform: translate(4px, -8px); }
+}
+
+/* Player Profiles */
+.match-info-panel {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 8px 12px;
+    width: 100%;
+    max-width: 600px;
+    flex-shrink: 0;
+}
+.player-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    min-width: 0;
+    flex: 1;
+    max-width: 280px;
+}
+.player-profile.active {
+    border-color: rgba(255,215,0,0.2);
+    box-shadow: 0 0 20px rgba(255,215,0,0.05);
+}
+.player-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    color: #fff;
+    position: relative;
+    border: 2px solid rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+.player-avatar .jersey-num {
+    position: absolute;
+    bottom: -4px; right: -4px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    border: 1px solid rgba(255,215,0,0.5);
+    color: #ffd700;
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+.player-details h4 { font-size: 14px; font-weight: 700; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player-details p { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+.player-stats-row {
+    display: flex;
+    gap: 8px;
+}
+.stat-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+}
+.stat-badge.gold { color: #ffd700; border-color: rgba(255,215,0,0.2); }
+
+/* Penalty Tracker */
+.penalty-tracker {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 8px;
+    width: 100%;
+    flex-shrink: 0;
+}
+.tracker-team {
+    display: flex;
+    gap: 6px;
+}
+.tracker-slot {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 800;
+    transition: all 0.3s;
+}
+.tracker-slot.goal { background: rgba(0,255,136,0.15); border-color: #00ff88; color: #00ff88; }
+.tracker-slot.miss { background: rgba(255,68,68,0.15); border-color: #ff4444; color: #ff4444; }
+.tracker-slot.pending { background: rgba(255,255,255,0.02); }
+
+/* Instruction text */
+.shoot-instruction {
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    padding: 8px;
+    flex-shrink: 0;
+}
+
+.ai-thinking {
+    text-align: center;
+    padding: 20px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 2px;
+    flex-shrink: 0;
+}
+.ai-thinking::after {
+    content: '';
+    animation: dots 1.5s infinite;
+}
+@keyframes dots {
+    0% { content: '.'; }
+    33% { content: '..'; }
+    66% { content: '...'; }
+}
+
+/* ===== RESULT SCREEN ===== */
+.result-screen {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 30px;
+    padding: 20px;
+}
+.result-title {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+}
+.result-title.victory {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.result-title.defeat {
+    color: #ff4444;
+}
+.result-score {
+    font-size: 72px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+.result-details {
+    display: flex;
+    gap: 40px;
+    padding: 24px;
+}
+.result-detail-item {
+    text-align: center;
+}
+.result-detail-item .label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 8px;
+}
+.result-detail-item .value {
+    font-size: 28px;
+    font-weight: 800;
+    color: #ffd700;
+}
+
+/* ===== CHAMPION SCREEN ===== */
+.champion-screen {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+    padding: 20px;
+}
+.champion-trophy {
+    font-size: 150px;
+    filter: drop-shadow(0 0 40px rgba(255,215,0,0.5));
+    animation: championFloat 3s ease-in-out infinite;
+}
+@keyframes championFloat {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-20px) scale(1.05); }
+}
+.champion-text {
+    font-size: 24px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+}
+.champion-team-name {
+    font-size: 52px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #ffd700, #ffed4e, #ffd700);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 10px 0;
+}
+.champion-flag {
+    font-size: 80px;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+.mvp-card {
+    padding: 24px;
+    margin-top: 20px;
+    max-width: 400px;
+    width: 100%;
+}
+.mvp-label {
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #ffd700;
+    margin-bottom: 12px;
+}
+.mvp-player {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.mvp-avatar {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 900;
+    border: 2px solid rgba(255,215,0,0.3);
+}
+.mvp-info h3 { font-size: 22px; margin-bottom: 4px; }
+.mvp-info p { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 600px;
+    width: 100%;
+    margin-top: 20px;
+}
+.stat-card {
+    padding: 20px;
+    text-align: center;
+}
+.stat-card .stat-value {
+    font-size: 32px;
+    font-weight: 900;
+    color: #ffd700;
+    margin-bottom: 4px;
+}
+.stat-card .stat-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+}
+
+/* ===== ACHIEVEMENTS ===== */
+.achievement-popup {
+    position: fixed;
+    top: 30px;
+    right: -400px;
+    padding: 20px 30px;
+    border-radius: 16px;
+    border-left: 4px solid #ffd700;
+    z-index: 1000;
+    transition: right 0.5s ease-out;
+    max-width: 350px;
+}
+.achievement-popup.show { right: 30px; }
+.achievement-popup h4 {
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #ffd700;
+    margin-bottom: 4px;
+}
+.achievement-popup p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0a0a0a; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .menu-title { font-size: 32px; letter-spacing: 4px; }
+    .teams-grid { grid-template-columns: 1fr; }
+    .bracket-container { grid-template-columns: 1fr; gap: 20px; }
+    .match-header { gap: 12px; }
+    .scoreboard-main { font-size: 32px; min-width: 80px; }
+    .match-team-display .flag { font-size: 22px; }
+    .match-team-display .name { font-size: 12px; }
+    .result-title { font-size: 36px; }
+    .result-score { font-size: 52px; }
+    .result-details { flex-direction: column; gap: 20px; }
+    .stats-grid { grid-template-columns: 1fr; }
+    .goal-zone .zone-label { font-size: 9px; }
+    .goalkeeper-sprite { width: 28px; height: 40px; }
+    .goalkeeper-sprite.dive-left { transform: translateX(-80px) rotate(-30deg); }
+    .goalkeeper-sprite.dive-right { transform: translateX(80px) rotate(30deg); }
+    .goalkeeper-sprite.dive-tl { transform: translateX(-50px) translateY(-40px) rotate(-20deg); }
+    .goalkeeper-sprite.dive-tr { transform: translateX(50px) translateY(-40px) rotate(20deg); }
+    @keyframes ballKickTL { 0% { transform: translate(-50%, -50%) scale(1); } 40% { transform: translate(-50%, -50%) translateY(-30px) scale(0.9); } 100% { transform: translate(-50%, -50%) translateX(-80px) translateY(-150px) scale(0.4); opacity: 0.7; } }
+    @keyframes ballKickTR { 0% { transform: translate(-50%, -50%) scale(1); } 40% { transform: translate(-50%, -50%) translateY(-30px) scale(0.9); } 100% { transform: translate(-50%, -50%) translateX(80px) translateY(-150px) scale(0.4); opacity: 0.7; } }
+    @keyframes ballKickBL { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) translateX(-80px) translateY(-40px) scale(0.5); opacity: 0.7; } }
+    @keyframes ballKickBR { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) translateX(80px) translateY(-40px) scale(0.5); opacity: 0.7; } }
+    @keyframes ballKickCenter { 0% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) translateY(-140px) scale(0.4); opacity: 0.7; } }
+}
+</style>
+</head>
+<body>
+<div class="stadium-bg"></div>
+<div class="spotlight spotlight-1"></div>
+<div class="spotlight spotlight-2"></div>
+<div class="spotlight spotlight-3"></div>
+<div class="crowd" id="crowd"></div>
+<canvas id="fireworks" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:50;pointer-events:none;"></canvas>
+
+<div id="achievement-popup" class="achievement-popup glass">
+    <h4 id="ach-title">Achievement Unlocked</h4>
+    <p id="ach-desc">Description</p>
+</div>
+
+<!-- MENU SCREEN -->
+<div id="screen-menu" class="screen active">
+    <div class="menu-container">
+        <div class="trophy-icon">🏆</div>
+        <div class="menu-title">World Cup</div>
+        <div class="menu-subtitle">Penalty Tournament</div>
+        <button class="btn-gold" onclick="Game.enterTournament()">Enter Tournament</button>
+        <div class="glass" style="padding:24px; margin-top:30px; min-width:300px;">
+            <div style="font-size:11px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,0.4); margin-bottom:16px; text-align:center;">Career Statistics</div>
+            <div id="menu-stats" style="display:grid; grid-template-columns:1fr 1fr; gap:16px; text-align:center;">
+                <div><div style="font-size:24px; font-weight:900; color:#ffd700;" id="stat-wins">0</div><div style="font-size:10px; color:rgba(255,255,255,0.4); margin-top:4px;">Tournaments Won</div></div>
+                <div><div style="font-size:24px; font-weight:900; color:#ffd700;" id="stat-goals">0</div><div style="font-size:10px; color:rgba(255,255,255,0.4); margin-top:4px;">Goals Scored</div></div>
+                <div><div style="font-size:24px; font-weight:900; color:#ffd700;" id="stat-accuracy">0%</div><div style="font-size:10px; color:rgba(255,255,255,0.4); margin-top:4px;">Accuracy</div></div>
+                <div><div style="font-size:24px; font-weight:900; color:#ffd700;" id="stat-saves">0</div><div style="font-size:10px; color:rgba(255,255,255,0.4); margin-top:4px;">Saves Made</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- TEAM SELECT -->
+<div id="screen-select" class="screen">
+    <div class="select-header">Select Your Nation</div>
+    <div class="teams-grid" id="teams-grid"></div>
+</div>
+
+<!-- BRACKET -->
+<div id="screen-bracket" class="screen bracket-screen">
+    <div class="bracket-header">Tournament Bracket</div>
+    <div class="bracket-container" id="bracket-container"></div>
+    <button class="btn-gold" id="bracket-btn" style="margin-top:30px;" onclick="Game.startNextMatch()">Start Match</button>
+</div>
+
+<!-- MATCH SCREEN - TOUCH GOAL SYSTEM -->
+<div id="screen-match" class="screen match-screen">
+    <div class="round-indicator" id="round-indicator">Quarter Final</div>
+    <div class="match-header">
+        <div class="match-team-display">
+            <span class="flag" id="match-flag-a"></span>
+            <span class="name" id="match-name-a">Team A</span>
+        </div>
+        <div class="scoreboard-main" id="match-score">0 - 0</div>
+        <div class="match-team-display">
+            <span class="name" id="match-name-b">Team B</span>
+            <span class="flag" id="match-flag-b"></span>
+        </div>
+    </div>
+
+    <!-- Interactive Goal Area -->
+    <div class="goal-area-container">
+        <div class="goal-wrapper" id="goal-wrapper">
+            <div class="goal-net"></div>
+            <div class="goalkeeper-sprite" id="goalkeeper"></div>
+            <div class="goal-zones" id="goal-zones">
+                <div class="goal-zone" data-dir="TL" onclick="Game.zoneTap('TL')">
+                    <div class="zone-flash"></div>
+                    <span class="zone-label">Top<br>Left</span>
+                </div>
+                <div class="goal-zone" data-dir="C" onclick="Game.zoneTap('C')">
+                    <div class="zone-flash"></div>
+                    <span class="zone-label">Center</span>
+                </div>
+                <div class="goal-zone" data-dir="TR" onclick="Game.zoneTap('TR')">
+                    <div class="zone-flash"></div>
+                    <span class="zone-label">Top<br>Right</span>
+                </div>
+                <div class="goal-zone" data-dir="BL" onclick="Game.zoneTap('BL')">
+                    <div class="zone-flash"></div>
+                    <span class="zone-label">Bottom<br>Left</span>
+                </div>
+                <div class="goal-zone" data-dir="BR" onclick="Game.zoneTap('BR')">
+                    <div class="zone-flash"></div>
+                    <span class="zone-label">Bottom<br>Right</span>
+                </div>
+            </div>
+            <div class="result-text" id="result-text"></div>
+        </div>
+    </div>
+
+    <!-- Penalty Spot Area -->
+    <div class="penalty-spot-area" id="penalty-spot-area">
+        <div class="penalty-line"></div>
+        <div class="penalty-spot"></div>
+        <div class="match-ball" id="match-ball"></div>
+    </div>
+
+    <div class="match-info-panel" id="match-info-panel">
+        <div class="player-profile glass" id="profile-shooter">
+            <div class="player-avatar" id="shooter-avatar">
+                <span id="shooter-initials">LM</span>
+                <span class="jersey-num" id="shooter-num">10</span>
+            </div>
+            <div class="player-details">
+                <h4 id="shooter-name">Lionel Messi</h4>
+                <p id="shooter-pos">Forward</p>
+                <div class="player-stats-row">
+                    <span class="stat-badge gold">PEN <span id="shooter-pen">93</span></span>
+                    <span class="stat-badge">COM <span id="shooter-comp">96</span></span>
+                </div>
+            </div>
+        </div>
+        <div class="player-profile glass" id="profile-keeper">
+            <div class="player-avatar" id="keeper-avatar">
+                <span id="keeper-initials">EM</span>
+                <span class="jersey-num" id="keeper-num">23</span>
+            </div>
+            <div class="player-details">
+                <h4 id="keeper-name">Emiliano Martinez</h4>
+                <p id="keeper-pos">Goalkeeper</p>
+                <div class="player-stats-row">
+                    <span class="stat-badge gold">GK <span id="keeper-gk">92</span></span>
+                    <span class="stat-badge">COM <span id="keeper-comp">85</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="penalty-tracker" id="penalty-tracker">
+        <div class="tracker-team" id="tracker-a"></div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.3); font-weight:700;">VS</div>
+        <div class="tracker-team" id="tracker-b"></div>
+    </div>
+
+    <div class="shoot-instruction" id="shoot-instruction">Tap the goal to shoot</div>
+    <div class="ai-thinking" id="ai-thinking" style="display:none;">Opponent is shooting</div>
+</div>
+
+<!-- MATCH RESULT -->
+<div id="screen-result" class="screen result-screen">
+    <div class="result-title" id="result-title">Victory</div>
+    <div class="result-score" id="result-score">3 - 2</div>
+    <div class="result-details glass" id="result-details">
+        <div class="result-detail-item">
+            <div class="label">Goals Scored</div>
+            <div class="value" id="res-goals">0</div>
+        </div>
+        <div class="result-detail-item">
+            <div class="label">Goals Saved</div>
+            <div class="value" id="res-saves">0</div>
+        </div>
+        <div class="result-detail-item">
+            <div class="label">Accuracy</div>
+            <div class="value" id="res-accuracy">0%</div>
+        </div>
+    </div>
+    <button class="btn-gold" id="result-btn" onclick="Game.postMatch()">Continue</button>
+</div>
+
+<!-- CHAMPION -->
+<div id="screen-champion" class="screen champion-screen">
+    <div class="champion-trophy">🏆</div>
+    <div class="champion-text">World Champions</div>
+    <div class="champion-flag" id="champion-flag">🇦🇷</div>
+    <div class="champion-team-name" id="champion-name">Argentina</div>
+
+    <div class="mvp-card glass glass-gold">
+        <div class="mvp-label">Tournament MVP</div>
+        <div class="mvp-player">
+            <div class="mvp-avatar" id="mvp-avatar">LM</div>
+            <div class="mvp-info">
+                <h3 id="mvp-name">Lionel Messi</h3>
+                <p id="mvp-team">Argentina • 10 Goals</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid" id="champion-stats">
+        <div class="stat-card glass">
+            <div class="stat-value" id="champ-goals">0</div>
+            <div class="stat-label">Goals</div>
+        </div>
+        <div class="stat-card glass">
+            <div class="stat-value" id="champ-accuracy">0%</div>
+            <div class="stat-label">Accuracy</div>
+        </div>
+        <div class="stat-card glass">
+            <div class="stat-value" id="champ-saves">0</div>
+            <div class="stat-label">Saves</div>
+        </div>
+    </div>
+
+    <button class="btn-gold" style="margin-top:30px;" onclick="Game.reset()">New Tournament</button>
+</div>
+
+<script>
+
+// ===== GAME DATA =====
+const TEAMS = [
+    {
+        id: 'arg', name: 'Argentina', flag: '🇦🇷', color: '#6BAFCE',
+        players: [
+            { name: 'Emiliano Martinez', number: 23, position: 'GK', overall: 88, penalty: 50, composure: 85, gk: 92 },
+            { name: 'Lionel Messi', number: 10, position: 'RW', overall: 94, penalty: 93, composure: 96 },
+            { name: 'Julian Alvarez', number: 9, position: 'ST', overall: 84, penalty: 82, composure: 80 },
+            { name: 'Angel Di Maria', number: 11, position: 'RW', overall: 84, penalty: 85, composure: 88 },
+            { name: 'Enzo Fernandez', number: 24, position: 'CM', overall: 84, penalty: 78, composure: 82 },
+            { name: 'Alexis Mac Allister', number: 20, position: 'CM', overall: 83, penalty: 75, composure: 80 },
+            { name: 'Rodrigo De Paul', number: 7, position: 'CM', overall: 84, penalty: 76, composure: 83 },
+            { name: 'Cristian Romero', number: 13, position: 'CB', overall: 86, penalty: 55, composure: 78 },
+            { name: 'Nahuel Molina', number: 26, position: 'RB', overall: 81, penalty: 60, composure: 75 },
+            { name: 'Nicolas Otamendi', number: 19, position: 'CB', overall: 80, penalty: 50, composure: 82 },
+            { name: 'Nicolas Tagliafico', number: 3, position: 'LB', overall: 80, penalty: 55, composure: 76 }
+        ]
+    },
+    {
+        id: 'bra', name: 'Brazil', flag: '🇧🇷', color: '#009C3B',
+        players: [
+            { name: 'Alisson Becker', number: 1, position: 'GK', overall: 89, penalty: 45, composure: 82, gk: 91 },
+            { name: 'Neymar Jr', number: 10, position: 'LW', overall: 90, penalty: 89, composure: 85 },
+            { name: 'Vinicius Jr', number: 7, position: 'LW', overall: 90, penalty: 82, composure: 80 },
+            { name: 'Rodrygo', number: 11, position: 'RW', overall: 85, penalty: 80, composure: 78 },
+            { name: 'Lucas Paqueta', number: 8, position: 'CM', overall: 82, penalty: 76, composure: 75 },
+            { name: 'Bruno Guimaraes', number: 5, position: 'CM', overall: 85, penalty: 70, composure: 82 },
+            { name: 'Gabriel Martinelli', number: 9, position: 'LW', overall: 84, penalty: 78, composure: 76 },
+            { name: 'Marquinhos', number: 4, position: 'CB', overall: 86, penalty: 60, composure: 88 },
+            { name: 'Eder Militao', number: 3, position: 'CB', overall: 85, penalty: 55, composure: 80 },
+            { name: 'Danilo', number: 2, position: 'RB', overall: 81, penalty: 65, composure: 85 },
+            { name: 'Alex Telles', number: 16, position: 'LB', overall: 78, penalty: 60, composure: 72 }
+        ]
+    },
+    {
+        id: 'fra', name: 'France', flag: '🇫🇷', color: '#0055A4',
+        players: [
+            { name: 'Mike Maignan', number: 16, position: 'GK', overall: 88, penalty: 40, composure: 80, gk: 90 },
+            { name: 'Kylian Mbappe', number: 10, position: 'ST', overall: 92, penalty: 88, composure: 82 },
+            { name: 'Antoine Griezmann', number: 7, position: 'CF', overall: 85, penalty: 86, composure: 90 },
+            { name: 'Ousmane Dembele', number: 11, position: 'RW', overall: 86, penalty: 79, composure: 78 },
+            { name: 'Aurelien Tchouameni', number: 8, position: 'CM', overall: 85, penalty: 70, composure: 85 },
+            { name: 'Eduardo Camavinga', number: 6, position: 'CM', overall: 83, penalty: 65, composure: 80 },
+            { name: 'Randal Kolo Muani', number: 12, position: 'ST', overall: 82, penalty: 76, composure: 74 },
+            { name: 'Dayot Upamecano', number: 4, position: 'CB', overall: 84, penalty: 50, composure: 78 },
+            { name: 'Jules Kounde', number: 5, position: 'CB', overall: 84, penalty: 55, composure: 80 },
+            { name: 'Theo Hernandez', number: 22, position: 'LB', overall: 85, penalty: 72, composure: 75 },
+            { name: 'Benjamin Pavard', number: 2, position: 'RB', overall: 82, penalty: 68, composure: 82 }
+        ]
+    },
+    {
+        id: 'eng', name: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', color: '#CF081F',
+        players: [
+            { name: 'Jordan Pickford', number: 1, position: 'GK', overall: 85, penalty: 45, composure: 78, gk: 87 },
+            { name: 'Harry Kane', number: 9, position: 'ST', overall: 90, penalty: 92, composure: 88 },
+            { name: 'Jude Bellingham', number: 10, position: 'CM', overall: 90, penalty: 80, composure: 86 },
+            { name: 'Phil Foden', number: 11, position: 'LW', overall: 88, penalty: 82, composure: 80 },
+            { name: 'Bukayo Saka', number: 7, position: 'RW', overall: 87, penalty: 84, composure: 85 },
+            { name: 'Declan Rice', number: 4, position: 'CM', overall: 87, penalty: 65, composure: 88 },
+            { name: 'Cole Palmer', number: 20, position: 'RW', overall: 85, penalty: 86, composure: 78 },
+            { name: 'John Stones', number: 5, position: 'CB', overall: 85, penalty: 55, composure: 84 },
+            { name: 'Kyle Walker', number: 2, position: 'RB', overall: 84, penalty: 50, composure: 86 },
+            { name: 'Luke Shaw', number: 3, position: 'LB', overall: 81, penalty: 60, composure: 80 },
+            { name: 'Marc Guehi', number: 6, position: 'CB', overall: 82, penalty: 50, composure: 78 }
+        ]
+    },
+    {
+        id: 'esp', name: 'Spain', flag: '🇪🇸', color: '#C60B1E',
+        players: [
+            { name: 'Unai Simon', number: 23, position: 'GK', overall: 86, penalty: 40, composure: 78, gk: 88 },
+            { name: 'Lamine Yamal', number: 19, position: 'RW', overall: 87, penalty: 83, composure: 80 },
+            { name: 'Pedri', number: 8, position: 'CM', overall: 88, penalty: 78, composure: 90 },
+            { name: 'Dani Olmo', number: 10, position: 'LW', overall: 85, penalty: 80, composure: 82 },
+            { name: 'Nico Williams', number: 17, position: 'LW', overall: 86, penalty: 79, composure: 78 },
+            { name: 'Rodri', number: 16, position: 'CM', overall: 89, penalty: 70, composure: 92 },
+            { name: 'Alvaro Morata', number: 7, position: 'ST', overall: 83, penalty: 82, composure: 75 },
+            { name: 'Aymeric Laporte', number: 14, position: 'CB', overall: 86, penalty: 60, composure: 85 },
+            { name: 'Dani Carvajal', number: 2, position: 'RB', overall: 84, penalty: 65, composure: 88 },
+            { name: 'Alejandro Grimaldo', number: 12, position: 'LB', overall: 84, penalty: 70, composure: 80 },
+            { name: 'Fabian Ruiz', number: 15, position: 'CM', overall: 84, penalty: 75, composure: 82 }
+        ]
+    },
+    {
+        id: 'por', name: 'Portugal', flag: '🇵🇹', color: '#006600',
+        players: [
+            { name: 'Diogo Costa', number: 22, position: 'GK', overall: 85, penalty: 40, composure: 76, gk: 86 },
+            { name: 'Cristiano Ronaldo', number: 7, position: 'ST', overall: 90, penalty: 95, composure: 92 },
+            { name: 'Rafael Leao', number: 10, position: 'LW', overall: 87, penalty: 81, composure: 78 },
+            { name: 'Bernardo Silva', number: 20, position: 'RW', overall: 88, penalty: 85, composure: 90 },
+            { name: 'Bruno Fernandes', number: 8, position: 'CM', overall: 88, penalty: 88, composure: 85 },
+            { name: 'Vitinha', number: 18, position: 'CM', overall: 84, penalty: 75, composure: 82 },
+            { name: 'Joao Felix', number: 11, position: 'CF', overall: 84, penalty: 80, composure: 76 },
+            { name: 'Ruben Dias', number: 4, position: 'CB', overall: 88, penalty: 55, composure: 88 },
+            { name: 'Joao Cancelo', number: 2, position: 'RB', overall: 85, penalty: 70, composure: 80 },
+            { name: 'Nuno Mendes', number: 19, position: 'LB', overall: 83, penalty: 65, composure: 78 },
+            { name: 'Goncalo Inacio', number: 14, position: 'CB', overall: 83, penalty: 50, composure: 76 }
+        ]
+    },
+    {
+        id: 'ger', name: 'Germany', flag: '🇩🇪', color: '#000000',
+        players: [
+            { name: 'Manuel Neuer', number: 1, position: 'GK', overall: 87, penalty: 50, composure: 90, gk: 89 },
+            { name: 'Jamal Musiala', number: 10, position: 'AM', overall: 88, penalty: 84, composure: 86 },
+            { name: 'Florian Wirtz', number: 17, position: 'AM', overall: 87, penalty: 83, composure: 84 },
+            { name: 'Kai Havertz', number: 7, position: 'CF', overall: 84, penalty: 80, composure: 82 },
+            { name: 'Leroy Sane', number: 19, position: 'RW', overall: 85, penalty: 78, composure: 80 },
+            { name: 'Joshua Kimmich', number: 6, position: 'CM', overall: 88, penalty: 72, composure: 90 },
+            { name: 'Ilkay Gundogan', number: 21, position: 'CM', overall: 85, penalty: 76, composure: 88 },
+            { name: 'Antonio Rudiger', number: 2, position: 'CB', overall: 86, penalty: 55, composure: 85 },
+            { name: 'Jonathan Tah', number: 4, position: 'CB', overall: 84, penalty: 50, composure: 82 },
+            { name: 'David Raum', number: 3, position: 'LB', overall: 81, penalty: 65, composure: 78 },
+            { name: 'Maximilian Mittelstadt', number: 18, position: 'LB', overall: 80, penalty: 60, composure: 76 }
+        ]
+    },
+    {
+        id: 'ned', name: 'Netherlands', flag: '🇳🇱', color: '#FF4F00',
+        players: [
+            { name: 'Bart Verbruggen', number: 1, position: 'GK', overall: 82, penalty: 35, composure: 72, gk: 84 },
+            { name: 'Cody Gakpo', number: 11, position: 'LW', overall: 85, penalty: 82, composure: 80 },
+            { name: 'Memphis Depay', number: 10, position: 'CF', overall: 83, penalty: 85, composure: 78 },
+            { name: 'Xavi Simons', number: 7, position: 'AM', overall: 84, penalty: 80, composure: 76 },
+            { name: 'Steven Bergwijn', number: 9, position: 'RW', overall: 82, penalty: 78, composure: 74 },
+            { name: 'Frenkie de Jong', number: 21, position: 'CM', overall: 87, penalty: 75, composure: 88 },
+            { name: 'Tijjani Reijnders', number: 14, position: 'CM', overall: 83, penalty: 70, composure: 80 },
+            { name: 'Virgil van Dijk', number: 4, position: 'CB', overall: 89, penalty: 65, composure: 92 },
+            { name: 'Nathan Ake', number: 5, position: 'CB', overall: 84, penalty: 55, composure: 86 },
+            { name: 'Denzel Dumfries', number: 22, position: 'RB', overall: 83, penalty: 60, composure: 82 },
+            { name: 'Daley Blind', number: 17, position: 'LB', overall: 81, penalty: 68, composure: 88 }
+        ]
+    },
+    {
+        id: 'ita', name: 'Italy', flag: '🇮🇹', color: '#0066CC',
+        players: [
+            { name: 'Gianluigi Donnarumma', number: 1, position: 'GK', overall: 88, penalty: 40, composure: 78, gk: 90 },
+            { name: 'Federico Chiesa', number: 14, position: 'RW', overall: 84, penalty: 82, composure: 80 },
+            { name: 'Nicolo Barella', number: 23, position: 'CM', overall: 87, penalty: 78, composure: 86 },
+            { name: 'Stephan El Shaarawy', number: 92, position: 'LW', overall: 82, penalty: 80, composure: 76 },
+            { name: 'Giacomo Raspadori', number: 9, position: 'ST', overall: 81, penalty: 79, composure: 74 },
+            { name: 'Lorenzo Pellegrini', number: 10, position: 'CM', overall: 83, penalty: 76, composure: 82 },
+            { name: 'Davide Frattesi', number: 7, position: 'CM', overall: 82, penalty: 72, composure: 78 },
+            { name: 'Alessandro Bastoni', number: 3, position: 'CB', overall: 86, penalty: 55, composure: 84 },
+            { name: 'Giovanni Di Lorenzo', number: 22, position: 'RB', overall: 84, penalty: 60, composure: 86 },
+            { name: 'Federico Dimarco', number: 33, position: 'LB', overall: 84, penalty: 70, composure: 80 },
+            { name: 'Riccardo Calafiori', number: 5, position: 'CB', overall: 82, penalty: 50, composure: 78 }
+        ]
+    },
+    {
+        id: 'bel', name: 'Belgium', flag: '🇧🇪', color: '#FAE042',
+        players: [
+            { name: 'Thibaut Courtois', number: 1, position: 'GK', overall: 90, penalty: 35, composure: 85, gk: 92 },
+            { name: 'Kevin De Bruyne', number: 7, position: 'CM', overall: 91, penalty: 85, composure: 88 },
+            { name: 'Romelu Lukaku', number: 10, position: 'ST', overall: 85, penalty: 84, composure: 80 },
+            { name: 'Leandro Trossard', number: 11, position: 'LW', overall: 84, penalty: 83, composure: 78 },
+            { name: 'Jeremy Doku', number: 22, position: 'RW', overall: 84, penalty: 78, composure: 76 },
+            { name: 'Youri Tielemans', number: 8, position: 'CM', overall: 84, penalty: 76, composure: 82 },
+            { name: 'Amadou Onana', number: 18, position: 'CM', overall: 82, penalty: 65, composure: 78 },
+            { name: 'Wout Faes', number: 4, position: 'CB', overall: 82, penalty: 50, composure: 80 },
+            { name: 'Timothy Castagne', number: 21, position: 'RB', overall: 81, penalty: 60, composure: 78 },
+            { name: 'Arthur Theate', number: 3, position: 'CB', overall: 81, penalty: 50, composure: 76 },
+            { name: 'Maxim De Cuyper', number: 25, position: 'LB', overall: 79, penalty: 55, composure: 74 }
+        ]
+    }
+];
+
+// ===== UTILITY =====
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+function shuffle(arr) { return arr.sort(() => Math.random() - 0.5); }
+function getInitials(name) { return name.split(' ').map(n => n[0]).join('').substring(0, 2); }
+function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+}
+
+// ===== FIREWORKS SYSTEM =====
+const canvas = document.getElementById('fireworks');
+const ctx = canvas.getContext('2d');
+let fireworks = [];
+let particles = [];
+
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+class Firework {
+    constructor(x, targetY, color) {
+        this.x = x;
+        this.y = canvas.height;
+        this.targetY = targetY;
+        this.speed = rand(8, 14);
+        this.color = color;
+        this.exploded = false;
+    }
+    update() {
+        this.y -= this.speed;
+        if (this.y <= this.targetY && !this.exploded) {
+            this.exploded = true;
+            explode(this.x, this.y, this.color);
+        }
+    }
+    draw() {
+        if (!this.exploded) {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.fill();
+        }
+    }
+}
+
+class Particle {
+    constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.vx = rand(-6, 6);
+        this.vy = rand(-6, 6);
+        this.life = 1;
+        this.decay = rand(0.01, 0.03);
+        this.color = color;
+        this.gravity = 0.15;
+    }
+    update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += this.gravity;
+        this.life -= this.decay;
+    }
+    draw() {
+        ctx.globalAlpha = this.life;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+}
+
+function explode(x, y, color) {
+    for (let i = 0; i < 40; i++) {
+        particles.push(new Particle(x, y, color));
+    }
+}
+
+function launchFirework() {
+    const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#ff8c42', '#ff006e', '#8338ec', '#3a86ff'];
+    fireworks.push(new Firework(rand(100, canvas.width - 100), rand(100, canvas.height * 0.4), colors[randInt(0, colors.length - 1)]));
+}
+
+function animateFireworks() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    fireworks = fireworks.filter(f => !f.exploded || f.y > 0);
+    fireworks.forEach(f => { f.update(); f.draw(); });
+    particles = particles.filter(p => p.life > 0);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animateFireworks);
+}
+animateFireworks();
+
+function celebrateFireworks() {
+    let count = 0;
+    const interval = setInterval(() => {
+        launchFirework();
+        count++;
+        if (count > 15) clearInterval(interval);
+    }, 300);
+}
+
+// ===== CROWD =====
+function generateCrowd() {
+    const crowd = document.getElementById('crowd');
+    for (let i = 0; i < 150; i++) {
+        const p = document.createElement('div');
+        p.className = 'crowd-particle';
+        p.style.left = rand(0, 100) + '%';
+        p.style.top = rand(0, 100) + '%';
+        p.style.width = rand(2, 5) + 'px';
+        p.style.height = p.style.width;
+        p.style.animationDelay = rand(0, 2) + 's';
+        p.style.animationDuration = rand(0.5, 1.5) + 's';
+        const colors = ['rgba(255,255,255,0.2)', 'rgba(255,215,0,0.15)', 'rgba(0,255,136,0.1)', 'rgba(255,100,100,0.1)'];
+        p.style.background = colors[randInt(0, colors.length - 1)];
+        crowd.appendChild(p);
+    }
+}
+generateCrowd();
+
+// ===== AI SYSTEM =====
+class AI {
+    constructor() {
+        this.userPatterns = { 'TL': 0, 'TR': 0, 'BL': 0, 'BR': 0, 'C': 0 };
+        this.aiPatterns = { 'TL': 0, 'TR': 0, 'BL': 0, 'BR': 0, 'C': 0 };
+        this.totalUserShots = 0;
+        this.totalAIShots = 0;
+    }
+
+    recordUserShot(dir) {
+        this.userPatterns[dir]++;
+        this.totalUserShots++;
+    }
+
+    recordAIShot(dir) {
+        this.aiPatterns[dir]++;
+        this.totalAIShots++;
+    }
+
+    chooseGKDive(gkRating) {
+        let probs = { 'TL': 0.18, 'TR': 0.18, 'BL': 0.18, 'BR': 0.18, 'C': 0.18 };
+
+        if (this.totalUserShots > 0) {
+            const entries = Object.entries(this.userPatterns).sort((a, b) => b[1] - a[1]);
+            const topDir = entries[0][0];
+            const topCount = entries[0][1];
+
+            if (topCount >= 2) {
+                const bonus = Math.min(0.25, (topCount / this.totalUserShots) * 0.4);
+                probs[topDir] += bonus;
+                const sum = Object.values(probs).reduce((a, b) => a + b, 0);
+                for (let k in probs) probs[k] /= sum;
+            }
+        }
+
+        const randomness = Math.max(0.1, 0.4 - (gkRating / 100) * 0.2);
+        return this.weightedRandom(probs);
+    }
+
+    chooseShotDirection(shooter, pressure) {
+        let probs = { 'TL': 0.2, 'TR': 0.2, 'BL': 0.2, 'BR': 0.2, 'C': 0.2 };
+
+        const recent = Object.entries(this.aiPatterns).sort((a, b) => b[1] - a[1]);
+        if (recent[0][1] >= 2) {
+            probs[recent[0][0]] *= 0.4;
+        }
+        if (recent[1] && recent[1][1] >= 2) {
+            probs[recent[1][0]] *= 0.6;
+        }
+
+        if (pressure > 0.7 && shooter.composure < 80) {
+            probs['C'] += 0.15;
+        }
+
+        if (shooter.penalty > 85) {
+            probs['TL'] += 0.05;
+            probs['TR'] += 0.05;
+        }
+
+        const sum = Object.values(probs).reduce((a, b) => a + b, 0);
+        for (let k in probs) probs[k] /= sum;
+
+        return this.weightedRandom(probs);
+    }
+
+    weightedRandom(probs) {
+        const roll = Math.random();
+        let cumulative = 0;
+        for (let [dir, prob] of Object.entries(probs)) {
+            cumulative += prob;
+            if (roll <= cumulative) return dir;
+        }
+        return 'C';
+    }
+}
+
+// ===== SHOT RESOLUTION =====
+function resolveShot(shooter, goalkeeper, shotDir, gkDir, pressure) {
+    const composureBonus = shooter.composure * (1 - pressure * 0.4);
+    let shotQuality = (shooter.penalty * 0.65 + composureBonus * 0.35);
+    shotQuality += rand(-12, 12);
+    shotQuality = Math.max(0, Math.min(100, shotQuality));
+
+    let gkQuality = goalkeeper.gk + rand(-10, 10);
+    gkQuality = Math.max(0, Math.min(100, gkQuality));
+
+    let result, detail;
+
+    if (shotDir === gkDir) {
+        const saveProb = (gkQuality / 100) * 0.75;
+        const roll = Math.random();
+        if (roll < saveProb) {
+            result = 'SAVE';
+            detail = 'Great save!';
+        } else if (roll < saveProb + 0.08) {
+            result = 'MISS';
+            detail = 'Hit the keeper!';
+        } else {
+            result = 'GOAL';
+            detail = 'Powerful strike!';
+        }
+    } else {
+        const miracleSave = (gkQuality / 100) * 0.08;
+        const roll = Math.random();
+        if (roll < miracleSave) {
+            result = 'SAVE';
+            detail = 'Miracle save!';
+        } else if (shotQuality < 45) {
+            result = 'MISS';
+            detail = 'Off target!';
+        } else {
+            result = 'GOAL';
+            detail = 'Perfect placement!';
+        }
+    }
+
+    return { result, detail, shotQuality, gkQuality };
+}
+
+// ===== GAME STATE =====
+const Game = {
+    userTeam: null,
+    bracket: null,
+    currentMatch: null,
+    roundNames: ['Quarter Final', 'Semi Final', 'Final'],
+    roundIndex: 0,
+    stats: { wins: 0, goals: 0, saves: 0, shots: 0, onTarget: 0, tournaments: 0 },
+    achievements: new Set(),
+    tournamentStats: { goals: 0, saves: 0, shots: 0, onTarget: 0, scorers: {} },
+
+    init() {
+        this.loadStats();
+        this.renderMenuStats();
+        this.renderTeamSelect();
+    },
+
+    loadStats() {
+        const saved = localStorage.getItem('wc_penalty_stats');
+        if (saved) this.stats = JSON.parse(saved);
+    },
+
+    saveStats() {
+        localStorage.setItem('wc_penalty_stats', JSON.stringify(this.stats));
+    },
+
+    renderMenuStats() {
+        const acc = this.stats.shots > 0 ? Math.round((this.stats.onTarget / this.stats.shots) * 100) : 0;
+        document.getElementById('stat-wins').textContent = this.stats.wins;
+        document.getElementById('stat-goals').textContent = this.stats.goals;
+        document.getElementById('stat-accuracy').textContent = acc + '%';
+        document.getElementById('stat-saves').textContent = this.stats.saves;
+    },
+
+    renderTeamSelect() {
+        const grid = document.getElementById('teams-grid');
+        grid.innerHTML = '';
+        TEAMS.forEach(team => {
+            const avg = Math.round(team.players.reduce((s, p) => s + p.overall, 0) / team.players.length);
+            const card = document.createElement('div');
+            card.className = 'team-card glass';
+            card.innerHTML = `
+                <div class="team-flag">${team.flag}</div>
+                <div class="team-info">
+                    <h3>${team.name}</h3>
+                    <p>${team.players.length} Players • Avg ${avg} OVR</p>
+                </div>
+                <div class="team-rating">${avg}</div>
+            `;
+            card.onclick = () => this.selectTeam(team.id);
+            grid.appendChild(card);
+        });
+    },
+
+    enterTournament() {
+        showScreen('select');
+    },
+
+    selectTeam(teamId) {
+        this.userTeam = TEAMS.find(t => t.id === teamId);
+        this.tournamentStats = { goals: 0, saves: 0, shots: 0, onTarget: 0, scorers: {} };
+        this.achievements = new Set();
+        this.generateBracket();
+        showScreen('bracket');
+        this.renderBracket();
+    },
+
+    generateBracket() {
+        const others = TEAMS.filter(t => t.id !== this.userTeam.id);
+        const shuffled = shuffle([...others]);
+
+        const openingTeams = shuffled.slice(0, 4);
+        const byeTeams = shuffled.slice(4, 8);
+        byeTeams.push(this.userTeam);
+
+        const openingWinners = [];
+        for (let i = 0; i < 2; i++) {
+            const winner = this.simulateMatch(openingTeams[i * 2], openingTeams[i * 2 + 1]);
+            openingWinners.push(winner);
+        }
+
+        const quarterTeams = shuffle([...byeTeams, ...openingWinners]);
+        const userIdx = quarterTeams.findIndex(t => t.id === this.userTeam.id);
+        if (userIdx > 0) [quarterTeams[0], quarterTeams[userIdx]] = [quarterTeams[userIdx], quarterTeams[0]];
+
+        this.bracket = {
+            quarter: [
+                { teamA: quarterTeams[0], teamB: quarterTeams[1], winner: null, scoreA: 0, scoreB: 0, played: false },
+                { teamA: quarterTeams[2], teamB: quarterTeams[3], winner: null, scoreA: 0, scoreB: 0, played: false },
+                { teamA: quarterTeams[4], teamB: quarterTeams[5], winner: null, scoreA: 0, scoreB: 0, played: false },
+                { teamA: quarterTeams[6], teamB: quarterTeams[7], winner: null, scoreA: 0, scoreB: 0, played: false }
+            ],
+            semi: [
+                { teamA: null, teamB: null, winner: null, scoreA: 0, scoreB: 0, played: false },
+                { teamA: null, teamB: null, winner: null, scoreA: 0, scoreB: 0, played: false }
+            ],
+            final: { teamA: null, teamB: null, winner: null, scoreA: 0, scoreB: 0, played: false }
+        };
+
+        this.roundIndex = 0;
+    },
+
+    simulateMatch(teamA, teamB) {
+        const ai = new AI();
+        const shootersA = teamA.players.filter(p => p.position !== 'GK').sort((a, b) => b.penalty - a.penalty);
+        const shootersB = teamB.players.filter(p => p.position !== 'GK').sort((a, b) => b.penalty - a.penalty);
+        const gkA = teamA.players.find(p => p.position === 'GK');
+        const gkB = teamB.players.find(p => p.position === 'GK');
+
+        let scoreA = 0, scoreB = 0;
+        let round = 0;
+
+        while (round < 5 || scoreA === scoreB) {
+            const pressure = Math.min(0.95, 0.1 + round * 0.12);
+
+            const sA = shootersA[round % shootersA.length];
+            const dirA = ai.chooseShotDirection(sA, pressure);
+            const gkDirB = ai.chooseGKDive(gkB.gk);
+            const resA = resolveShot(sA, gkB, dirA, gkDirB, pressure);
+            if (resA.result === 'GOAL') scoreA++;
+
+            const sB = shootersB[round % shootersB.length];
+            const dirB = ai.chooseShotDirection(sB, pressure);
+            const gkDirA = ai.chooseGKDive(gkA.gk);
+            const resB = resolveShot(sB, gkA, dirB, gkDirA, pressure);
+            if (resB.result === 'GOAL') scoreB++;
+
+            round++;
+            if (round >= 5 && scoreA !== scoreB) break;
+        }
+
+        return scoreA > scoreB ? teamA : teamB;
+    },
+
+    renderBracket() {
+        const container = document.getElementById('bracket-container');
+        container.innerHTML = '';
+
+        const rounds = [
+            { title: 'Quarter Final', matches: this.bracket.quarter },
+            { title: 'Semi Final', matches: this.bracket.semi },
+            { title: 'Final', matches: [this.bracket.final] }
+        ];
+
+        rounds.forEach((round, rIdx) => {
+            const roundDiv = document.createElement('div');
+            roundDiv.className = 'bracket-round';
+            roundDiv.innerHTML = `<div class="bracket-round-title">${round.title}</div>`;
+
+            round.matches.forEach((match, mIdx) => {
+                if (!match.teamA) return;
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'bracket-match glass' + (match.played ? '' : ' active');
+
+                const isUserMatch = (match.teamA.id === this.userTeam.id || match.teamB.id === this.userTeam.id);
+                if (isUserMatch && !match.played) matchDiv.classList.add('active');
+
+                matchDiv.innerHTML = `
+                    <div class="bracket-team ${match.winner?.id === match.teamA.id ? 'winner' : (match.played ? 'loser' : '')}">
+                        <span class="bracket-team-flag">${match.teamA.flag}</span>
+                        <span>${match.teamA.name}</span>
+                        <span class="bracket-score">${match.played ? match.scoreA : '-'}</span>
+                    </div>
+                    <div class="bracket-vs">VS</div>
+                    <div class="bracket-team ${match.winner?.id === match.teamB.id ? 'winner' : (match.played ? 'loser' : '')}">
+                        <span class="bracket-team-flag">${match.teamB.flag}</span>
+                        <span>${match.teamB.name}</span>
+                        <span class="bracket-score">${match.played ? match.scoreB : '-'}</span>
+                    </div>
+                `;
+                roundDiv.appendChild(matchDiv);
+            });
+
+            container.appendChild(roundDiv);
+        });
+
+        const btn = document.getElementById('bracket-btn');
+        const currentRound = this.getCurrentRoundMatches();
+        const userMatch = currentRound.find(m => m.teamA.id === this.userTeam.id || m.teamB.id === this.userTeam.id);
+
+        if (!userMatch) {
+            btn.textContent = 'Tournament Complete';
+            btn.onclick = () => {};
+            btn.style.opacity = '0.5';
+        } else if (userMatch.played) {
+            btn.textContent = 'Next Round';
+            btn.onclick = () => this.advanceRound();
+        } else {
+            btn.textContent = 'Start Match';
+            btn.onclick = () => this.startNextMatch();
+            btn.style.opacity = '1';
+        }
+    },
+
+    getCurrentRoundMatches() {
+        if (this.roundIndex === 0) return this.bracket.quarter;
+        if (this.roundIndex === 1) return this.bracket.semi;
+        return [this.bracket.final];
+    },
+
+    startNextMatch() {
+        const matches = this.getCurrentRoundMatches();
+        const match = matches.find(m => 
+            (m.teamA.id === this.userTeam.id || m.teamB.id === this.userTeam.id) && !m.played
+        );
+
+        if (!match) return;
+
+        this.currentMatch = new PenaltyMatch(match.teamA, match.teamB, match);
+        this.setupMatchScreen();
+        showScreen('match');
+        this.currentMatch.start();
+    },
+
+    setupMatchScreen() {
+        const m = this.currentMatch;
+        document.getElementById('round-indicator').textContent = this.roundNames[this.roundIndex];
+        document.getElementById('match-flag-a').textContent = m.teamA.flag;
+        document.getElementById('match-name-a').textContent = m.teamA.name;
+        document.getElementById('match-flag-b').textContent = m.teamB.flag;
+        document.getElementById('match-name-b').textContent = m.teamB.name;
+        document.getElementById('match-score').textContent = '0 - 0';
+
+        // Reset animations
+        document.getElementById('match-ball').className = 'match-ball';
+        document.getElementById('goalkeeper').className = 'goalkeeper-sprite';
+        document.getElementById('result-text').className = 'result-text';
+        document.getElementById('goal-wrapper').classList.remove('camera-shake');
+
+        // Enable all zones
+        document.querySelectorAll('.goal-zone').forEach(z => {
+            z.classList.remove('disabled', 'tapped');
+        });
+
+        this.updateTracker();
+    },
+
+    updateTracker() {
+        const m = this.currentMatch;
+        const trackerA = document.getElementById('tracker-a');
+        const trackerB = document.getElementById('tracker-b');
+
+        trackerA.innerHTML = '';
+        trackerB.innerHTML = '';
+
+        for (let i = 0; i < 5; i++) {
+            const slotA = document.createElement('div');
+            slotA.className = 'tracker-slot';
+            if (i < m.historyA.length) {
+                slotA.classList.add(m.historyA[i].result === 'GOAL' ? 'goal' : 'miss');
+                slotA.textContent = m.historyA[i].result === 'GOAL' ? '✓' : '✕';
+            } else {
+                slotA.classList.add('pending');
+            }
+            trackerA.appendChild(slotA);
+
+            const slotB = document.createElement('div');
+            slotB.className = 'tracker-slot';
+            if (i < m.historyB.length) {
+                slotB.classList.add(m.historyB[i].result === 'GOAL' ? 'goal' : 'miss');
+                slotB.textContent = m.historyB[i].result === 'GOAL' ? '✓' : '✕';
+            } else {
+                slotB.classList.add('pending');
+            }
+            trackerB.appendChild(slotB);
+        }
+    },
+
+    // NEW: Touch-based goal zone tap
+    zoneTap(direction) {
+        if (!this.currentMatch || !this.currentMatch.waiting) return;
+
+        // Visual feedback on tapped zone
+        const zone = document.querySelector(`.goal-zone[data-dir="${direction}"]`);
+        if (zone) {
+            zone.classList.add('tapped');
+            setTimeout(() => zone.classList.remove('tapped'), 400);
+        }
+
+        // Disable all zones
+        document.querySelectorAll('.goal-zone').forEach(z => z.classList.add('disabled'));
+
+        this.currentMatch.userShoot(direction);
+    },
+
+    showResult(result, detail) {
+        const text = document.getElementById('result-text');
+        text.textContent = result;
+        text.className = 'result-text ' + result.toLowerCase() + ' show';
+
+        if (result === 'GOAL') {
+            document.getElementById('goal-wrapper').classList.add('camera-shake');
+            launchFirework();
+        }
+
+        setTimeout(() => {
+            text.classList.remove('show');
+            document.getElementById('goal-wrapper').classList.remove('camera-shake');
+        }, 1500);
+    },
+
+    updateScoreboard() {
+        const m = this.currentMatch;
+        document.getElementById('match-score').textContent = `${m.scoreA} - ${m.scoreB}`;
+    },
+
+    showMatchEnd(won, scoreA, scoreB) {
+        showScreen('result');
+        const title = document.getElementById('result-title');
+        title.textContent = won ? 'Victory' : 'Defeat';
+        title.className = 'result-title ' + (won ? 'victory' : 'defeat');
+        document.getElementById('result-score').textContent = `${scoreA} - ${scoreB}`;
+
+        const matchGoals = this.currentMatch.historyA.filter(h => h.result === 'GOAL').length;
+        const matchSaves = this.currentMatch.historyB.filter(h => h.result === 'SAVE').length;
+        const matchShots = this.currentMatch.historyA.length;
+        const matchOnTarget = this.currentMatch.historyA.filter(h => h.result !== 'MISS').length;
+        const accuracy = matchShots > 0 ? Math.round((matchOnTarget / matchShots) * 100) : 0;
+
+        document.getElementById('res-goals').textContent = matchGoals;
+        document.getElementById('res-saves').textContent = matchSaves;
+        document.getElementById('res-accuracy').textContent = accuracy + '%';
+
+        this.stats.goals += matchGoals;
+        this.stats.saves += matchSaves;
+        this.stats.shots += matchShots;
+        this.stats.onTarget += matchOnTarget;
+        this.saveStats();
+
+        this.tournamentStats.goals += matchGoals;
+        this.tournamentStats.saves += matchSaves;
+        this.tournamentStats.shots += matchShots;
+        this.tournamentStats.onTarget += matchOnTarget;
+
+        this.currentMatch.historyA.forEach(h => {
+            if (h.result === 'GOAL' && h.shooter) {
+                const key = h.shooter.name;
+                this.tournamentStats.scorers[key] = (this.tournamentStats.scorers[key] || 0) + 1;
+            }
+        });
+
+        const btn = document.getElementById('result-btn');
+        if (won) {
+            btn.textContent = 'Continue';
+            btn.onclick = () => this.postMatch();
+        } else {
+            btn.textContent = 'Exit Tournament';
+            btn.onclick = () => this.eliminated();
+        }
+    },
+
+    postMatch() {
+        const matches = this.getCurrentRoundMatches();
+        matches.forEach(m => {
+            if (!m.played && m !== this.currentMatch.matchData) {
+                const winner = this.simulateMatch(m.teamA, m.teamB);
+                m.winner = winner;
+                m.played = true;
+                m.scoreA = winner.id === m.teamA.id ? randInt(3, 5) : randInt(1, 3);
+                m.scoreB = winner.id === m.teamB.id ? randInt(3, 5) : randInt(1, 3);
+            }
+        });
+
+        this.currentMatch.matchData.played = true;
+        this.currentMatch.matchData.winner = this.currentMatch.winner;
+        this.currentMatch.matchData.scoreA = this.currentMatch.scoreA;
+        this.currentMatch.matchData.scoreB = this.currentMatch.scoreB;
+
+        showScreen('bracket');
+        this.renderBracket();
+    },
+
+    advanceRound() {
+        const currentMatches = this.getCurrentRoundMatches();
+
+        if (!currentMatches.every(m => m.played)) {
+            currentMatches.forEach(m => {
+                if (!m.played) {
+                    const winner = this.simulateMatch(m.teamA, m.teamB);
+                    m.winner = winner;
+                    m.played = true;
+                    m.scoreA = winner.id === m.teamA.id ? randInt(3, 5) : randInt(1, 3);
+                    m.scoreB = winner.id === m.teamB.id ? randInt(3, 5) : randInt(1, 3);
+                }
+            });
+        }
+
+        if (this.roundIndex === 0) {
+            this.bracket.semi[0].teamA = this.bracket.quarter[0].winner;
+            this.bracket.semi[0].teamB = this.bracket.quarter[1].winner;
+            this.bracket.semi[1].teamA = this.bracket.quarter[2].winner;
+            this.bracket.semi[1].teamB = this.bracket.quarter[3].winner;
+        } else if (this.roundIndex === 1) {
+            this.bracket.final.teamA = this.bracket.semi[0].winner;
+            this.bracket.final.teamB = this.bracket.semi[1].winner;
+        } else if (this.roundIndex === 2) {
+            this.showChampion();
+            return;
+        }
+
+        this.roundIndex++;
+        this.renderBracket();
+    },
+
+    eliminated() {
+        showScreen('menu');
+        this.renderMenuStats();
+    },
+
+    showChampion() {
+        const winner = this.bracket.final.winner;
+        showScreen('champion');
+
+        document.getElementById('champion-flag').textContent = winner.flag;
+        document.getElementById('champion-name').textContent = winner.name;
+
+        let mvpName = '';
+        let mvpGoals = 0;
+        for (let [name, goals] of Object.entries(this.tournamentStats.scorers)) {
+            if (goals > mvpGoals) {
+                mvpGoals = goals;
+                mvpName = name;
+            }
+        }
+
+        if (!mvpName) {
+            mvpName = winner.players[1].name;
+            mvpGoals = 1;
+        }
+
+        const mvpPlayer = winner.players.find(p => p.name === mvpName) || winner.players[1];
+        document.getElementById('mvp-avatar').textContent = getInitials(mvpName);
+        document.getElementById('mvp-avatar').style.background = `linear-gradient(135deg, ${winner.color}, #1a1a1a)`;
+        document.getElementById('mvp-name').textContent = mvpName;
+        document.getElementById('mvp-team').textContent = `${winner.name} • ${mvpGoals} Goals`;
+
+        const acc = this.tournamentStats.shots > 0 ? Math.round((this.tournamentStats.onTarget / this.tournamentStats.shots) * 100) : 0;
+        document.getElementById('champ-goals').textContent = this.tournamentStats.goals;
+        document.getElementById('champ-accuracy').textContent = acc + '%';
+        document.getElementById('champ-saves').textContent = this.tournamentStats.saves;
+
+        if (winner.id === this.userTeam.id) {
+            this.stats.wins++;
+            this.unlockAchievement('World Champion', 'Won the World Cup Tournament');
+            this.saveStats();
+            celebrateFireworks();
+        }
+
+        if (this.tournamentStats.shots > 0 && this.tournamentStats.onTarget === this.tournamentStats.shots) {
+            this.unlockAchievement('Perfect Shootout', '100% shot accuracy in the tournament');
+        }
+
+        if (mvpGoals >= 5) {
+            this.unlockAchievement('Golden Boot', 'Top scorer of the tournament');
+        }
+
+        if (this.tournamentStats.saves >= 5) {
+            this.unlockAchievement('Iron Goalkeeper', 'Made 5+ saves in the tournament');
+        }
+    },
+
+    unlockAchievement(title, desc) {
+        if (this.achievements.has(title)) return;
+        this.achievements.add(title);
+        const popup = document.getElementById('achievement-popup');
+        document.getElementById('ach-title').textContent = 'Achievement Unlocked: ' + title;
+        document.getElementById('ach-desc').textContent = desc;
+        popup.classList.add('show');
+        setTimeout(() => popup.classList.remove('show'), 4000);
+    },
+
+    reset() {
+        showScreen('menu');
+        this.renderMenuStats();
+    }
+};
+
+// ===== PENALTY MATCH CLASS - TOUCH GOAL SYSTEM =====
+class PenaltyMatch {
+    constructor(teamA, teamB, matchData) {
+        this.teamA = teamA;
+        this.teamB = teamB;
+        this.matchData = matchData;
+        this.scoreA = 0;
+        this.scoreB = 0;
+        this.round = 0;
+        this.historyA = [];
+        this.historyB = [];
+        this.shootersA = teamA.players.filter(p => p.position !== 'GK').sort((a, b) => b.penalty - a.penalty);
+        this.shootersB = teamB.players.filter(p => p.position !== 'GK').sort((a, b) => b.penalty - a.penalty);
+        this.gkA = teamA.players.find(p => p.position === 'GK');
+        this.gkB = teamB.players.find(p => p.position === 'GK');
+        this.ai = new AI();
+        this.waiting = false;
+        this.isUserTeamA = teamA.id === Game.userTeam.id;
+        this.turn = 0; // 0 = A shoots, 1 = B shoots
+    }
+
+    start() {
+        this.nextTurn();
+    }
+
+    nextTurn() {
+        if (this.round >= 5 && this.scoreA !== this.scoreB) {
+            this.endMatch();
+            return;
+        }
+
+        const remainingA = 5 - this.historyA.length;
+        const remainingB = 5 - this.historyB.length;
+        if (this.round >= 3 && remainingA === 0 && this.scoreA > this.scoreB + remainingB) {
+            this.endMatch();
+            return;
+        }
+        if (this.round >= 3 && remainingB === 0 && this.scoreB > this.scoreA + remainingA) {
+            this.endMatch();
+            return;
+        }
+
+        const isUserTurn = (this.turn === 0 && this.isUserTeamA) || (this.turn === 1 && !this.isUserTeamA);
+
+        if (isUserTurn) {
+            this.showUserTurn();
+        } else {
+            this.showAITurn();
+        }
+    }
+
+    showUserTurn() {
+        this.waiting = true;
+        const shooter = this.turn === 0 ? this.shootersA[this.round % this.shootersA.length] : this.shootersB[this.round % this.shootersB.length];
+        const keeper = this.turn === 0 ? this.gkB : this.gkA;
+        const isUserTeam = this.turn === 0 ? this.isUserTeamA : !this.isUserTeamA;
+        const team = isUserTeam ? Game.userTeam : (this.isUserTeamA ? this.teamB : this.teamA);
+
+        // Update shooter profile
+        document.getElementById('profile-shooter').classList.add('active');
+        document.getElementById('profile-keeper').classList.remove('active');
+        document.getElementById('shooter-initials').textContent = getInitials(shooter.name);
+        document.getElementById('shooter-avatar').style.background = `linear-gradient(135deg, ${team.color}, #1a1a1a)`;
+        document.getElementById('shooter-num').textContent = shooter.number;
+        document.getElementById('shooter-name').textContent = shooter.name;
+        document.getElementById('shooter-pos').textContent = shooter.position;
+        document.getElementById('shooter-pen').textContent = shooter.penalty;
+        document.getElementById('shooter-comp').textContent = shooter.composure;
+
+        // Update keeper profile
+        document.getElementById('keeper-initials').textContent = getInitials(keeper.name);
+        document.getElementById('keeper-avatar').style.background = `linear-gradient(135deg, ${isUserTeam ? (this.isUserTeamA ? this.teamB.color : this.teamA.color) : team.color}, #1a1a1a)`;
+        document.getElementById('keeper-num').textContent = keeper.number;
+        document.getElementById('keeper-name').textContent = keeper.name;
+        document.getElementById('keeper-gk').textContent = keeper.gk;
+        document.getElementById('keeper-comp').textContent = keeper.composure;
+
+        // Show instruction, hide AI thinking
+        document.getElementById('shoot-instruction').style.display = 'block';
+        document.getElementById('shoot-instruction').textContent = 'Tap the goal to shoot';
+        document.getElementById('ai-thinking').style.display = 'none';
+
+        // Enable goal zones
+        document.querySelectorAll('.goal-zone').forEach(z => z.classList.remove('disabled'));
+    }
+
+    showAITurn() {
+        this.waiting = false;
+        const shooter = this.turn === 0 ? this.shootersA[this.round % this.shootersA.length] : this.shootersB[this.round % this.shootersB.length];
+        const keeper = this.turn === 0 ? this.gkB : this.gkA;
+        const isUserTeam = this.turn === 0 ? this.isUserTeamA : !this.isUserTeamA;
+        const team = isUserTeam ? Game.userTeam : (this.isUserTeamA ? this.teamB : this.teamA);
+        const oppTeam = isUserTeam ? (this.isUserTeamA ? this.teamB : this.teamA) : Game.userTeam;
+
+        // Update shooter profile (AI is shooter)
+        document.getElementById('profile-shooter').classList.add('active');
+        document.getElementById('profile-keeper').classList.remove('active');
+        document.getElementById('shooter-initials').textContent = getInitials(shooter.name);
+        document.getElementById('shooter-avatar').style.background = `linear-gradient(135deg, ${team.color}, #1a1a1a)`;
+        document.getElementById('shooter-num').textContent = shooter.number;
+        document.getElementById('shooter-name').textContent = shooter.name;
+        document.getElementById('shooter-pos').textContent = shooter.position;
+        document.getElementById('shooter-pen').textContent = shooter.penalty;
+        document.getElementById('shooter-comp').textContent = shooter.composure;
+
+        // Update keeper profile (User is keeper)
+        document.getElementById('keeper-initials').textContent = getInitials(keeper.name);
+        document.getElementById('keeper-avatar').style.background = `linear-gradient(135deg, ${oppTeam.color}, #1a1a1a)`;
+        document.getElementById('keeper-num').textContent = keeper.number;
+        document.getElementById('keeper-name').textContent = keeper.name;
+        document.getElementById('keeper-gk').textContent = keeper.gk;
+        document.getElementById('keeper-comp').textContent = keeper.composure;
+
+        // Hide instruction, show AI thinking
+        document.getElementById('shoot-instruction').style.display = 'none';
+        document.getElementById('ai-thinking').style.display = 'block';
+
+        // Disable goal zones
+        document.querySelectorAll('.goal-zone').forEach(z => z.classList.add('disabled'));
+
+        // AI shoots after delay
+        setTimeout(() => {
+            this.aiShoot();
+        }, 2000);
+    }
+
+    userShoot(direction) {
+        if (!this.waiting) return;
+        this.waiting = false;
+
+        const shooter = this.turn === 0 ? this.shootersA[this.round % this.shootersA.length] : this.shootersB[this.round % this.shootersB.length];
+        const keeper = this.turn === 0 ? this.gkB : this.gkA;
+        const pressure = Math.min(0.95, 0.1 + this.round * 0.12);
+
+        const gkDir = this.ai.chooseGKDive(keeper.gk);
+        this.ai.recordUserShot(direction);
+
+        // Animate ball from penalty spot to goal zone
+        this.animateKick(direction, gkDir, () => {
+            const res = resolveShot(shooter, keeper, direction, gkDir, pressure);
+            this.handleResult(res, shooter, direction, gkDir);
+        });
+    }
+
+    aiShoot() {
+        const shooter = this.turn === 0 ? this.shootersA[this.round % this.shootersA.length] : this.shootersB[this.round % this.shootersB.length];
+        const keeper = this.turn === 0 ? this.gkB : this.gkA;
+        const pressure = Math.min(0.95, 0.1 + this.round * 0.12);
+
+        const shotDir = this.ai.chooseShotDirection(shooter, pressure);
+        const gkDir = this.ai.chooseGKDive(keeper.gk);
+        this.ai.recordAIShot(shotDir);
+
+        // Flash the zone AI is shooting at
+        const zone = document.querySelector(`.goal-zone[data-dir="${shotDir}"]`);
+        if (zone) {
+            zone.classList.add('tapped');
+            setTimeout(() => zone.classList.remove('tapped'), 400);
+        }
+
+        this.animateKick(shotDir, gkDir, () => {
+            const res = resolveShot(shooter, keeper, shotDir, gkDir, pressure);
+            this.handleResult(res, shooter, shotDir, gkDir);
+        });
+    }
+
+    animateKick(shotDir, gkDir, callback) {
+        const ball = document.getElementById('match-ball');
+        const gk = document.getElementById('goalkeeper');
+
+        // Reset
+        ball.className = 'match-ball';
+        gk.className = 'goalkeeper-sprite';
+
+        // GK dive animation
+        const gkClassMap = {
+            'TL': 'dive-tl', 'TR': 'dive-tr', 'BL': 'dive-left', 'BR': 'dive-right', 'C': 'dive-center'
+        };
+        gk.classList.add(gkClassMap[gkDir] || 'dive-center');
+
+        // Ball kick animation from penalty spot to goal
+        const ballClassMap = {
+            'TL': 'kick-tl', 'TR': 'kick-tr', 'BL': 'kick-bl', 'BR': 'kick-br', 'C': 'kick-center'
+        };
+        ball.classList.add(ballClassMap[shotDir] || 'kick-center');
+
+        setTimeout(callback, 900);
+    }
+
+    handleResult(res, shooter, shotDir, gkDir) {
+        Game.showResult(res.result, res.detail);
+
+        const isGoal = res.result === 'GOAL';
+
+        if (this.turn === 0) {
+            this.historyA.push({ result: res.result, shooter, direction: shotDir, gkDirection: gkDir });
+            if (isGoal) this.scoreA++;
+        } else {
+            this.historyB.push({ result: res.result, shooter, direction: shotDir, gkDirection: gkDir });
+            if (isGoal) this.scoreB++;
+        }
+
+        Game.updateScoreboard();
+        Game.updateTracker();
+
+        if (this.turn === 1) {
+            this.round++;
+        }
+        this.turn = 1 - this.turn;
+
+        setTimeout(() => {
+            // Reset ball and GK
+            document.getElementById('match-ball').className = 'match-ball';
+            document.getElementById('goalkeeper').className = 'goalkeeper-sprite';
+            this.nextTurn();
+        }, 2000);
+    }
+
+    endMatch() {
+        const won = this.scoreA > this.scoreB;
+        this.winner = won ? this.teamA : this.teamB;
+
+        setTimeout(() => {
+            Game.showMatchEnd(
+                this.winner.id === Game.userTeam.id,
+                this.scoreA,
+                this.scoreB
+            );
+        }, 1500);
+    }
+}
+
+// ===== INITIALIZE =====
+Game.init();
+</script>
+</body>
+</html>

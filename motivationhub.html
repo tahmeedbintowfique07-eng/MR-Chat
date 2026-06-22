@@ -1,0 +1,2604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Motivation Hub — Your Emotional Companion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --bg: #faf9f7;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 40px rgba(0,0,0,0.1);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: var(--transition);
+        }
+
+        /* ===== MOOD THEMES ===== */
+        body.mood-sad { --primary: #8b9dc3; --primary-light: #a8b9d8; --bg: #f0f4f8; }
+        body.mood-depressed { --primary: #7c6fae; --primary-light: #9b8ec4; --bg: #ede9f5; }
+        body.mood-anxious { --primary: #5a9a8f; --primary-light: #7ab8ad; --bg: #e8f4f1; }
+        body.mood-stressed { --primary: #c97b63; --primary-light: #d99a85; --bg: #faf0eb; }
+        body.mood-lonely { --primary: #8fa8c8; --primary-light: #a8bed8; --bg: #eef2f7; }
+        body.mood-overthinking { --primary: #6b8e9b; --primary-light: #8baab5; --bg: #e8f0f3; }
+        body.mood-neutral { --primary: #6366f1; --primary-light: #818cf8; --bg: #faf9f7; }
+        body.mood-motivated { --primary: #d4a843; --primary-light: #e4c06a; --bg: #fdf8ec; }
+        body.mood-broken { --primary: #6b7c93; --primary-light: #8a9ab0; --bg: #1a1f2e; --text: #e2e8f0; --text-secondary: #94a3b8; --surface: #252b3b; --border: #334155; }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.5); opacity: 1; }
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+        @keyframes ripple {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+        @keyframes gentlePulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
+        }
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes blink {
+            50% { border-color: transparent; }
+        }
+
+        .fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        .fade-in-delay-1 { animation: fadeIn 0.6s ease-out 0.1s forwards; opacity: 0; }
+        .fade-in-delay-2 { animation: fadeIn 0.6s ease-out 0.2s forwards; opacity: 0; }
+        .fade-in-delay-3 { animation: fadeIn 0.6s ease-out 0.3s forwards; opacity: 0; }
+
+        /* ===== LAYOUT ===== */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 100px;
+        }
+
+        .screen {
+            display: none;
+            padding: 24px 20px;
+            min-height: 100vh;
+        }
+        .screen.active { display: block; }
+
+        /* ===== MOOD SELECTOR ===== */
+        .mood-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            text-align: center;
+            padding: 40px 24px;
+        }
+
+        .mood-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text);
+            line-height: 1.2;
+        }
+
+        .mood-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 300px;
+            line-height: 1.6;
+        }
+
+        .mood-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .mood-card {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mood-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .mood-card:active { transform: scale(0.96); }
+
+        .mood-emoji {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .mood-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .mood-card.selected {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary-light)20, var(--primary)10);
+        }
+
+        .name-input-container {
+            margin-top: 32px;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            background: var(--surface);
+            color: var(--text);
+            transition: var(--transition);
+            outline: none;
+        }
+
+        .name-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light)30;
+        }
+
+        .name-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 16px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 4px 15px var(--primary)40;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--primary)50;
+        }
+
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* ===== HEADER ===== */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0 24px;
+            position: sticky;
+            top: 0;
+            background: var(--bg);
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-greeting {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .header-greeting span {
+            color: var(--primary);
+        }
+
+        .header-mood {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1.1rem;
+        }
+
+        .icon-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            transform: scale(1.1);
+        }
+
+        /* ===== MOTIVATION ENGINE ===== */
+        .motivation-card {
+            background: linear-gradient(135deg, var(--primary)15, var(--primary-light)08);
+            border: 1px solid var(--primary)25;
+            border-radius: var(--radius);
+            padding: 24px 20px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .motivation-card::before {
+            content: '"';
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: var(--primary);
+            opacity: 0.2;
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            line-height: 1;
+        }
+
+        .motivation-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: var(--text);
+            position: relative;
+            z-index: 1;
+            font-style: italic;
+        }
+
+        .motivation-author {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 12px;
+            font-style: normal;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .refresh-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .refresh-btn:hover { transform: rotate(180deg); background: var(--primary); border-color: var(--primary); }
+
+        /* ===== SECTIONS ===== */
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title .emoji { font-size: 1.3rem; }
+
+        /* ===== TOOLKIT CARDS ===== */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .tool-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .tool-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .tool-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .tool-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+        }
+
+        /* ===== MICRO TASKS ===== */
+        .tasks-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+
+        .streak-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .streak-fire {
+            font-size: 1.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .streak-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .streak-count {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: var(--transition);
+            user-select: none;
+        }
+
+        .task-item:last-child { border-bottom: none; }
+        .task-item:hover { background: var(--bg); margin: 0 -12px; padding-left: 12px; padding-right: 12px; border-radius: 8px; }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            flex-shrink: 0;
+            font-size: 0.8rem;
+            color: white;
+        }
+
+        .task-item.completed .task-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .task-item.completed .task-text {
+            text-decoration: line-through;
+            color: var(--text-secondary);
+        }
+
+        .task-text {
+            font-size: 0.9rem;
+            color: var(--text);
+            transition: var(--transition);
+        }
+
+        .task-emoji { font-size: 1.1rem; margin-right: 4px; }
+
+        /* ===== CONTENT FEED ===== */
+        .feed-container {
+            margin-bottom: 28px;
+        }
+
+        .feed-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 20px;
+            margin-bottom: 12px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .feed-card:hover {
+            border-color: var(--primary);
+            transform: translateX(4px);
+        }
+
+        .feed-type {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .feed-content {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .feed-action {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ===== FUTURE SELF ===== */
+        .future-self-section {
+            background: linear-gradient(135deg, var(--primary)12, var(--primary-light)06);
+            border: 1px solid var(--primary)20;
+            border-radius: var(--radius);
+            padding: 24px 20px;
+            margin-bottom: 28px;
+        }
+
+        .future-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            resize: none;
+            outline: none;
+            transition: var(--transition);
+            margin-bottom: 12px;
+        }
+
+        .future-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light)20;
+        }
+
+        .future-response {
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            margin-top: 16px;
+            border-left: 3px solid var(--primary);
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .future-response.show { display: block; }
+
+        .future-response-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .future-response-text {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--text);
+            font-style: italic;
+        }
+
+        /* ===== BROKEN SECTION ===== */
+        .broken-screen {
+            background: linear-gradient(180deg, #1a1f2e 0%, #252b3b 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .broken-screen::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(107, 124, 147, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .broken-emoji {
+            font-size: 4rem;
+            margin-bottom: 24px;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .broken-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #e2e8f0;
+            margin-bottom: 32px;
+            line-height: 1.4;
+        }
+
+        .broken-message {
+            font-size: 1.05rem;
+            color: #94a3b8;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            max-width: 320px;
+            opacity: 0;
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        .broken-message:nth-child(3) { animation-delay: 0.5s; }
+        .broken-message:nth-child(4) { animation-delay: 1s; }
+        .broken-message:nth-child(5) { animation-delay: 1.5s; }
+
+        .broken-actions {
+            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn-glass {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #e2e8f0;
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-glass:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-glass-primary {
+            background: linear-gradient(135deg, rgba(107, 124, 147, 0.4), rgba(138, 154, 176, 0.3));
+            border: 1px solid rgba(138, 154, 176, 0.4);
+        }
+
+        /* ===== BREATHING EXERCISE ===== */
+        .breathing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(20px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 1000;
+            padding: 24px;
+        }
+
+        .breathing-overlay.active { display: flex; }
+
+        .breathing-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary-light), var(--primary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: breathe 8s ease-in-out infinite;
+            box-shadow: 0 0 60px var(--primary)40;
+            margin-bottom: 32px;
+        }
+
+        .breathing-text {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .breathing-instruction {
+            color: rgba(255,255,255,0.7);
+            font-size: 1rem;
+            margin-top: 16px;
+        }
+
+        .breathing-close {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .breathing-close:hover { background: rgba(255,255,255,0.2); }
+
+        /* ===== FOCUS MODE ===== */
+        .focus-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 24px;
+        }
+
+        .focus-overlay.active { display: flex; }
+
+        .focus-timer {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 32px;
+            font-weight: 600;
+        }
+
+        .focus-message {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 300px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .focus-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .focus-btn:hover { transform: scale(1.05); }
+
+        /* ===== GROUNDING EXERCISE ===== */
+        .grounding-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .grounding-overlay.active { display: flex; }
+
+        .grounding-step {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 16px;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .grounding-step:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .grounding-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .grounding-prompt {
+            font-size: 1.1rem;
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        /* ===== OVER THINKING TOOL ===== */
+        .overthinking-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .overthinking-overlay.active { display: flex; }
+
+        .overthinking-step {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .overthinking-step.active { display: block; }
+
+        .overthinking-question {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            color: var(--text);
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+
+        .overthinking-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .overthinking-option {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 1rem;
+            color: var(--text);
+            text-align: left;
+        }
+
+        .overthinking-option:hover {
+            border-color: var(--primary);
+            background: var(--primary)08;
+        }
+
+        .overthinking-result {
+            background: var(--surface);
+            border: 1px solid var(--primary)30;
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .overthinking-result-emoji {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .overthinking-result-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: var(--text);
+        }
+
+        /* ===== CALM SPACE ===== */
+        .calm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 24px;
+        }
+
+        .calm-overlay.active { display: flex; }
+
+        .calm-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #e2e8f0;
+            margin-bottom: 8px;
+        }
+
+        .calm-subtitle {
+            color: #94a3b8;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+        }
+
+        .sound-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .sound-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius-sm);
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .sound-card:hover, .sound-card.playing {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .sound-card.playing {
+            box-shadow: 0 0 30px rgba(107, 124, 147, 0.3);
+        }
+
+        .sound-emoji { font-size: 2.5rem; margin-bottom: 8px; display: block; }
+        .sound-name { color: #e2e8f0; font-size: 0.9rem; font-weight: 500; }
+        .sound-status { color: #94a3b8; font-size: 0.75rem; margin-top: 4px; }
+
+        .sound-visualizer {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 3px;
+            height: 30px;
+            margin-top: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sound-card.playing .sound-visualizer { opacity: 1; }
+
+        .sound-bar {
+            width: 4px;
+            background: var(--primary-light);
+            border-radius: 2px;
+            animation: soundBar 1s ease-in-out infinite;
+        }
+
+        .sound-bar:nth-child(1) { height: 40%; animation-delay: 0s; }
+        .sound-bar:nth-child(2) { height: 70%; animation-delay: 0.1s; }
+        .sound-bar:nth-child(3) { height: 50%; animation-delay: 0.2s; }
+        .sound-bar:nth-child(4) { height: 80%; animation-delay: 0.3s; }
+        .sound-bar:nth-child(5) { height: 60%; animation-delay: 0.4s; }
+
+        @keyframes soundBar {
+            0%, 100% { transform: scaleY(0.6); }
+            50% { transform: scaleY(1); }
+        }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 480px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 24px;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+            padding: 4px 12px;
+            border-radius: 12px;
+        }
+
+        .nav-item:hover { background: var(--bg); }
+
+        .nav-icon {
+            font-size: 1.4rem;
+            transition: var(--transition);
+        }
+
+        .nav-label {
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .nav-item.active .nav-icon { color: var(--primary); transform: translateY(-2px); }
+        .nav-item.active .nav-label { color: var(--primary); font-weight: 600; }
+
+        /* ===== CELEBRATION ===== */
+        .celebration-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+
+        .celebration-overlay.active { display: block; }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            animation: confetti 2s ease-out forwards;
+        }
+
+        .celebration-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--surface);
+            padding: 24px 32px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: fadeIn 0.3s ease-out, pulse 2s ease-in-out infinite;
+            border: 2px solid var(--primary);
+        }
+
+        .celebration-emoji { font-size: 3rem; margin-bottom: 8px; }
+        .celebration-text { font-size: 1.1rem; font-weight: 600; color: var(--text); }
+
+        /* ===== SCROLLBAR ===== */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* ===== UTILITY ===== */
+        .hidden { display: none !important; }
+
+        .typing-effect {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid var(--primary);
+            animation: typing 2s steps(40, end), blink 0.75s step-end infinite;
+        }
+
+        .progress-ring {
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform-origin: 50% 50%;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 380px) {
+            .mood-title { font-size: 1.8rem; }
+            .tools-grid { grid-template-columns: 1fr; }
+            .sound-grid { grid-template-columns: 1fr; }
+        }
+
+        /* ===== GRATITUDE JAR (BONUS) ===== */
+        .gratitude-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 28px;
+        }
+
+        .gratitude-jar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+            min-height: 60px;
+        }
+
+        .gratitude-note {
+            background: linear-gradient(135deg, var(--primary)15, var(--primary-light)08);
+            border: 1px solid var(--primary)20;
+            border-radius: 12px;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            color: var(--text);
+            animation: fadeIn 0.3s ease-out;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .gratitude-note:hover {
+            transform: scale(1.05);
+            box-shadow: var(--shadow);
+        }
+
+        /* ===== EMOTION CHECK-IN HISTORY ===== */
+        .history-section {
+            margin-bottom: 28px;
+        }
+
+        .history-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            height: 100px;
+            padding: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+
+        .history-bar {
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            transition: var(--transition);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .history-bar:hover {
+            opacity: 0.8;
+            transform: scaleY(1.05);
+        }
+
+        .history-bar::after {
+            content: attr(data-emoji);
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+        }
+
+        /* ===== AFFIRMATION WALL ===== */
+        .affirmation-flip {
+            perspective: 1000px;
+            height: 160px;
+            margin-bottom: 28px;
+        }
+
+        .affirmation-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .affirmation-flip.flipped .affirmation-inner {
+            transform: rotateY(180deg);
+        }
+
+        .affirmation-front, .affirmation-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .affirmation-front {
+            background: linear-gradient(135deg, var(--primary)20, var(--primary-light)10);
+            border: 1px solid var(--primary)25;
+        }
+
+        .affirmation-back {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            transform: rotateY(180deg);
+        }
+
+        .affirmation-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        .affirmation-hint {
+            position: absolute;
+            bottom: 12px;
+            right: 16px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* ===== DAILY WINS ===== */
+        .wins-counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .win-star {
+            font-size: 2rem;
+            transition: var(--transition);
+            filter: grayscale(1);
+            opacity: 0.3;
+        }
+
+        .win-star.earned {
+            filter: grayscale(0);
+            opacity: 1;
+            animation: heartBeat 0.8s ease-out;
+        }
+
+        /* ===== MOOD EMERGENCY BUTTON ===== */
+        .emergency-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+            z-index: 90;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            animation: gentlePulse 3s ease-in-out infinite;
+        }
+
+        .emergency-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(239, 68, 68, 0.6);
+        }
+
+        .emergency-btn::before {
+            content: 'SOS';
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ef4444;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .emergency-btn:hover::before { opacity: 1; }
+
+        /* ===== WIDGETS ROW ===== */
+        .widgets-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+            margin-bottom: 24px;
+            scrollbar-width: none;
+        }
+
+        .widgets-row::-webkit-scrollbar { display: none; }
+
+        .widget-pill {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 10px 18px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            font-size: 0.85rem;
+            color: var(--text);
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .widget-pill:hover {
+            border-color: var(--primary);
+            background: var(--primary)08;
+        }
+
+        .widget-pill .emoji { font-size: 1.1rem; }
+
+        /* ===== SECTION DIVIDER ===== */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 8px 0 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ===== MOOD SELECTION SCREEN ===== -->
+        <div id="moodScreen" class="mood-screen screen active">
+            <div class="mood-title fade-in">How are you feeling right now?</div>
+            <div class="mood-subtitle fade-in-delay-1">This helps us create a space that truly supports you today.</div>
+
+            <div class="mood-grid fade-in-delay-2">
+                <div class="mood-card" data-mood="sad" onclick="selectMood('sad')">
+                    <span class="mood-emoji">😔</span>
+                    <span class="mood-label">Sad</span>
+                </div>
+                <div class="mood-card" data-mood="depressed" onclick="selectMood('depressed')">
+                    <span class="mood-emoji">🌧️</span>
+                    <span class="mood-label">Depressed</span>
+                </div>
+                <div class="mood-card" data-mood="anxious" onclick="selectMood('anxious')">
+                    <span class="mood-emoji">😰</span>
+                    <span class="mood-label">Anxious</span>
+                </div>
+                <div class="mood-card" data-mood="stressed" onclick="selectMood('stressed')">
+                    <span class="mood-emoji">😤</span>
+                    <span class="mood-label">Stressed</span>
+                </div>
+                <div class="mood-card" data-mood="lonely" onclick="selectMood('lonely')">
+                    <span class="mood-emoji">🌑</span>
+                    <span class="mood-label">Lonely</span>
+                </div>
+                <div class="mood-card" data-mood="overthinking" onclick="selectMood('overthinking')">
+                    <span class="mood-emoji">🔄</span>
+                    <span class="mood-label">Overthinking</span>
+                </div>
+                <div class="mood-card" data-mood="neutral" onclick="selectMood('neutral')">
+                    <span class="mood-emoji">😐</span>
+                    <span class="mood-label">Neutral</span>
+                </div>
+                <div class="mood-card" data-mood="motivated" onclick="selectMood('motivated')">
+                    <span class="mood-emoji">✨</span>
+                    <span class="mood-label">Motivated</span>
+                </div>
+            </div>
+
+            <div class="name-input-container fade-in-delay-3">
+                <input type="text" class="name-input" id="userNameInput" placeholder="Your name (optional)" maxlength="20">
+                <button class="btn-primary" onclick="enterApp()" id="enterBtn">Continue</button>
+            </div>
+        </div>
+
+        <!-- ===== MAIN DASHBOARD ===== -->
+        <div id="dashboardScreen" class="screen">
+            <div class="app-header">
+                <div>
+                    <div class="header-greeting">Hello, <span id="userNameDisplay">friend</span></div>
+                    <div class="header-mood" id="currentMoodDisplay">Feeling neutral</div>
+                </div>
+                <div class="header-actions">
+                    <div class="icon-btn" onclick="showMoodSelector()" title="Change mood">🎭</div>
+                    <div class="icon-btn" onclick="showBrokenScreen()" title="I need help">🆘</div>
+                </div>
+            </div>
+
+            <!-- Motivation Engine -->
+            <div class="motivation-card fade-in" id="motivationCard">
+                <button class="refresh-btn" onclick="refreshMotivation()">↻</button>
+                <div class="motivation-text" id="motivationText">Welcome to your safe space.</div>
+                <div class="motivation-author" id="motivationAuthor">— Your Companion</div>
+            </div>
+
+            <!-- Quick Widgets -->
+            <div class="widgets-row fade-in-delay-1">
+                <div class="widget-pill" onclick="openBreathing()">
+                    <span class="emoji">🫁</span> Breathe
+                </div>
+                <div class="widget-pill" onclick="openFocus()">
+                    <span class="emoji">🎯</span> Focus
+                </div>
+                <div class="widget-pill" onclick="openGrounding()">
+                    <span class="emoji">🌿</span> Ground
+                </div>
+                <div class="widget-pill" onclick="openCalmSpace()">
+                    <span class="emoji">🎵</span> Sounds
+                </div>
+                <div class="widget-pill" onclick="openOverthinking()">
+                    <span class="emoji">🧠</span> Reset
+                </div>
+            </div>
+
+            <!-- Affirmation Card -->
+            <div class="section-title fade-in-delay-1">
+                <span class="emoji">💫</span> Daily Affirmation
+            </div>
+            <div class="affirmation-flip fade-in-delay-1" id="affirmationCard" onclick="flipAffirmation()">
+                <div class="affirmation-inner">
+                    <div class="affirmation-front">
+                        <div class="affirmation-text" id="affirmationFront">Tap to reveal today's affirmation</div>
+                        <div class="affirmation-hint">Tap to flip →</div>
+                    </div>
+                    <div class="affirmation-back">
+                        <div class="affirmation-text" id="affirmationBack">You are exactly where you need to be right now.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Mental Reset Toolkit -->
+            <div class="section-title fade-in-delay-2">
+                <span class="emoji">🧰</span> Mental Reset Toolkit
+            </div>
+            <div class="tools-grid fade-in-delay-2">
+                <div class="tool-card" onclick="openBreathing()">
+                    <span class="tool-icon">🫁</span>
+                    <div class="tool-name">Breathe</div>
+                    <div class="tool-desc">60-second guided breathing</div>
+                </div>
+                <div class="tool-card" onclick="openFocus()">
+                    <span class="tool-icon">🎯</span>
+                    <div class="tool-name">Focus Reset</div>
+                    <div class="tool-desc">5-minute clarity mode</div>
+                </div>
+                <div class="tool-card" onclick="openOverthinking()">
+                    <span class="tool-icon">🧠</span>
+                    <div class="tool-name">Stop Overthinking</div>
+                    <div class="tool-desc">Guided thought release</div>
+                </div>
+                <div class="tool-card" onclick="openCalmSpace()">
+                    <span class="tool-icon">🎵</span>
+                    <div class="tool-name">Calm Space</div>
+                    <div class="tool-desc">Rain, night & lofi sounds</div>
+                </div>
+                <div class="tool-card" onclick="openGrounding()">
+                    <span class="tool-icon">🌿</span>
+                    <div class="tool-name">Grounding</div>
+                    <div class="tool-desc">5-4-3-2-1 sensory exercise</div>
+                </div>
+                <div class="tool-card" onclick="openFutureSelf()">
+                    <span class="tool-icon">💌</span>
+                    <div class="tool-name">Future Self</div>
+                    <div class="tool-desc">Write to your future you</div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Micro Tasks -->
+            <div class="section-title fade-in-delay-2">
+                <span class="emoji">🎯</span> Tiny Wins
+            </div>
+            <div class="tasks-container fade-in-delay-2">
+                <div class="streak-display">
+                    <span class="streak-fire">🔥</span>
+                    <span class="streak-text">Current Streak: <span class="streak-count" id="streakCount">0</span> days</span>
+                </div>
+                <div class="wins-counter" id="winsCounter">
+                    <span class="win-star">⭐</span>
+                    <span class="win-star">⭐</span>
+                    <span class="win-star">⭐</span>
+                    <span class="win-star">⭐</span>
+                    <span class="win-star">⭐</span>
+                </div>
+                <div id="tasksList">
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <div class="task-checkbox"></div>
+                        <div class="task-text"><span class="task-emoji">💧</span> Drink a glass of water</div>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <div class="task-checkbox"></div>
+                        <div class="task-text"><span class="task-emoji">🚶</span> Step outside for 2 minutes</div>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <div class="task-checkbox"></div>
+                        <div class="task-text"><span class="task-emoji">🚿</span> Take a shower or wash face</div>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <div class="task-checkbox"></div>
+                        <div class="task-text"><span class="task-emoji">📚</span> Read or study for 10 minutes</div>
+                    </div>
+                    <div class="task-item" onclick="toggleTask(this)">
+                        <div class="task-checkbox"></div>
+                        <div class="task-text"><span class="task-emoji">🧘</span> Stretch your body gently</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Future Self -->
+            <div class="section-title fade-in-delay-3">
+                <span class="emoji">💌</span> Talk to Your Future Self
+            </div>
+            <div class="future-self-section fade-in-delay-3" id="futureSelfSection">
+                <textarea class="future-input" id="futureInput" rows="3" placeholder="Write what you're feeling right now... What's weighing on you? What do you wish someone understood?"></textarea>
+                <button class="btn-primary" onclick="sendToFutureSelf()" style="margin-top:0;max-width:100%;">Send to Future Me</button>
+                <div class="future-response" id="futureResponse">
+                    <div class="future-response-label">From Your Future Self</div>
+                    <div class="future-response-text" id="futureResponseText"></div>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Gratitude Jar -->
+            <div class="section-title fade-in-delay-3">
+                <span class="emoji">🏺</span> Gratitude Jar
+            </div>
+            <div class="gratitude-section fade-in-delay-3">
+                <div style="display:flex;gap:8px;margin-bottom:12px;">
+                    <input type="text" class="name-input" id="gratitudeInput" placeholder="Something small you're grateful for..." style="margin-top:0;flex:1;">
+                    <button class="btn-primary" onclick="addGratitude()" style="margin-top:0;width:auto;padding:14px 20px;max-width:80px;">Add</button>
+                </div>
+                <div class="gratitude-jar" id="gratitudeJar"></div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <!-- Emotion Feed -->
+            <div class="section-title fade-in-delay-3">
+                <span class="emoji">📖</span> For You Right Now
+            </div>
+            <div class="feed-container fade-in-delay-3" id="feedContainer"></div>
+
+            <!-- Mood History -->
+            <div class="section-title">
+                <span class="emoji">📊</span> Your Journey
+            </div>
+            <div class="history-section">
+                <div class="history-chart" id="historyChart"></div>
+            </div>
+        </div>
+
+        <!-- ===== BROKEN SCREEN ===== -->
+        <div id="brokenScreen" class="broken-screen screen">
+            <div class="broken-emoji">🤍</div>
+            <div class="broken-title">You are still here,<br>and that is enough<br>for today.</div>
+            <div class="broken-message">You don't need to fix your whole life right now.</div>
+            <div class="broken-message">This moment is temporary, not your identity.</div>
+            <div class="broken-message">You are not broken. You are human, and you are surviving.</div>
+            <div class="broken-actions">
+                <button class="btn-glass btn-glass-primary" onclick="openBreathing()">🫁 Take 3 Deep Breaths</button>
+                <button class="btn-glass" onclick="openGrounding()">🌿 Ground Yourself Now</button>
+                <button class="btn-glass" onclick="showDashboard()">🏠 Return to Dashboard</button>
+                <button class="btn-glass" onclick="showMoodSelector()">🎭 Change My Mood</button>
+            </div>
+        </div>
+
+        <!-- ===== OVERLAYS ===== -->
+        <!-- Breathing -->
+        <div class="breathing-overlay" id="breathingOverlay">
+            <button class="breathing-close" onclick="closeBreathing()">✕</button>
+            <div class="breathing-circle">
+                <div class="breathing-text" id="breathText">Breathe In</div>
+            </div>
+            <div class="breathing-instruction" id="breathInstruction">Follow the circle. Inhale as it grows.</div>
+        </div>
+
+        <!-- Focus -->
+        <div class="focus-overlay" id="focusOverlay">
+            <button class="breathing-close" onclick="closeFocus()" style="color:var(--text);">✕</button>
+            <div class="focus-timer" id="focusTimer">05:00</div>
+            <div class="focus-message" id="focusMessage">One thing at a time. You are capable of this moment.</div>
+            <button class="focus-btn" id="focusBtn" onclick="toggleFocus()">Start Focus</button>
+        </div>
+
+        <!-- Grounding -->
+        <div class="grounding-overlay" id="groundingOverlay">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <div class="section-title" style="margin:0;"><span class="emoji">🌿</span> 5-4-3-2-1 Grounding</div>
+                <button class="breathing-close" onclick="closeGrounding()" style="position:static;color:var(--text);width:36px;height:36px;">✕</button>
+            </div>
+            <div class="grounding-step" onclick="completeGroundingStep(this, 5)">
+                <div class="grounding-number">5</div>
+                <div class="grounding-prompt">Look around and name <strong>5 things</strong> you can see right now</div>
+            </div>
+            <div class="grounding-step" onclick="completeGroundingStep(this, 4)">
+                <div class="grounding-number">4</div>
+                <div class="grounding-prompt">Notice <strong>4 things</strong> you can physically touch</div>
+            </div>
+            <div class="grounding-step" onclick="completeGroundingStep(this, 3)">
+                <div class="grounding-number">3</div>
+                <div class="grounding-prompt">Listen for <strong>3 sounds</strong> you can hear</div>
+            </div>
+            <div class="grounding-step" onclick="completeGroundingStep(this, 2)">
+                <div class="grounding-number">2</div>
+                <div class="grounding-prompt">Identify <strong>2 things</strong> you can smell</div>
+            </div>
+            <div class="grounding-step" onclick="completeGroundingStep(this, 1)">
+                <div class="grounding-number">1</div>
+                <div class="grounding-prompt">Find <strong>1 thing</strong> you can taste</div>
+            </div>
+            <div style="text-align:center;margin-top:20px;">
+                <button class="btn-primary" onclick="closeGrounding()" style="max-width:200px;">I'm Grounded</button>
+            </div>
+        </div>
+
+        <!-- Overthinking -->
+        <div class="overthinking-overlay" id="overthinkingOverlay">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                <div class="section-title" style="margin:0;"><span class="emoji">🧠</span> Overthinking Reset</div>
+                <button class="breathing-close" onclick="closeOverthinking()" style="position:static;color:var(--text);width:36px;height:36px;">✕</button>
+            </div>
+            <div id="overthinkingContainer">
+                <div class="overthinking-step active" id="otStep1">
+                    <div class="overthinking-question">What is the thought looping in your mind right now?</div>
+                    <div class="overthinking-options">
+                        <button class="overthinking-option" onclick="nextOverthinking(2, 'future')">Something that might happen</button>
+                        <button class="overthinking-option" onclick="nextOverthinking(2, 'past')">Something that already happened</button>
+                        <button class="overthinking-option" onclick="nextOverthinking(2, 'judgment')">I'm judging myself harshly</button>
+                        <button class="overthinking-option" onclick="nextOverthinking(2, 'unknown')">I don't even know what I'm thinking</button>
+                    </div>
+                </div>
+                <div class="overthinking-step" id="otStep2">
+                    <div class="overthinking-question">How much control do you have over this right now?</div>
+                    <div class="overthinking-options">
+                        <button class="overthinking-option" onclick="nextOverthinking(3, 'some')">Some control</button>
+                        <button class="overthinking-option" onclick="nextOverthinking(3, 'none')">No control at all</button>
+                        <button class="overthinking-option" onclick="nextOverthinking(3, 'unsure')">I'm not sure</button>
+                    </div>
+                </div>
+                <div class="overthinking-step" id="otStep3">
+                    <div class="overthinking-question">What would you tell a friend who felt this way?</div>
+                    <div class="overthinking-options">
+                        <button class="overthinking-option" onclick="showOverthinkingResult('kind')">They need to be gentle with themselves</button>
+                        <button class="overthinking-option" onclick="showOverthinkingResult('action')">They should take one small step</button>
+                        <button class="overthinking-option" onclick="showOverthinkingResult('patience')">This feeling will pass with time</button>
+                    </div>
+                </div>
+                <div class="overthinking-step" id="otResult">
+                    <div class="overthinking-result">
+                        <div class="overthinking-result-emoji" id="otResultEmoji">🌱</div>
+                        <div class="overthinking-result-text" id="otResultText"></div>
+                    </div>
+                    <div style="text-align:center;margin-top:24px;">
+                        <button class="btn-primary" onclick="closeOverthinking()" style="max-width:200px;">I Feel Lighter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calm Space -->
+        <div class="calm-overlay" id="calmOverlay">
+            <button class="breathing-close" onclick="closeCalmSpace()">✕</button>
+            <div class="calm-title">Calm Space</div>
+            <div class="calm-subtitle">Let the sounds carry your thoughts away</div>
+            <div class="sound-grid">
+                <div class="sound-card" id="soundRain" onclick="toggleSound('rain')">
+                    <span class="sound-emoji">🌧️</span>
+                    <div class="sound-name">Gentle Rain</div>
+                    <div class="sound-status" id="rainStatus">Tap to play</div>
+                    <div class="sound-visualizer">
+                        <div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div>
+                    </div>
+                </div>
+                <div class="sound-card" id="soundNight" onclick="toggleSound('night')">
+                    <span class="sound-emoji">🌙</span>
+                    <div class="sound-name">Night Ambience</div>
+                    <div class="sound-status" id="nightStatus">Tap to play</div>
+                    <div class="sound-visualizer">
+                        <div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div>
+                    </div>
+                </div>
+                <div class="sound-card" id="soundLoFi" onclick="toggleSound('lofi')">
+                    <span class="sound-emoji">🎹</span>
+                    <div class="sound-name">Lo-Fi Vibes</div>
+                    <div class="sound-status" id="lofiStatus">Tap to play</div>
+                    <div class="sound-visualizer">
+                        <div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div>
+                    </div>
+                </div>
+                <div class="sound-card" id="soundWaves" onclick="toggleSound('waves')">
+                    <span class="sound-emoji">🌊</span>
+                    <div class="sound-name">Ocean Waves</div>
+                    <div class="sound-status" id="wavesStatus">Tap to play</div>
+                    <div class="sound-visualizer">
+                        <div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div><div class="sound-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Celebration -->
+        <div class="celebration-overlay" id="celebrationOverlay">
+            <div class="celebration-message" id="celebrationMessage">
+                <div class="celebration-emoji" id="celebrationEmoji">🎉</div>
+                <div class="celebration-text" id="celebrationText">Tiny win completed!</div>
+            </div>
+        </div>
+
+        <!-- Emergency Button -->
+        <button class="emergency-btn" onclick="showBrokenScreen()" id="emergencyBtn" style="display:none;">🆘</button>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" id="bottomNav" style="display:none;">
+            <div class="nav-item active" onclick="switchTab('dashboard')">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label">Home</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('tools')">
+                <span class="nav-icon">🧰</span>
+                <span class="nav-label">Tools</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('journal')">
+                <span class="nav-icon">📓</span>
+                <span class="nav-label">Journal</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('progress')">
+                <span class="nav-icon">📈</span>
+                <span class="nav-label">Progress</span>
+            </div>
+        </nav>
+    </div>
+
+    <script>
+        // ===== STATE =====
+        let currentMood = 'neutral';
+        let userName = '';
+        let streak = parseInt(localStorage.getItem('mh_streak') || '0');
+        let lastCheckIn = localStorage.getItem('mh_lastCheckIn');
+        let completedTasks = JSON.parse(localStorage.getItem('mh_tasks') || '[]');
+        let gratitudeNotes = JSON.parse(localStorage.getItem('mh_gratitude') || '[]');
+        let moodHistory = JSON.parse(localStorage.getItem('mh_moodHistory') || '[]');
+        let audioContext = null;
+        let currentOscillator = null;
+        let currentGain = null;
+        let activeSound = null;
+        let focusInterval = null;
+        let focusSeconds = 300;
+        let focusRunning = false;
+
+        // ===== MOOD DATA =====
+        const moodData = {
+            sad: {
+                emojis: '😔',
+                motivations: [
+                    { text: "This feeling is heavy, but it will not stay forever. It is just passing through.", author: "— Your Companion" },
+                    { text: "You are allowed to feel sad. It does not make you weak—it makes you human.", author: "— Your Companion" },
+                    { text: "Some days are just for surviving. And that is more than enough.", author: "— Your Companion" },
+                    { text: "The sadness you feel is a sign that you have loved, hoped, and cared deeply.", author: "— Your Companion" },
+                    { text: "You don't have to be okay right now. Just be here. That is courage.", author: "— Your Companion" }
+                ],
+                feed: [
+                    { type: "Healing", content: "It's okay to rest. The world will keep spinning while you breathe." },
+                    { type: "Reflection", content: "What emotion needs to be felt fully before it can leave? Name it gently." },
+                    { type: "Comfort", content: "Wrap yourself in something warm. Physical comfort reaches the heart too." },
+                    { type: "Reminder", content: "You have survived 100% of your bad days so far. That is a powerful truth." },
+                    { type: "Gentle Push", content: "One small step: text someone you trust, or write three feelings in a note." }
+                ],
+                tasks: ["💧 Drink water slowly, feeling each sip", "🚶 Walk to a window and look at the sky", "🤗 Place a hand on your heart and breathe", "📝 Write one sentence about how you feel", "🎵 Play one song that understands you"],
+                affirmation: "Your sadness is valid, and it does not define your worth."
+            },
+            depressed: {
+                emojis: '🌧️',
+                motivations: [
+                    { text: "You are not falling behind. You are healing at your own pace, and that pace is sacred.", author: "— Your Companion" },
+                    { text: "The fact that you opened this app today is proof that some part of you still hopes.", author: "— Your Companion" },
+                    { text: "You do not need to earn your rest. You do not need to justify your pain.", author: "— Your Companion" },
+                    { text: "Depression lies. It tells you that you are alone, but you are not. I am here with you.", author: "— Your Companion" },
+                    { text: "Today, your only job is to exist. Everything else can wait. You are enough.", author: "— Your Companion" }
+                ],
+                feed: [
+                    { type: "Emergency Care", content: "If you are in crisis, please reach out to a crisis line or trusted person. You do not have to carry this alone." },
+                    { type: "Gentle Truth", content: "Depression is not laziness. It is a real weight. You are carrying something heavy with courage." },
+                    { type: "Micro Win", content: "Brushing your teeth is a victory today. Showering is a triumph. Celebrate the small." },
+                    { type: "Connection", content: "Isolation feeds depression. One message, one call, one presence can break the cycle." },
+                    { type: "Hope", content: "This fog will lift. Not today, maybe not tomorrow, but it will. You have survived it before." }
+                ],
+                tasks: ["🛁 Take a shower or wash your face", "🍎 Eat something nourishing", "🪟 Open a curtain and let light in", "📱 Text one person—any word is enough", "🛏️ Make your bed, even messily"],
+                affirmation: "You are doing your best with what you have right now, and that is enough."
+            },
+            anxious: {
+                emojis: '😰',
+                motivations: [
+                    { text: "Your anxiety is trying to protect you, but it is working too hard. You are safe right now.", author: "— Your Companion" },
+                    { text: "Breathe. The future has not happened yet. You are only responsible for this single breath.", author: "— Your Companion" },
+                    { text: "Anxiety is loud, but it is not the truth. You are stronger than the noise in your mind.", author: "— Your Companion" },
+                    { text: "You do not need to have everything figured out. You just need to be here, now.", author: "— Your Companion" },
+                    { text: "Your body is reacting to a threat that is not present. Ground yourself. You are safe.", author: "— Your Companion" }
+                ],
+                feed: [
+                    { type: "Grounding", content: "Name 5 things you see, 4 you can touch, 3 you hear, 2 you smell, 1 you taste." },
+                    { type: "Reframe", content: "What if the worst case does not happen? What if something good surprises you?" },
+                    { type: "Body", content: "Place your feet flat on the floor. Feel the ground holding you. You are anchored." },
+                    { type: "Breath", content: "Box breathing: inhale 4, hold 4, exhale 4, hold 4. Repeat until your heart slows." },
+                    { type: "Truth", content: "You have faced uncertainty before. You are still here. That is your superpower." }
+                ],
+                tasks: ["🫁 Do 5 rounds of box breathing", "📝 Write down the worry, then write a kind response", "🚶 Walk for 5 minutes outside", "🤲 Rub your palms together and feel warmth", "🎵 Listen to a calming playlist"],
+                affirmation: "You are safe in this moment, and you have the strength to handle what comes."
+            },
+            stressed: {
+                emojis: '😤',
+                motivations: [
+                    { text: "You are carrying a lot right now. It is okay to set something down, even for a moment.", author: "— Your Companion" },
+                    { text: "Stress means you care deeply. But you cannot pour from an empty cup. Rest is productive.", author: "— Your Companion" },
+                    { text: "You do not have to solve everything today. One thing at a time. You are doing enough.", author: "— Your Companion" },
+                    { text: "The pressure you feel is real, but it is not permanent. This season will change.", author: "— Your Companion" },
+                    { text: "You are not failing. You are overloaded. There is a difference, and it matters.", author: "— Your Companion" }
+                ],
+                feed: [
+                    { type: "Release", content: "Tense every muscle for 5 seconds, then release. Feel the difference between stress and relaxation." },
+                    { type: "Priority", content: "What is the ONE thing that would make today feel manageable? Do that first." },
+                    { type: "Boundary", content: "It is okay to say no. It is okay to delay. Your wellbeing is not negotiable." },
+                    { type: "Perspective", content: "In one year, will this stress matter? Focus on what will still be important." },
+                    { type: "Restore", content: "Take 10 minutes to do something that has no purpose other than joy." }
+                ],
+                tasks: ["🧘 Do a 2-minute body scan meditation", "📋 Write down 3 priorities and cross off 2", "🍵 Make tea and drink it without multitasking", "🌬️ Step outside and take 10 deep breaths", "😴 Close your eyes for 5 minutes of silence"],
+                affirmation: "You are allowed to rest. You are allowed to say no. Your peace matters."
+            },
+            lonely: {
+                emojis: '🌑',
+                motivations: [
+                    { text: "Feeling lonely does not mean you are unlovable. It means you are human and you need connection.", author: "— Your Companion" },
+                    { text: "You are not alone in feeling alone. Millions of hearts are beating with the same ache tonight.", author: "— Your Companion" },
+                    { text: "Your presence matters. Even if no one is beside you right now, you are still worthy of love.", author: "— Your Companion" },
+                    { text: "Loneliness is a signal, not a sentence. It is your heart asking for connection—and that is beautiful.", author: "— Your Companion" },
+                    { text: "I am here with you right now. This app is a bridge between your solitude and care.", author: "— Your Companion" }
+                ],
+                feed: [
+                    { type: "Connection", content: "Send one message to someone you have not spoken to in a while. Vulnerability builds bridges." },
+                    { type: "Self-Companionship", content: "Be the friend to yourself that you wish you had. Speak to yourself with warmth." },
+                    { type: "Community", content: "Join an online space about something you love. Shared passion creates instant bonds." },
+                    { type: "Comfort", content: "Put on a familiar movie or song. Let the feeling of nostalgia wrap around you like a blanket." },
+                    { type: "Presence", content: "Sit in a public space—a café, a park. Simply being around others can ease loneliness." }
+                ],
+                tasks: ["📱 Call or message one person today", "🐕 Visit a park or pet store for animal connection", "🎭 Watch a live stream or virtual event", "🤝 Help someone online with advice or kindness", "📝 Write a letter to yourself with compassion"],
+                affirmation: "You are worthy of love and connection, even in the quiet moments."
+            },
+            overthinking: {
+                emojis: '🔄',
+                motivations: [
+                    { text: "Your mind is racing because it cares. But not every thought deserves your attention right now.", author: "— Your Companion" },
+                    { text: "You cannot think your way out of overthinking. Sometimes the answer is to stop and breathe.", author: "— Your Companion" },
+                    { text: "What is the simplest thing you can do right now? Start there. Action quiets the mind.", author: "— Your Companion" },
+                    { text: "Not every problem needs to be solved today. Some just need to be observed and released.", author: "— Your Companion" },
+                    { text: "Your thoughts are not facts. They are stories your mind tells. You get to choose which ones to believe.", author: "— Your Companion" }
+                ],
+                feed: [
+                    { type: "Release", content: "Write the looping thought on paper. Then write: 'I release this for now.' Tear the paper." },
+                    { type: "Timer", content: "Give yourself 5 minutes to think about this. When the timer ends, move your body." },
+                    { type: "Question", content: "Will this matter in 5 days? 5 months? 5 years? Shrink the thought to its real size." },
+                    { type: "Shift", content: "Do something physical—wash dishes, fold laundry, stretch. Motion interrupts rumination." },
+                    { type: "Acceptance", content: "It is okay not to have clarity right now. Uncertainty is uncomfortable, not dangerous." }
+                ],
+                tasks: ["📝 Brain dump: write every thought for 3 minutes", "🧘 Do a 5-minute guided meditation", "🚶 Walk while focusing only on your steps", "🎵 Play music and focus entirely on the lyrics", "🛑 Set a 'worry timer' for 10 minutes, then stop"],
+                affirmation: "You do not need to have all the answers right now. Peace comes from trusting the process."
+            },
+            neutral: {
+                emojis: '😐',
+                motivations: [
+                    { text: "Neutral is not empty. It is a canvas. You get to choose what you paint on it today.", author: "— Your Companion" },
+                    { text: "There is a quiet strength in neutrality. You are stable, and that is a gift.", author: "— Your Companion" },
+                    { text: "Not every day needs to be extraordinary. Some days are just for being. That is enough.", author: "— Your Companion" },
+                    { text: "You are in a place of balance. Use this calm to plant seeds for tomorrow.", author: "— Your Companion" },
+                    { text: "Neutrality is a resting place. Rest here without guilt. You do not need to perform joy.", author: "— Your Companion" }
+                ],
+                feed: [
+                    { type: "Curiosity", content: "What is one thing you have been curious about? Explore it for 10 minutes with no goal." },
+                    { type: "Gratitude", content: "List three small things that went okay today. Neutral days have hidden gifts." },
+                    { type: "Creation", content: "Make something—cook, draw, write, build. Creation turns neutrality into flow." },
+                    { type: "Movement", content: "Move your body in a way that feels good, not productive. Dance, stretch, walk." },
+                    { type: "Presence", content: "Sit in silence for 3 minutes. No phone, no task. Just be." }
+                ],
+                tasks: ["📚 Read one chapter or article", "🎨 Doodle or create something small", "🍳 Cook a simple meal with care", "🌳 Sit outside for 10 minutes", "🧹 Tidy one small space"],
+                affirmation: "You are exactly where you need to be. Peace is found in acceptance."
+            },
+            motivated: {
+                emojis: '✨',
+                motivations: [
+                    { text: "Your energy is beautiful. Channel it, but do not burn out. Sustainable progress beats sprinting.", author: "— Your Companion" },
+                    { text: "You are building something. Even the invisible work counts. Trust the foundation you are laying.", author: "— Your Companion" },
+                    { text: "Motivation is a spark. Use it to start, but build systems so you keep going when it fades.", author: "— Your Companion" },
+                    { text: "You are capable of incredible things. But remember: you are worthy even when you rest.", author: "— Your Companion" },
+                    { text: "This feeling of drive is a gift. Honor it by choosing one meaningful thing to focus on.", author: "— Your Companion" }
+                ],
+                feed: [
+                    { type: "Focus", content: "What is the ONE thing that would make today a win? Protect your energy for that." },
+                    { type: "Momentum", content: "Start with the hardest task. Motivation is highest now—use it on what matters most." },
+                    { type: "Rest", content: "Even motivated people need breaks. Schedule a 10-minute pause every 90 minutes." },
+                    { type: "Vision", content: "Write down where you want to be in 6 months. Let this energy fuel the long game." },
+                    { type: "Celebrate", content: "Look back at how far you have come. You have already done more than you realize." }
+                ],
+                tasks: ["🎯 Complete your most important task first", "📅 Plan tomorrow's priorities", "💪 Exercise or move your body", "📝 Journal your goals and why they matter", "🎁 Do something kind for someone else"],
+                affirmation: "Your drive is powerful, and your rest is sacred. Balance is your strength."
+            }
+        };
+
+        const futureSelfResponses = {
+            sad: [
+                "I know today feels heavy, but I promise you are building something better silently. The sadness you feel now is fertilizer for the garden you will grow. I am proud of you for still being here.",
+                "From where I stand, this sadness is just a chapter—not the whole book. You are going to surprise yourself with how much joy returns. Keep breathing. Keep going. I am waiting for you with open arms."
+            ],
+            depressed: [
+                "I remember this darkness. It felt endless. But I need you to know: the light returns. Not all at once, but slowly, like sunrise. You are doing the hardest thing—surviving. And that is the most important work you will ever do.",
+                "I am the you that made it through. I am not special—I am just you, with more time. The fact that you opened this app today tells me you still have fight left. Hold on. I am proof that it gets better."
+            ],
+            anxious: [
+                "I know your chest feels tight and your mind is racing. But listen: the thing you are afraid of? It either will not happen, or you will handle it better than you think. You always do. You are stronger than the anxiety tells you.",
+                "Future you here. I want you to know that the worry consuming you right now will fade. It always does. You will look back and wonder why you gave it so much space. Breathe. You are safe. You are capable."
+            ],
+            stressed: [
+                "I see you carrying so much. But here is what I have learned: not everything is your responsibility. Some things can wait. Some things can be delegated. Some things do not matter at all. Put something down. I give you permission.",
+                "You are not a machine. You are a human being with limits, and those limits are not flaws—they are features. The world will not end if you rest. In fact, everything gets clearer after you do."
+            ],
+            lonely: [
+                "I know this ache. It feels like you are the only one. But you are not. There are people who will love you deeply—some you have not met yet. And in the meantime, I am here. I am always here. You are never truly alone.",
+                "The loneliness you feel is real, but it is not permanent. Connection is coming. It might be a new friend, a rekindled bond, or a deeper relationship with yourself. Hold on. Love is on its way."
+            ],
+            overthinking: [
+                "I need you to hear this: you do not need to figure everything out today. The answer you are searching for will come when you stop searching so hard. Let go. Trust. The universe is not trying to trick you.",
+                "Your mind is a powerful tool, but right now it is running on overdrive. Future you says: take a break from thinking. Go for a walk. Take a shower. Sleep. The clarity you need will meet you there."
+            ],
+            neutral: [
+                "I love this version of you. Neutral, calm, open. This is a fertile state. Use it to explore, to rest, to create without pressure. Not every day needs a label. Some days are just for being. And that is perfect.",
+                "You are in a beautiful place of balance. Do not rush to fill this neutrality with drama or urgency. Let it be a foundation. From here, you can choose any direction. I trust your choice."
+            ],
+            motivated: [
+                "I am so proud of this energy you have right now. Use it wisely. Do not scatter it across ten things. Focus it like a laser on what truly matters. And remember to rest—sustainable passion is the goal, not burnout.",
+                "Your drive is inspiring. But I want you to know: you do not need to earn your worth through achievement. You are already enough. Let this motivation be an expression of joy, not a chase for validation."
+            ]
+        };
+
+        const affirmationPool = [
+            "You are exactly where you need to be right now.",
+            "Your best is enough, and your enough is perfect.",
+            "You are allowed to take up space in this world.",
+            "Every small step is still movement forward.",
+            "You are more resilient than you realize.",
+            "Your feelings are valid, and so is your healing.",
+            "You do not have to be perfect to be worthy.",
+            "Rest is productive. Stillness is powerful.",
+            "You are becoming the person you needed.",
+            "Your presence alone makes a difference."
+        ];
+
+        // ===== INIT =====
+        function init() {
+            const savedName = localStorage.getItem('mh_name');
+            const savedMood = localStorage.getItem('mh_mood');
+
+            if (savedName) {
+                document.getElementById('userNameInput').value = savedName;
+            }
+
+            if (savedMood && savedName) {
+                userName = savedName;
+                currentMood = savedMood;
+                showDashboard();
+            }
+
+            updateStreak();
+            renderGratitude();
+            renderHistory();
+
+            // Random affirmation
+            const randomAff = affirmationPool[Math.floor(Math.random() * affirmationPool.length)];
+            document.getElementById('affirmationBack').textContent = randomAff;
+        }
+
+        // ===== MOOD SELECTION =====
+        function selectMood(mood) {
+            currentMood = mood;
+            document.querySelectorAll('.mood-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-mood="${mood}"]`).classList.add('selected');
+        }
+
+        function enterApp() {
+            userName = document.getElementById('userNameInput').value.trim() || 'friend';
+            localStorage.setItem('mh_name', userName);
+            localStorage.setItem('mh_mood', currentMood);
+
+            // Record mood history
+            moodHistory.push({ mood: currentMood, date: new Date().toISOString() });
+            if (moodHistory.length > 14) moodHistory = moodHistory.slice(-14);
+            localStorage.setItem('mh_moodHistory', JSON.stringify(moodHistory));
+
+            showDashboard();
+        }
+
+        function showMoodSelector() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('moodScreen').classList.add('active');
+            document.getElementById('bottomNav').style.display = 'none';
+            document.getElementById('emergencyBtn').style.display = 'none';
+            document.body.className = '';
+        }
+
+        // ===== DASHBOARD =====
+        function showDashboard() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('dashboardScreen').classList.add('active');
+            document.getElementById('bottomNav').style.display = 'flex';
+            document.getElementById('emergencyBtn').style.display = 'flex';
+
+            document.body.className = `mood-${currentMood}`;
+
+            document.getElementById('userNameDisplay').textContent = userName;
+            document.getElementById('currentMoodDisplay').textContent = `Feeling ${currentMood}`;
+
+            refreshMotivation();
+            renderFeed();
+            renderTasks();
+            updateStreakDisplay();
+            renderHistory();
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        function showBrokenScreen() {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('brokenScreen').classList.add('active');
+            document.getElementById('bottomNav').style.display = 'none';
+            document.getElementById('emergencyBtn').style.display = 'none';
+            document.body.className = 'mood-broken';
+        }
+
+        // ===== MOTIVATION ENGINE =====
+        function refreshMotivation() {
+            const data = moodData[currentMood];
+            const motivation = data.motivations[Math.floor(Math.random() * data.motivations.length)];
+
+            const textEl = document.getElementById('motivationText');
+            const authorEl = document.getElementById('motivationAuthor');
+
+            textEl.style.opacity = '0';
+            authorEl.style.opacity = '0';
+
+            setTimeout(() => {
+                textEl.textContent = motivation.text;
+                authorEl.textContent = motivation.author;
+                textEl.style.opacity = '1';
+                authorEl.style.opacity = '1';
+            }, 300);
+        }
+
+        // ===== FEED =====
+        function renderFeed() {
+            const container = document.getElementById('feedContainer');
+            const data = moodData[currentMood];
+            container.innerHTML = '';
+
+            data.feed.forEach((item, i) => {
+                const card = document.createElement('div');
+                card.className = 'feed-card';
+                card.style.animationDelay = `${i * 0.1}s`;
+                card.innerHTML = `
+                    <div class="feed-type">${item.type}</div>
+                    <div class="feed-content">${item.content}</div>
+                    <div class="feed-action">Reflect on this →</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ===== TASKS =====
+        function renderTasks() {
+            const list = document.getElementById('tasksList');
+            const data = moodData[currentMood];
+            list.innerHTML = '';
+
+            data.tasks.forEach((task, i) => {
+                const isCompleted = completedTasks.includes(`${currentMood}_${i}`);
+                const item = document.createElement('div');
+                item.className = `task-item ${isCompleted ? 'completed' : ''}`;
+                item.onclick = () => toggleTask(item, i);
+                item.innerHTML = `
+                    <div class="task-checkbox">${isCompleted ? '✓' : ''}</div>
+                    <div class="task-text">${task}</div>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function toggleTask(element, index) {
+            const taskId = `${currentMood}_${index}`;
+            const isCompleted = completedTasks.includes(taskId);
+
+            if (isCompleted) {
+                completedTasks = completedTasks.filter(id => id !== taskId);
+                element.classList.remove('completed');
+                element.querySelector('.task-checkbox').textContent = '';
+            } else {
+                completedTasks.push(taskId);
+                element.classList.add('completed');
+                element.querySelector('.task-checkbox').textContent = '✓';
+
+                // Celebration
+                showCelebration();
+
+                // Update streak
+                const today = new Date().toDateString();
+                if (lastCheckIn !== today) {
+                    streak++;
+                    lastCheckIn = today;
+                    localStorage.setItem('mh_streak', streak);
+                    localStorage.setItem('mh_lastCheckIn', lastCheckIn);
+                    updateStreakDisplay();
+                }
+            }
+
+            localStorage.setItem('mh_tasks', JSON.stringify(completedTasks));
+            updateWinsCounter();
+        }
+
+        function updateStreak() {
+            const today = new Date().toDateString();
+            if (lastCheckIn && lastCheckIn !== today) {
+                const lastDate = new Date(lastCheckIn);
+                const todayDate = new Date(today);
+                const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+
+                if (diffDays > 1) {
+                    streak = 0;
+                    localStorage.setItem('mh_streak', '0');
+                }
+            }
+        }
+
+        function updateStreakDisplay() {
+            document.getElementById('streakCount').textContent = streak;
+        }
+
+        function updateWinsCounter() {
+            const stars = document.querySelectorAll('.win-star');
+            const completedCount = completedTasks.filter(t => t.startsWith(currentMood + '_')).length;
+            const totalTasks = moodData[currentMood].tasks.length;
+            const progress = Math.min(completedCount / totalTasks, 1);
+            const earnedStars = Math.ceil(progress * 5);
+
+            stars.forEach((star, i) => {
+                if (i < earnedStars) {
+                    star.classList.add('earned');
+                } else {
+                    star.classList.remove('earned');
+                }
+            });
+        }
+
+        function showCelebration() {
+            const overlay = document.getElementById('celebrationOverlay');
+            const messages = [
+                { emoji: '✨', text: 'Tiny win completed!' },
+                { emoji: '🌟', text: 'You are building momentum!' },
+                { emoji: '💪', text: 'One step closer to peace!' },
+                { emoji: '🌱', text: 'Growth happens in small steps!' },
+                { emoji: '🎉', text: 'You are doing amazing!' }
+            ];
+            const msg = messages[Math.floor(Math.random() * messages.length)];
+
+            document.getElementById('celebrationEmoji').textContent = msg.emoji;
+            document.getElementById('celebrationText').textContent = msg.text;
+
+            overlay.classList.add('active');
+
+            // Confetti
+            for (let i = 0; i < 20; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.top = '100%';
+                piece.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                piece.style.animationDelay = Math.random() * 0.5 + 's';
+                piece.style.animationDuration = (1.5 + Math.random()) + 's';
+                overlay.appendChild(piece);
+                setTimeout(() => piece.remove(), 3000);
+            }
+
+            setTimeout(() => {
+                overlay.classList.remove('active');
+            }, 2000);
+        }
+
+        // ===== FUTURE SELF =====
+        function sendToFutureSelf() {
+            const input = document.getElementById('futureInput').value.trim();
+            if (!input) return;
+
+            const responses = futureSelfResponses[currentMood];
+            const response = responses[Math.floor(Math.random() * responses.length)];
+
+            const responseEl = document.getElementById('futureResponse');
+            const textEl = document.getElementById('futureResponseText');
+
+            textEl.textContent = response;
+            responseEl.classList.add('show');
+
+            document.getElementById('futureInput').value = '';
+
+            // Save to localStorage
+            const entries = JSON.parse(localStorage.getItem('mh_futureEntries') || '[]');
+            entries.push({ date: new Date().toISOString(), mood: currentMood, message: input, response });
+            localStorage.setItem('mh_futureEntries', JSON.stringify(entries));
+        }
+
+        function openFutureSelf() {
+            document.getElementById('futureSelfSection').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('futureInput').focus();
+        }
+
+        // ===== GRATITUDE =====
+        function addGratitude() {
+            const input = document.getElementById('gratitudeInput');
+            const text = input.value.trim();
+            if (!text) return;
+
+            gratitudeNotes.push({ text, date: new Date().toISOString() });
+            if (gratitudeNotes.length > 20) gratitudeNotes = gratitudeNotes.slice(-20);
+            localStorage.setItem('mh_gratitude', JSON.stringify(gratitudeNotes));
+
+            input.value = '';
+            renderGratitude();
+            showCelebration();
+        }
+
+        function renderGratitude() {
+            const jar = document.getElementById('gratitudeJar');
+            jar.innerHTML = '';
+
+            gratitudeNotes.slice().reverse().forEach(note => {
+                const el = document.createElement('div');
+                el.className = 'gratitude-note';
+                el.textContent = note.text;
+                jar.appendChild(el);
+            });
+        }
+
+        // ===== AFFIRMATION =====
+        function flipAffirmation() {
+            document.getElementById('affirmationCard').classList.toggle('flipped');
+        }
+
+        // ===== BREATHING =====
+        let breathingInterval = null;
+        function openBreathing() {
+            document.getElementById('breathingOverlay').classList.add('active');
+            let phase = 0;
+            const phases = [
+                { text: 'Breathe In', instruction: 'Inhale deeply through your nose...' },
+                { text: 'Hold', instruction: 'Hold gently...' },
+                { text: 'Breathe Out', instruction: 'Exhale slowly through your mouth...' },
+                { text: 'Rest', instruction: 'Let your body relax...' }
+            ];
+
+            document.getElementById('breathText').textContent = phases[0].text;
+            document.getElementById('breathInstruction').textContent = phases[0].instruction;
+
+            breathingInterval = setInterval(() => {
+                phase = (phase + 1) % 4;
+                document.getElementById('breathText').textContent = phases[phase].text;
+                document.getElementById('breathInstruction').textContent = phases[phase].instruction;
+            }, 4000);
+        }
+
+        function closeBreathing() {
+            document.getElementById('breathingOverlay').classList.remove('active');
+            if (breathingInterval) clearInterval(breathingInterval);
+        }
+
+        // ===== FOCUS =====
+        function openFocus() {
+            document.getElementById('focusOverlay').classList.add('active');
+            focusSeconds = 300;
+            focusRunning = false;
+            updateFocusTimer();
+            document.getElementById('focusBtn').textContent = 'Start Focus';
+            document.getElementById('focusMessage').textContent = 'One thing at a time. You are capable of this moment.';
+        }
+
+        function updateFocusTimer() {
+            const mins = Math.floor(focusSeconds / 60).toString().padStart(2, '0');
+            const secs = (focusSeconds % 60).toString().padStart(2, '0');
+            document.getElementById('focusTimer').textContent = `${mins}:${secs}`;
+        }
+
+        function toggleFocus() {
+            if (focusRunning) {
+                clearInterval(focusInterval);
+                focusRunning = false;
+                document.getElementById('focusBtn').textContent = 'Resume';
+            } else {
+                focusRunning = true;
+                document.getElementById('focusBtn').textContent = 'Pause';
+                focusInterval = setInterval(() => {
+                    focusSeconds--;
+                    updateFocusTimer();
+                    if (focusSeconds <= 0) {
+                        clearInterval(focusInterval);
+                        focusRunning = false;
+                        document.getElementById('focusBtn').textContent = 'Done!';
+                        document.getElementById('focusMessage').textContent = 'You did it. Five minutes of pure focus. That is a gift to yourself.';
+                        showCelebration();
+                    }
+                }, 1000);
+            }
+        }
+
+        function closeFocus() {
+            document.getElementById('focusOverlay').classList.remove('active');
+            if (focusInterval) clearInterval(focusInterval);
+            focusRunning = false;
+        }
+
+        // ===== GROUNDING =====
+        function openGrounding() {
+            document.getElementById('groundingOverlay').classList.add('active');
+            document.querySelectorAll('.grounding-step').forEach(s => {
+                s.style.background = 'var(--surface)';
+                s.style.borderColor = 'var(--border)';
+            });
+        }
+
+        function completeGroundingStep(element, num) {
+            element.style.background = 'linear-gradient(135deg, var(--primary)15, var(--primary-light)08)';
+            element.style.borderColor = 'var(--primary)';
+
+            if (num === 1) {
+                setTimeout(() => {
+                    showCelebration();
+                }, 500);
+            }
+        }
+
+        function closeGrounding() {
+            document.getElementById('groundingOverlay').classList.remove('active');
+        }
+
+        // ===== OVER THINKING =====
+        function openOverthinking() {
+            document.getElementById('overthinkingOverlay').classList.add('active');
+            document.querySelectorAll('.overthinking-step').forEach(s => s.classList.remove('active'));
+            document.getElementById('otStep1').classList.add('active');
+        }
+
+        function nextOverthinking(step, answer) {
+            document.querySelectorAll('.overthinking-step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`otStep${step}`).classList.add('active');
+        }
+
+        function showOverthinkingResult(type) {
+            const results = {
+                kind: { emoji: '🤗', text: "You deserve the same kindness you would give a friend. Speak to yourself with the same gentleness. You are doing your best, and your best is enough. Place your hand on your heart and say: 'I am kind to myself.'" },
+                action: { emoji: '🎯', text: "One small step is all you need. Not a leap. Not a plan. Just one tiny action. Text one person. Wash one dish. Step outside for one minute. Momentum builds from the smallest movement." },
+                patience: { emoji: '🌊', text: "This feeling is a wave, not the ocean. It will rise, peak, and pass. You do not need to fight it. Float on it. Trust that calmer waters are ahead. They always come." }
+            };
+
+            const result = results[type];
+            document.getElementById('otResultEmoji').textContent = result.emoji;
+            document.getElementById('otResultText').textContent = result.text;
+
+            document.querySelectorAll('.overthinking-step').forEach(s => s.classList.remove('active'));
+            document.getElementById('otResult').classList.add('active');
+        }
+
+        function closeOverthinking() {
+            document.getElementById('overthinkingOverlay').classList.remove('active');
+        }
+
+        // ===== CALM SPACE / SOUNDS =====
+        function openCalmSpace() {
+            document.getElementById('calmOverlay').classList.add('active');
+        }
+
+        function closeCalmSpace() {
+            document.getElementById('calmOverlay').classList.remove('active');
+            stopAllSounds();
+        }
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function createNoise(type) {
+            initAudio();
+            const bufferSize = audioContext.sampleRate * 2;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = audioContext.createBufferSource();
+            noise.buffer = buffer;
+            noise.loop = true;
+
+            const filter = audioContext.createBiquadFilter();
+            const gain = audioContext.createGain();
+            gain.gain.value = 0.15;
+
+            if (type === 'rain') {
+                filter.type = 'lowpass';
+                filter.frequency.value = 800;
+            } else if (type === 'waves') {
+                filter.type = 'lowpass';
+                filter.frequency.value = 400;
+                // Create LFO for wave effect
+                const lfo = audioContext.createOscillator();
+                lfo.frequency.value = 0.1;
+                const lfoGain = audioContext.createGain();
+                lfoGain.gain.value = 0.05;
+                lfo.connect(lfoGain);
+                lfoGain.connect(gain.gain);
+                lfo.start();
+            } else if (type === 'night') {
+                filter.type = 'bandpass';
+                filter.frequency.value = 2000;
+                filter.Q.value = 0.5;
+                gain.gain.value = 0.08;
+            } else if (type === 'lofi') {
+                filter.type = 'lowpass';
+                filter.frequency.value = 2000;
+                gain.gain.value = 0.1;
+                // Add subtle crackle
+                const crackle = audioContext.createBufferSource();
+                const crackleBuffer = audioContext.createBuffer(1, bufferSize / 10, audioContext.sampleRate);
+                const crackleData = crackleBuffer.getChannelData(0);
+                for (let i = 0; i < crackleData.length; i++) {
+                    crackleData[i] = Math.random() > 0.995 ? Math.random() * 0.3 : 0;
+                }
+                crackle.buffer = crackleBuffer;
+                crackle.loop = true;
+                const crackleGain = audioContext.createGain();
+                crackleGain.gain.value = 0.05;
+                crackle.connect(crackleGain);
+                crackleGain.connect(audioContext.destination);
+                crackle.start();
+            }
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioContext.destination);
+            noise.start();
+
+            return { noise, gain };
+        }
+
+        function toggleSound(type) {
+            initAudio();
+
+            if (activeSound === type) {
+                stopAllSounds();
+                return;
+            }
+
+            stopAllSounds();
+            activeSound = type;
+
+            const nodes = createNoise(type);
+            currentOscillator = nodes.noise;
+            currentGain = nodes.gain;
+
+            document.querySelectorAll('.sound-card').forEach(c => c.classList.remove('playing'));
+            document.getElementById(`sound${type.charAt(0).toUpperCase() + type.slice(1)}`).classList.add('playing');
+
+            document.getElementById(`${type}Status`).textContent = 'Playing...';
+        }
+
+        function stopAllSounds() {
+            if (currentOscillator) {
+                try { currentOscillator.stop(); } catch(e) {}
+                currentOscillator = null;
+            }
+            if (currentGain) {
+                try { currentGain.gain.setValueAtTime(0, audioContext.currentTime); } catch(e) {}
+            }
+            activeSound = null;
+
+            document.querySelectorAll('.sound-card').forEach(c => c.classList.remove('playing'));
+            ['rain', 'night', 'lofi', 'waves'].forEach(s => {
+                document.getElementById(`${s}Status`).textContent = 'Tap to play';
+            });
+        }
+
+        // ===== MOOD HISTORY =====
+        function renderHistory() {
+            const chart = document.getElementById('historyChart');
+            chart.innerHTML = '';
+
+            const recent = moodHistory.slice(-7);
+            const moodColors = {
+                sad: '#8b9dc3', depressed: '#7c6fae', anxious: '#5a9a8f',
+                stressed: '#c97b63', lonely: '#8fa8c8', overthinking: '#6b8e9b',
+                neutral: '#6366f1', motivated: '#d4a843'
+            };
+            const moodEmojis = {
+                sad: '😔', depressed: '🌧️', anxious: '😰', stressed: '😤',
+                lonely: '🌑', overthinking: '🔄', neutral: '😐', motivated: '✨'
+            };
+
+            recent.forEach(entry => {
+                const bar = document.createElement('div');
+                bar.className = 'history-bar';
+                bar.style.height = '40%';
+                bar.style.background = moodColors[entry.mood] || '#6366f1';
+                bar.setAttribute('data-emoji', moodEmojis[entry.mood] || '😐');
+                bar.title = `${entry.mood} - ${new Date(entry.date).toLocaleDateString()}`;
+                chart.appendChild(bar);
+            });
+
+            if (recent.length === 0) {
+                chart.innerHTML = '<div style="color:var(--text-secondary);font-size:0.85rem;width:100%;text-align:center;">Your mood history will appear here</div>';
+            }
+        }
+
+        // ===== NAVIGATION =====
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            if (tab === 'dashboard') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (tab === 'tools') {
+                document.querySelector('.tools-grid').scrollIntoView({ behavior: 'smooth' });
+            } else if (tab === 'journal') {
+                document.getElementById('futureSelfSection').scrollIntoView({ behavior: 'smooth' });
+            } else if (tab === 'progress') {
+                document.querySelector('.history-section').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // ===== INIT APP =====
+        window.addEventListener('DOMContentLoaded', init);
+
+        // Handle visibility change for audio
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && activeSound) {
+                stopAllSounds();
+            }
+        });
+    </script>
+</body>
+</html>
