@@ -362,7 +362,7 @@
         .modal-card.wide { max-width: 760px; }
         .modal-card.full { max-width: 920px; }
         .modal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--pink-primary), var(--purple-primary)); border-radius: 24px 24px 0 0; }
-        .modal-close-btn { position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; z-index: 10; }
+        .modal-close-btn { position: absolute; top: 16px; right: 16px; background: transparent; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; z-index: 5; }
         .modal-close-btn:hover { background: var(--bg-hover); color: var(--pink-primary); }
         .modal-title { font-size: 1.15rem; font-weight: 800; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
         .modal-title i { color: var(--pink-primary); }
@@ -370,24 +370,24 @@
 
         /* Story viewer */
         .story-viewer-overlay { position: fixed; inset: 0; background: #000; z-index: 11000; display: flex; align-items: center; justify-content: center; }
-        .story-viewer-content { position: relative; width: 100%; max-width: 460px; height: 100vh; max-height: 100vh; overflow: hidden; background: #000; border-radius: 0; }
-        .story-progress-bar { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 5px; z-index: 20; }
+        .story-viewer-content { position: relative; width: 100%; max-width: 460px; height: 100vh; max-height: 100vh; overflow: hidden; background: #000; }
+        .story-progress-bar { position: absolute; top: 12px; left: 12px; right: 12px; display: flex; gap: 5px; z-index: 15; }
         .story-progress-segment { flex: 1; height: 3px; background: rgba(255,255,255,0.3); border-radius: 2px; overflow: hidden; }
         .story-progress-fill { height: 100%; background: #fff; width: 0%; transition: width 0.05s linear; }
-        .story-header { position: absolute; top: 28px; left: 12px; right: 12px; display: flex; align-items: center; gap: 10px; z-index: 20; }
+        .story-header { position: absolute; top: 28px; left: 12px; right: 12px; display: flex; align-items: center; gap: 10px; z-index: 15; }
         .story-header img { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--pink-primary); }
         .story-header .sv-info { flex: 1; min-width: 0; }
         .story-header .sv-name { color: #fff; font-weight: 700; font-size: 0.9rem; }
         .story-header .sv-time { color: rgba(255,255,255,0.7); font-size: 0.72rem; }
         .story-header .sv-actions { display: flex; gap: 6px; }
         .story-header .sv-actions button { background: rgba(255,255,255,0.15); border: none; color: #fff; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 0.85rem; }
-        .story-media { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.3s; position: absolute; top: 0; left: 0; z-index: 1; }
-        .story-text-display { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 40px; text-align: center; color: #fff; font-size: 1.6rem; font-weight: 800; line-height: 1.3; position: absolute; top: 0; left: 0; z-index: 1; }
-        .story-caption { position: absolute; bottom: 80px; left: 14px; right: 14px; color: #fff; font-size: 0.95rem; text-align: center; text-shadow: 0 2px 8px rgba(0,0,0,0.7); z-index: 20; }
+        .story-media { width: 100%; height: 100%; object-fit: cover; display: block; transition: opacity 0.3s; position: absolute; inset: 0; z-index: 1; }
+        .story-text-display { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 40px; text-align: center; color: #fff; font-size: 1.6rem; font-weight: 800; line-height: 1.3; position: absolute; inset: 0; z-index: 1; }
+        .story-caption { position: absolute; bottom: 80px; left: 14px; right: 14px; color: #fff; font-size: 0.95rem; text-align: center; text-shadow: 0 2px 8px rgba(0,0,0,0.7); z-index: 15; }
         .story-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 50%; height: 100%; cursor: pointer; }
         .story-nav.left { left: 0; }
         .story-nav.right { right: 0; }
-        .story-reply-bar { position: absolute; bottom: 16px; left: 16px; right: 16px; display: flex; gap: 8px; z-index: 20; }
+        .story-reply-bar { position: absolute; bottom: 16px; left: 16px; right: 16px; display: flex; gap: 8px; z-index: 15; }
         .story-reply-bar input { flex: 1; padding: 12px 16px; border-radius: 24px; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.25); color: #fff; font-size: 0.85rem; outline: none; backdrop-filter: blur(10px); }
         .story-reply-bar input::placeholder { color: rgba(255,255,255,0.7); }
         .story-reply-bar button { width: 44px; height: 44px; border-radius: 50%; background: var(--pink-primary); color: #fff; border: none; cursor: pointer; font-size: 1rem; }
@@ -477,7 +477,7 @@
         .pm-cover { height: 150px; background: linear-gradient(135deg, var(--pink-primary), var(--purple-primary)); position: relative; background-size: cover; background-position: center; }
         .pm-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 60%, var(--bg-sidebar) 100%); }
         .pm-cover .pm-cover-edit { position: absolute; top: 14px; right: 14px; background: rgba(0,0,0,0.4); color: #fff; border: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; }
-        .pm-avatar-wrap { position: relative; width: 110px; height: 110px; margin: -55px auto 0; z-index: 10; }
+        .pm-avatar-wrap { position: relative; width: 110px; height: 110px; margin: -55px auto 0; z-index: 5; }
         .pm-avatar-wrap img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg-sidebar); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
         .pm-body { padding: 16px 24px 24px; text-align: center; }
         .pm-name-row { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
@@ -1739,7 +1739,7 @@
                 <div class="post-header">
                     <div class="post-user" onclick="openProfileModal('${post.userId}')">
                         <div class="avatar-wrap">
-                            <img src="${escapeAttr(post.userPhoto)}" alt="${escapeAttr(post.userName)}" onerror="this.src='${getAvatarUrl(post.userId)}'" loading="lazy">
+                            <img src="${escapeAttr(post.userPhoto)}" alt="${escapeAttr(post.userName)}" onerror="this.src='${getAvatarUrl(post.userId)}'">
                         </div>
                         <div class="post-user-info">
                             <h4>${escapeHtml(post.userName)} ${post.isVerified ? '<i class="fas fa-circle-check verified-check"></i>' : ''} ${post.userType ? `<span class="user-type-badge">${escapeHtml(post.userType)}</span>` : ''} <span class="post-type-badge">${escapeHtml(postTypeLabel)}</span> ${post.communityName ? `<span class="community-badge">${escapeHtml(post.communityName)}</span>` : ''}</h4>
@@ -3142,7 +3142,7 @@
                     try {
                         snap = await getDocs(query(collection(db, "posts"), where("userId", "==", profileModalUid), orderBy("timestamp", "desc"), limit(20)));
                     } catch (indexErr) {
-                        console.warn('[Profile] Firestore index missing, using client-side sort');
+                        console.warn('[Profile] Firestore index missing for posts, using fallback');
                         const allSnap = await getDocs(query(collection(db, "posts"), where("userId", "==", profileModalUid), limit(50)));
                         const sorted = allSnap.docs.sort((a, b) => (b.data().timestamp || 0) - (a.data().timestamp || 0)).slice(0, 20);
                         snap = { docs: sorted, empty: sorted.length === 0 };
@@ -3157,8 +3157,8 @@
                         </div>`;
                     }).join('');
                 } catch (e) {
-                    console.error('[Profile] posts load error:', e);
-                    content.innerHTML = `<div class="empty-state" style="padding:24px;"><i class="fas fa-triangle-exclamation"></i><p>Failed to load posts.</p><p class="empty-sub">${escapeHtml(e.message || 'Please try again')}</p></div>`;
+                    console.error('[Profile] posts error:', e);
+                    content.innerHTML = `<div class="empty-state" style="padding:24px;"><i class="fas fa-triangle-exclamation"></i><p>Failed to load posts.</p><p class="empty-sub">${e.message || 'Please try again'}</p></div>`;
                 }
             } else if (tab === 'saved' && profileModalUid === currentUser.uid) {
                 try {
@@ -3166,7 +3166,7 @@
                     try {
                         snap = await getDocs(query(collection(db, "savedPosts"), where("userId", "==", currentUser.uid), orderBy("savedAt", "desc"), limit(20)));
                     } catch (indexErr) {
-                        console.warn('[Profile] Saved posts index missing, using client-side sort');
+                        console.warn('[Profile] Firestore index missing for saved, using fallback');
                         const allSnap = await getDocs(query(collection(db, "savedPosts"), where("userId", "==", currentUser.uid), limit(50)));
                         const sorted = allSnap.docs.sort((a, b) => (b.data().savedAt || 0) - (a.data().savedAt || 0)).slice(0, 20);
                         snap = { docs: sorted, empty: sorted.length === 0 };
@@ -3179,7 +3179,7 @@
                     }
                     content.innerHTML = posts.map(p => `<div class="pm-mini-post"><div class="mp-text">${escapeHtml((p.text || '').slice(0, 140))}</div><div class="mp-meta">${formatTimeAgo(p.timestamp)} · ${p.reactionsCount || 0} reactions</div></div>`).join('');
                 } catch (e) {
-                    console.error('[Profile] saved posts error:', e);
+                    console.error('[Profile] saved error:', e);
                     content.innerHTML = `<div class="empty-state" style="padding:24px;"><i class="fas fa-bookmark"></i><p>Failed to load saved posts.</p></div>`;
                 }
             } else if (tab === 'communities') {
@@ -3571,15 +3571,10 @@
                 currentCommunityId = communityId;
                 const isMember = (currentUserData.joinedCommunities || []).includes(communityId);
 
-                // Populate header
                 const coverEl = document.getElementById('community-cover-photo');
-                if (c.photoURL) {
-                    coverEl.style.backgroundImage = `url('${escapeAttr(c.photoURL)}')`;
-                    coverEl.style.background = 'linear-gradient(135deg, var(--pink-primary), var(--purple-primary))';
-                } else {
-                    coverEl.style.background = 'linear-gradient(135deg, var(--pink-primary), var(--purple-primary))';
-                    coverEl.style.backgroundImage = 'none';
-                }
+                coverEl.style.background = c.photoURL ? `linear-gradient(135deg, var(--pink-primary), var(--purple-primary)), url('${escapeAttr(c.photoURL)}')` : 'linear-gradient(135deg, var(--pink-primary), var(--purple-primary))';
+                coverEl.style.backgroundSize = 'cover';
+                coverEl.style.backgroundPosition = 'center';
 
                 const iconEl = document.getElementById('community-detail-icon');
                 if (c.photoURL) {
@@ -3589,44 +3584,31 @@
                 }
 
                 document.getElementById('community-detail-name').innerText = c.name || 'Community';
-                document.getElementById('community-detail-meta').innerText = `@${(c.name || 'community').toLowerCase().replace(/\s+/g, '')} · ${c.membersCount || 0} members`;
-                document.getElementById('community-detail-privacy').innerHTML = `<i class="fas ${c.isPrivate ? 'fa-lock' : 'fa-globe'}"></i> ${c.isPrivate ? 'Private' : 'Public'} group · ${c.category || 'general'}`;
+                document.getElementById('community-detail-meta').innerText = '@' + (c.name || 'community').toLowerCase().replace(/\s+/g, '') + ' · ' + (c.membersCount || 0) + ' members';
+                document.getElementById('community-detail-privacy').innerHTML = '<i class="fas ' + (c.isPrivate ? 'fa-lock' : 'fa-globe') + '"></i> ' + (c.isPrivate ? 'Private' : 'Public') + ' group · ' + (c.category || 'general');
 
-                // Update join button
                 const joinBtn = document.getElementById('community-join-btn');
                 joinBtn.innerHTML = isMember ? '<i class="fas fa-check"></i> Joined' : '<i class="fas fa-plus"></i> Join';
-                joinBtn.className = `action-btn-sm ${isMember ? 'btn-muted' : 'btn-pink'}`;
+                joinBtn.className = 'action-btn-sm ' + (isMember ? 'btn-muted' : 'btn-pink');
 
-                // Sidebar info
                 document.getElementById('sidebar-about-text').innerText = c.description || 'No description available.';
-                document.getElementById('sidebar-members').innerText = `${c.membersCount || 0} members`;
-                document.getElementById('sidebar-created').innerText = c.createdAt ? `Created ${formatTimeAgo(c.createdAt)}` : 'Created recently';
+                document.getElementById('sidebar-members').innerText = (c.membersCount || 0) + ' members';
+                document.getElementById('sidebar-created').innerText = 'Created ' + (c.createdAt ? formatTimeAgo(c.createdAt) : 'recently');
                 document.getElementById('sidebar-visibility').innerText = c.isPrivate ? 'Private' : 'Public';
 
-                // Load admins
                 const adminsContainer = document.getElementById('sidebar-admins');
                 if (c.createdBy) {
                     const adminSnap = await getDoc(doc(db, "users", c.createdBy));
                     if (adminSnap.exists()) {
                         const admin = adminSnap.data();
-                        adminsContainer.innerHTML = `
-                            <div class="community-member-row" onclick="openProfileModal('${c.createdBy}')">
-                                <img src="${escapeAttr(admin.photoURL || getAvatarUrl(c.createdBy))}" alt="" onerror="this.src='${getAvatarUrl(c.createdBy)}'">
-                                <div>
-                                    <div class="cm-name">${escapeHtml(admin.fullName || 'Admin')}</div>
-                                    <div class="cm-role">Creator</div>
-                                </div>
-                            </div>`;
+                        adminsContainer.innerHTML = '<div class="community-member-row" onclick="openProfileModal('' + c.createdBy + '')"><img src="' + escapeAttr(admin.photoURL || getAvatarUrl(c.createdBy)) + '" alt="" onerror="this.src='' + getAvatarUrl(c.createdBy) + ''"><div><div class="cm-name">' + escapeHtml(admin.fullName || 'Admin') + '</div><div class="cm-role">Creator</div></div></div>';
                     } else {
                         adminsContainer.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem;">No admins found</div>';
                     }
                 }
 
-                // Show overlay
                 document.getElementById('community-detail-overlay').classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
-
-                // Load discussion tab by default
                 switchCommunityTab('discussion');
             } catch (e) {
                 console.error('[Community] error:', e);
@@ -3643,27 +3625,11 @@
         window.switchCommunityTab = async function(tab) {
             document.querySelectorAll('.community-tab').forEach(t => t.classList.toggle('active', t.dataset.ctab === tab));
             const content = document.getElementById('community-content');
-
             if (!currentCommunityId) return;
 
             if (tab === 'discussion') {
-                content.innerHTML = `
-                    <div class="composer" style="margin-bottom:20px;">
-                        <div class="composer-top">
-                            <img src="${escapeAttr(currentUserData?.photoURL || getAvatarUrl(currentUser?.uid))}" class="composer-avatar" alt="Me">
-                            <textarea class="composer-textarea" id="community-composer-text" placeholder="What's on your mind?" maxlength="2000" style="min-height:48px;"></textarea>
-                        </div>
-                        <div class="composer-bottom">
-                            <button class="composer-tool" onclick="document.getElementById('community-photo-input').click()"><i class="fas fa-image"></i> Photo</button>
-                            <button class="composer-tool" onclick="document.getElementById('community-pdf-btn').click()"><i class="fas fa-file-pdf"></i> PDF</button>
-                            <button class="composer-submit" style="margin-left:auto;" onclick="postToCommunity()"><i class="fas fa-paper-plane"></i> Post</button>
-                        </div>
-                        <input type="file" id="community-photo-input" accept="image/*" multiple class="hidden">
-                    </div>
-                    <div id="community-posts-list"><div style="text-align:center; padding:20px; color:var(--text-muted);"><div class="spinner-sm" style="display:inline-block;"></div> Loading posts...</div></div>
-                `;
+                content.innerHTML = '<div class="composer" style="margin-bottom:20px;"><div class="composer-top"><img src="' + escapeAttr(currentUserData?.photoURL || getAvatarUrl(currentUser?.uid)) + '" class="composer-avatar" alt="Me"><textarea class="composer-textarea" id="community-composer-text" placeholder="What's on your mind?" maxlength="2000" style="min-height:48px;"></textarea></div><div class="composer-bottom"><button class="composer-tool" onclick="document.getElementById('community-photo-input').click()"><i class="fas fa-image"></i> Photo</button><button class="composer-submit" style="margin-left:auto;" onclick="postToCommunity()"><i class="fas fa-paper-plane"></i> Post</button></div><input type="file" id="community-photo-input" accept="image/*" multiple class="hidden"></div><div id="community-posts-list"><div style="text-align:center; padding:20px; color:var(--text-muted);"><div class="spinner-sm" style="display:inline-block;"></div> Loading posts...</div></div>';
 
-                // Load community posts
                 try {
                     let snap;
                     try {
@@ -3672,68 +3638,44 @@
                         const allSnap = await getDocs(query(collection(db, "posts"), where("communityId", "==", currentCommunityId), limit(50)));
                         snap = { docs: allSnap.docs.sort((a, b) => (b.data().timestamp || 0) - (a.data().timestamp || 0)).slice(0, 20), empty: allSnap.docs.length === 0 };
                     }
-
                     const list = document.getElementById('community-posts-list');
                     if (snap.empty) {
-                        list.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-newspaper"></i><p>No posts yet.</p><p class="empty-sub">Be the first to post in this community!</p></div>`;
+                        list.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-newspaper"></i><p>No posts yet.</p><p class="empty-sub">Be the first to post!</p></div>';
                         return;
                     }
-
                     list.innerHTML = '';
                     snap.docs.forEach(d => {
                         const post = { id: d.id, ...d.data() };
                         const el = document.createElement('div');
                         el.className = 'post-card';
-                        el.id = `post-${post.id}`;
+                        el.id = 'post-' + post.id;
                         renderPostInto(el, post);
                         list.appendChild(el);
                         renderedPosts.set(post.id, el);
                         subscribePostReactions(post.id);
                     });
                 } catch (e) {
-                    document.getElementById('community-posts-list').innerHTML = `<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-triangle-exclamation"></i><p>Failed to load posts.</p></div>`;
+                    document.getElementById('community-posts-list').innerHTML = '<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-triangle-exclamation"></i><p>Failed to load posts.</p></div>';
                 }
             } else if (tab === 'members') {
-                content.innerHTML = `<div style="text-align:center; padding:20px;"><div class="spinner-sm" style="display:inline-block;"></div> Loading members...</div>`;
+                content.innerHTML = '<div style="text-align:center; padding:20px;"><div class="spinner-sm" style="display:inline-block;"></div> Loading members...</div>';
                 try {
-                    // Get all users who have this community in joinedCommunities
                     const usersSnap = await getDocs(query(collection(db, "users"), where("joinedCommunities", "array-contains", currentCommunityId), limit(50)));
                     if (usersSnap.empty) {
-                        content.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-users"></i><p>No members yet.</p></div>`;
+                        content.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-users"></i><p>No members yet.</p></div>';
                         return;
                     }
-
-                    content.innerHTML = `<div style="display:flex; flex-direction:column; gap:8px;">` + usersSnap.docs.map(d => {
+                    content.innerHTML = '<div style="display:flex; flex-direction:column; gap:8px;">' + usersSnap.docs.map(d => {
                         const u = d.data();
-                        return `
-                            <div class="community-member-row" style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:12px;" onclick="openProfileModal('${d.id}')">
-                                <img src="${escapeAttr(u.photoURL || getAvatarUrl(d.id))}" alt="" onerror="this.src='${getAvatarUrl(d.id)}'">
-                                <div style="flex:1;">
-                                    <div class="cm-name">${escapeHtml(u.fullName || 'User')}</div>
-                                    <div style="font-size:0.7rem; color:var(--text-muted);">@${escapeHtml(u.username || 'user')}</div>
-                                </div>
-                                ${d.id !== currentUser?.uid ? `<button class="action-btn-sm btn-muted" style="font-size:0.7rem; padding:6px 12px;" onclick="event.stopPropagation(); messageUser('${d.id}')"><i class="fas fa-comment"></i></button>` : ''}
-                            </div>`;
-                    }).join('') + `</div>`;
+                        return '<div class="community-member-row" style="background:var(--bg-card); border:1px solid var(--glass-border); border-radius:12px; padding:12px;" onclick="openProfileModal('' + d.id + '')"><img src="' + escapeAttr(u.photoURL || getAvatarUrl(d.id)) + '" alt="" onerror="this.src='' + getAvatarUrl(d.id) + ''"><div style="flex:1;"><div class="cm-name">' + escapeHtml(u.fullName || 'User') + '</div><div style="font-size:0.7rem; color:var(--text-muted);">@' + escapeHtml(u.username || 'user') + '</div></div>' + (d.id !== currentUser?.uid ? '<button class="action-btn-sm btn-muted" style="font-size:0.7rem; padding:6px 12px;" onclick="event.stopPropagation(); messageUser('' + d.id + '')"><i class="fas fa-comment"></i></button>' : '') + '</div>';
+                    }).join('') + '</div>';
                 } catch (e) {
-                    content.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-triangle-exclamation"></i><p>Failed to load members.</p></div>`;
+                    content.innerHTML = '<div class="empty-state" style="padding:40px 20px;"><i class="fas fa-triangle-exclamation"></i><p>Failed to load members.</p></div>';
                 }
             } else if (tab === 'about') {
                 const snap = await getDoc(doc(db, "communities", currentCommunityId));
                 const c = snap.exists() ? snap.data() : {};
-                content.innerHTML = `
-                    <div class="community-about-card">
-                        <h4><i class="fas fa-info-circle"></i> Description</h4>
-                        <div class="community-about-text">${escapeHtml(c.description || 'No description available.')}</div>
-                    </div>
-                    <div class="community-about-card">
-                        <h4><i class="fas fa-chart-bar"></i> Information</h4>
-                        <div class="community-stats-row"><div class="community-stat"><i class="fas fa-users"></i> ${c.membersCount || 0} members</div></div>
-                        <div class="community-stats-row"><div class="community-stat"><i class="fas fa-folder"></i> ${escapeHtml(c.category || 'general')}</div></div>
-                        <div class="community-stats-row"><div class="community-stat"><i class="fas fa-eye"></i> ${c.isPrivate ? 'Private' : 'Public'}</div></div>
-                        <div class="community-stats-row"><div class="community-stat"><i class="fas fa-calendar"></i> Created ${c.createdAt ? formatTimeAgo(c.createdAt) : 'recently'}</div></div>
-                    </div>
-                `;
+                content.innerHTML = '<div class="community-about-card"><h4><i class="fas fa-info-circle"></i> Description</h4><div class="community-about-text">' + escapeHtml(c.description || 'No description available.') + '</div></div><div class="community-about-card"><h4><i class="fas fa-chart-bar"></i> Information</h4><div class="community-stats-row"><div class="community-stat"><i class="fas fa-users"></i> ' + (c.membersCount || 0) + ' members</div></div><div class="community-stats-row"><div class="community-stat"><i class="fas fa-folder"></i> ' + escapeHtml(c.category || 'general') + '</div></div><div class="community-stats-row"><div class="community-stat"><i class="fas fa-eye"></i> ' + (c.isPrivate ? 'Private' : 'Public') + '</div></div><div class="community-stats-row"><div class="community-stat"><i class="fas fa-calendar"></i> Created ' + (c.createdAt ? formatTimeAgo(c.createdAt) : 'recently') + '</div></div></div>';
             }
         };
 
@@ -3743,20 +3685,19 @@
             const snap = await getDoc(doc(db, "communities", currentCommunityId));
             if (snap.exists()) {
                 const c = snap.data();
-                document.getElementById('community-detail-meta').innerText = `@${(c.name || 'community').toLowerCase().replace(/\s+/g, '')} · ${c.membersCount || 0} members`;
-                document.getElementById('sidebar-members').innerText = `${c.membersCount || 0} members`;
+                document.getElementById('community-detail-meta').innerText = '@' + (c.name || 'community').toLowerCase().replace(/\s+/g, '') + ' · ' + (c.membersCount || 0) + ' members';
+                document.getElementById('sidebar-members').innerText = (c.membersCount || 0) + ' members';
             }
             const isMember = (currentUserData.joinedCommunities || []).includes(currentCommunityId);
             const joinBtn = document.getElementById('community-join-btn');
             joinBtn.innerHTML = isMember ? '<i class="fas fa-check"></i> Joined' : '<i class="fas fa-plus"></i> Join';
-            joinBtn.className = `action-btn-sm ${isMember ? 'btn-muted' : 'btn-pink'}`;
+            joinBtn.className = 'action-btn-sm ' + (isMember ? 'btn-muted' : 'btn-pink');
         };
 
         window.postToCommunity = async function() {
             const textarea = document.getElementById('community-composer-text');
             const text = textarea.value.trim();
             if (!text) { showToast('Write something first', 'info', 2000); return; }
-
             try {
                 await addDoc(collection(db, "posts"), {
                     userId: currentUser.uid,
@@ -3785,12 +3726,8 @@
 
         window.shareCommunity = function() {
             const name = document.getElementById('community-detail-name').innerText;
-            const url = `${window.location.origin}${window.location.pathname}?community=${currentCommunityId}`;
-            navigator.clipboard?.writeText(url).then(() => {
-                showToast('Community link copied!', 'success');
-            }).catch(() => {
-                showToast('Copy failed', 'error');
-            });
+            const url = window.location.origin + window.location.pathname + '?community=' + currentCommunityId;
+            navigator.clipboard?.writeText(url).then(() => showToast('Community link copied!', 'success')).catch(() => showToast('Copy failed', 'error'));
         };
 
         // ============ NOTIFICATIONS ============
@@ -3816,7 +3753,7 @@
                     console.warn('[Notif] error', err);
                     if (notifPanel) {
                         const list = notifPanel.querySelector('#notif-list');
-                        if (list) list.innerHTML = `<div class="empty-state" style="padding:24px;"><i class="fas fa-triangle-exclamation"></i><p>Failed to load notifications.</p><p class="empty-sub">${escapeHtml(err.message || 'Please refresh')}</p></div>`;
+                        if (list) list.innerHTML = `<div class="empty-state" style="padding:24px;"><i class="fas fa-triangle-exclamation"></i><p>Failed to load notifications.</p></div>`;
                     }
                 });
             } catch (e) { console.warn('[Notif] init failed', e); }
@@ -4136,9 +4073,7 @@
             <button class="community-tab" data-ctab="about" onclick="switchCommunityTab('about')">About</button>
         </div>
         <div class="community-layout">
-            <div class="community-content" id="community-content">
-                <!-- Dynamic content -->
-            </div>
+            <div class="community-content" id="community-content"></div>
             <aside class="community-sidebar" id="community-sidebar">
                 <div class="community-about-card">
                     <h4><i class="fas fa-info-circle"></i> About</h4>
@@ -4146,15 +4081,9 @@
                 </div>
                 <div class="community-about-card">
                     <h4><i class="fas fa-chart-bar"></i> Stats</h4>
-                    <div class="community-stats-row">
-                        <div class="community-stat"><i class="fas fa-users"></i> <span id="sidebar-members">0 members</span></div>
-                    </div>
-                    <div class="community-stats-row">
-                        <div class="community-stat"><i class="fas fa-calendar"></i> <span id="sidebar-created">Created recently</span></div>
-                    </div>
-                    <div class="community-stats-row">
-                        <div class="community-stat"><i class="fas fa-eye"></i> <span id="sidebar-visibility">Public</span></div>
-                    </div>
+                    <div class="community-stats-row"><div class="community-stat"><i class="fas fa-users"></i> <span id="sidebar-members">0 members</span></div></div>
+                    <div class="community-stats-row"><div class="community-stat"><i class="fas fa-calendar"></i> <span id="sidebar-created">Created recently</span></div></div>
+                    <div class="community-stats-row"><div class="community-stat"><i class="fas fa-eye"></i> <span id="sidebar-visibility">Public</span></div></div>
                 </div>
                 <div class="community-about-card">
                     <h4><i class="fas fa-user-shield"></i> Admins</h4>
