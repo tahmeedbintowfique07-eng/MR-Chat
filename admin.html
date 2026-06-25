@@ -812,11 +812,13 @@
                                 <option value="banned">Banned</option>
                             </select>
                             <select class="filter-select" id="user-sort" aria-label="Sort">
-                                <option value="createdAt-desc">Newest</option>
-                                <option value="createdAt-asc">Oldest</option>
+                                <option value="accountCreated-desc">Newest</option>
+                                <option value="accountCreated-asc">Oldest</option>
                                 <option value="level-desc">Level ↓</option>
                                 <option value="gold-desc">Gold ↓</option>
                                 <option value="diamonds-desc">Diamonds ↓</option>
+                                <option value="fullName-asc">Name A-Z</option>
+                                <option value="no-sort">Default (no sort)</option>
                             </select>
                         </div>
                         <div class="toolbar-right">
@@ -2354,13 +2356,30 @@
 
             try {
                 let q;
-                const sortVal = document.getElementById('user-sort').value || 'createdAt-desc';
-                const [sortField, sortDir] = sortVal.split('-');
-                // Build query with pagination
-                let baseQuery = [orderBy(sortField, sortDir), limit(PAGE_SIZE)];
-                if (usersLastDoc) baseQuery.push(startAfter(usersLastDoc));
+                const sortVal = document.getElementById('user-sort').value || 'accountCreated-desc';
+                // Build query with pagination — 'no-sort' fetches without orderBy (for old docs missing the field)
+                let baseQuery;
+                if (sortVal === 'no-sort') {
+                    baseQuery = [limit(PAGE_SIZE)];
+                    // cursor pagination without orderBy is non-deterministic; use limit + startAfter if we have a doc
+                    if (usersLastDoc) baseQuery.push(startAfter(usersLastDoc));
+                } else {
+                    const [sortField, sortDir] = sortVal.split('-');
+                    baseQuery = [orderBy(sortField, sortDir), limit(PAGE_SIZE)];
+                    if (usersLastDoc) baseQuery.push(startAfter(usersLastDoc));
+                }
                 q = query(collection(db, "users"), ...baseQuery);
-                const snap = await getDocs(q);
+                let snap;
+                try {
+                    snap = await getDocs(q);
+                } catch (sortErr) {
+                    // Fallback: the selected sort field may not exist on old docs (e.g., accountCreated missing)
+                    // Retry without orderBy so the table still renders.
+                    console.warn('Users sort failed, retrying without orderBy:', sortErr.message);
+                    const fallback = [limit(PAGE_SIZE)];
+                    if (usersLastDoc) fallback.push(startAfter(usersLastDoc));
+                    snap = await getDocs(query(collection(db, 'users'), ...fallback));
+                }
                 if (snap.empty) {
                     if (reset) allUsers = [];
                     usersHasMore = false;
