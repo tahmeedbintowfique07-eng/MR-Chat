@@ -3089,7 +3089,7 @@
             if (tab === 'about') {
                 content.innerHTML = `
                     ${u.username ? `<div class="pm-about-row"><i class="fas fa-at"></i> @${escapeHtml(u.username)}</div>` : ''}
-                    ${u.email ? `<div class="pm-about-row"><i class="fas fa-envelope"></i> ${escapeHtml(u.email)}</div>` : ''}
+                    <!-- Email hidden for privacy -->
                     ${u.education ? `<div class="pm-about-row"><i class="fas fa-graduation-cap"></i> ${escapeHtml(u.education)}</div>` : ''}
                     ${u.profession ? `<div class="pm-about-row"><i class="fas fa-briefcase"></i> ${escapeHtml(u.profession)}</div>` : ''}
                     ${u.from ? `<div class="pm-about-row"><i class="fas fa-location-dot"></i> ${escapeHtml(u.from)}</div>` : ''}
