@@ -1,176 +1,426 @@
 rules_version = '2';
+
+// ============================================================================
+// MR Chat — Firestore Security Rules (Phase 1 lockdown)
+// ----------------------------------------------------------------------------
+// Design principles:
+//   1. Every write is ownership-scoped: a user can only write documents that
+//      belong to them. The client can no longer forge `userId`, `senderId`,
+//      `reporterId`, etc.
+//   2. Privileged fields on `users/{uid}` (role, gold, diamonds, isBanned,
+//      forceLogout, ownedItems, etc.) cannot be self-written. Only admins
+//      (or Cloud Functions via Admin SDK, which bypasses rules) can write them.
+//   3. Private 1:1 DMs and WebRTC call signaling are scoped to the two
+//      participants. No more "any auth user can read every DM".
+//   4. Admin-only collections (announcements, quiz_questions, gold/diamond
+//      transactions, admin_logs, settings) are locked to isAdmin().
+//   5. Cloud Functions using the Admin SDK bypass these rules entirely, so
+//      server-side logic (purchases, gifts, mass-distribute, ban) keeps
+//      working once Phase 2 lands.
+// ============================================================================
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper: check admin
+
+    // ============================================================
+    // HELPERS
+    // ============================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    // Admin check — safely handles the case where the user doc doesn't exist yet.
     function isAdmin() {
-      return request.auth != null && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(uid()))
+        && get(/databases/$(database)/documents/users/$(uid())).data.role == "admin";
     }
 
-    // Users
+    // True if the request touches ANY of the listed fields (for update).
+    function changedAny(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // True if the request contains ONLY the listed fields (for partial update).
+    function changedOnly(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    // True if the request does NOT contain any of the listed fields (for create).
+    function doesNotRequestAny(fields) {
+      return !request.resource.data.keys().hasAny(fields);
+    }
+
+    // Fields that clients may NEVER write on a user doc — admin/Cloud Function only.
+    function privilegedUserFields() {
+      return [
+        'role',
+        'isBanned',
+        'isEmailVerified',
+        'forceLogout',
+        'gold',
+        'diamonds',
+        'xp',
+        'level',
+        'ownedItems',
+        'badges',
+        'unlockedFeatures',
+        'activeBoosts',
+        'bannedAt',
+        'bannedReason',
+        'bannedUntil',
+        'adminNotes'
+      ];
+    }
+
+    // ============================================================
+    // USERS
+    // ============================================================
+    // Anyone signed in can read any profile (social app requirement).
+    // A user can create their own doc on sign-up — but cannot grant
+    // themselves privileged fields at sign-up time.
+    // Self-update is allowed only for non-privileged fields.
+    // Admins can do anything to any user doc.
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update, delete: if request.auth != null && (
-        request.auth.uid == userId || isAdmin()
-      );
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn()
+                    && uid() == userId
+                    && doesNotRequestAny(privilegedUserFields());
+      allow update: if isSignedIn() && (
+                      (uid() == userId && !changedAny(privilegedUserFields()))
+                      || isAdmin()
+                    );
+      allow delete: if isSignedIn() && (uid() == userId || isAdmin());
     }
 
-    // Posts / Feed
+    // ============================================================
+    // POSTS / FEED  — author owns
+    // ============================================================
     match /posts/{id} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+      allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
 
-    // Stories
+    // ============================================================
+    // STORIES  — author owns
+    // ============================================================
     match /stories/{id} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update, delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
 
-    // Reactions
+    // ============================================================
+    // REACTIONS  (doc id convention: `${uid}_${postId}`)
+    // ============================================================
     match /reactions/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update, delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
 
-    // Comments
+    // ============================================================
+    // COMMENTS  — author owns
+    // ============================================================
     match /comments/{id} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update, delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
 
-    // Messages (story replies)
+    // ============================================================
+    // MESSAGES  (story replies + share-to-chat — top-level collection)
+    // senderId and receiverId both required on the doc.
+    // ============================================================
     match /messages/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+      allow read:   if isSignedIn() && (
+                      resource.data.senderId == uid()
+                      || resource.data.receiverId == uid()
+                    );
+      allow create: if isSignedIn() && request.resource.data.senderId == uid();
+      allow update, delete: if isSignedIn() && (resource.data.senderId == uid() || isAdmin());
     }
 
-    // Gold transactions
-    match /gold_transactions/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-
-    // Diamond transactions
-    match /diamond_transactions/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-
-    // Admin logs
-    match /admin_logs/{id} {
-      allow read, write: if request.auth != null && isAdmin();
-    }
-
-    // System settings
-    match /settings/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && isAdmin();
-    }
-
-    // Friendships
+    // ============================================================
+    // FRIENDSHIPS  (doc has user1 + user2)
+    // Only the two participants can read / write the friendship doc.
+    // ============================================================
     match /friendships/{id} {
-      allow read, write: if request.auth != null;
-    }
-    match /friendships/{id}/chat_messages/{msgId} {
-      allow read, write: if request.auth != null;
+      allow read:   if isSignedIn() && (
+                      resource.data.user1 == uid()
+                      || resource.data.user2 == uid()
+                    );
+      allow create: if isSignedIn() && (
+                      request.resource.data.user1 == uid()
+                      || request.resource.data.user2 == uid()
+                    );
+      allow update: if isSignedIn() && (
+                      resource.data.user1 == uid()
+                      || resource.data.user2 == uid()
+                      || isAdmin()
+                    );
+      allow delete: if isSignedIn() && (
+                      resource.data.user1 == uid()
+                      || resource.data.user2 == uid()
+                      || isAdmin()
+                    );
+
+      // ----- 1:1 DM subcollection -----
+      // Both participants can read; only the sender can create; sender can
+      // edit/delete their own; recipient may only flip `seen` / `seenAt` /
+      // `deliveredAt` / add their own entry in the `reactions` map.
+      match /chat_messages/{msgId} {
+        allow read:   if isSignedIn() && (
+                        get(/databases/$(database)/documents/friendships/$(id)).data.user1 == uid()
+                        || get(/databases/$(database)/documents/friendships/$(id)).data.user2 == uid()
+                      );
+        allow create: if isSignedIn()
+                        && request.resource.data.senderId == uid()
+                        && (
+                          get(/databases/$(database)/documents/friendships/$(id)).data.user1 == uid()
+                          || get(/databases/$(database)/documents/friendships/$(id)).data.user2 == uid()
+                        );
+        allow update: if isSignedIn()
+                        && (
+                          get(/databases/$(database)/documents/friendships/$(id)).data.user1 == uid()
+                          || get(/databases/$(database)/documents/friendships/$(id)).data.user2 == uid()
+                        )
+                        && (
+                          resource.data.senderId == uid()
+                          || changedOnly(['seen', 'seenAt', 'deliveredAt', 'reactions'])
+                          || isAdmin()
+                        );
+        allow delete: if isSignedIn() && (resource.data.senderId == uid() || isAdmin());
+      }
     }
 
-    // Group rooms
-    match /group_rooms/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-    match /group_rooms/{id}/room_messages/{msgId} {
-      allow read, write: if request.auth != null;
-    }
-
-    // Friend requests
+    // ============================================================
+    // FRIEND REQUESTS  (senderId / receiverId / status)
+    // sender creates; receiver accepts/declines; either can delete.
+    // ============================================================
     match /friendRequests/{id} {
-      allow read, write: if request.auth != null;
+      allow read:   if isSignedIn() && (
+                      resource.data.senderId == uid()
+                      || resource.data.receiverId == uid()
+                    );
+      allow create: if isSignedIn() && request.resource.data.senderId == uid();
+      allow update: if isSignedIn() && (
+                      resource.data.senderId == uid()
+                      || resource.data.receiverId == uid()
+                      || isAdmin()
+                    );
+      allow delete: if isSignedIn() && (
+                      resource.data.senderId == uid()
+                      || resource.data.receiverId == uid()
+                      || isAdmin()
+                    );
     }
 
-    // Quiz
-    match /quiz_questions/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-    match /quiz_results/{id} {
-      allow read, write: if request.auth != null;
+    // ============================================================
+    // GROUP ROOMS  (createdBy + members array)
+    // Anyone signed in can browse; owner can CRUD; members can update
+    // only the live fields (lastMessage, membersCount, members).
+    // ============================================================
+    match /group_rooms/{id} {
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.createdBy == uid();
+      allow update: if isSignedIn() && (
+                      resource.data.createdBy == uid()
+                      || isAdmin()
+                      || changedOnly(['membersCount', 'members', 'lastMessage', 'lastMessageAt', 'lastMessageSender'])
+                    );
+      allow delete: if isSignedIn() && (resource.data.createdBy == uid() || isAdmin());
+
+      match /room_messages/{msgId} {
+        allow read:   if isSignedIn();
+        allow create: if isSignedIn() && request.resource.data.senderId == uid();
+        allow update: if isSignedIn() && (resource.data.senderId == uid() || isAdmin());
+        allow delete: if isSignedIn() && (resource.data.senderId == uid() || isAdmin());
+      }
     }
 
-    // Reports
-    match /reports/{id} {
-      allow read, write: if request.auth != null;
-    }
-
-    // Announcements
-    match /announcements/{id} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-
-    // Dice games
-    match /dice_games/{id} {
-      allow read, write: if request.auth != null;
-    }
-
-    // Calls (WebRTC)
+    // ============================================================
+    // CALLS  (WebRTC signaling — callerId / calleeId)
+    // Strictly scoped to the two call participants.
+    // ============================================================
     match /calls/{id} {
-      allow read, write: if request.auth != null;
-    }
-    match /calls/{id}/callerCandidates/{cId} {
-      allow read, write: if request.auth != null;
-    }
-    match /calls/{id}/calleeCandidates/{cId} {
-      allow read, write: if request.auth != null;
+      allow read:   if isSignedIn() && (
+                      resource.data.callerId == uid()
+                      || resource.data.calleeId == uid()
+                    );
+      allow create: if isSignedIn() && request.resource.data.callerId == uid();
+      allow update: if isSignedIn() && (
+                      resource.data.callerId == uid()
+                      || resource.data.calleeId == uid()
+                      || isAdmin()
+                    );
+      allow delete: if isSignedIn() && (
+                      resource.data.callerId == uid()
+                      || resource.data.calleeId == uid()
+                      || isAdmin()
+                    );
+
+      // Only the caller writes caller candidates
+      match /callerCandidates/{cId} {
+        allow read: if isSignedIn() && (
+                      get(/databases/$(database)/documents/calls/$(id)).data.callerId == uid()
+                      || get(/databases/$(database)/documents/calls/$(id)).data.calleeId == uid()
+                    );
+        allow write: if isSignedIn()
+                      && get(/databases/$(database)/documents/calls/$(id)).data.callerId == uid();
+      }
+
+      // Only the callee writes callee candidates
+      match /calleeCandidates/{cId} {
+        allow read: if isSignedIn() && (
+                      get(/databases/$(database)/documents/calls/$(id)).data.callerId == uid()
+                      || get(/databases/$(database)/documents/calls/$(id)).data.calleeId == uid()
+                    );
+        allow write: if isSignedIn()
+                      && get(/databases/$(database)/documents/calls/$(id)).data.calleeId == uid();
+      }
     }
 
-    // ===================== NEW (feed.html / index.html / inbox.html) =====================
+    // ============================================================
+    // GOLD TRANSACTIONS  — admin / Cloud Function only
+    // Users can read their own ledger; only admins (and Cloud Functions
+    // via Admin SDK) can write.
+    // ============================================================
+    match /gold_transactions/{id} {
+      allow read:  if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+      allow write: if isAdmin();
+    }
 
-    // Communities
+    // ============================================================
+    // DIAMOND TRANSACTIONS  — admin / Cloud Function only
+    // ============================================================
+    match /diamond_transactions/{id} {
+      allow read:  if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    // STORE TRANSACTIONS  (audit trail — was MISSING in your old rules)
+    // The purchase flow should write here from a Cloud Function.
+    // ============================================================
+    match /storeTransactions/{id} {
+      allow read:  if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    // ADMIN LOGS  — admin only
+    // ============================================================
+    match /admin_logs/{id} {
+      allow read, write: if isAdmin();
+    }
+
+    // ============================================================
+    // SYSTEM SETTINGS  — admin write, all signed-in read
+    // ============================================================
+    match /settings/{id} {
+      allow read:  if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    // ANNOUNCEMENTS  — admin write, all signed-in read
+    // (Fixes: previously any user could post an announcement)
+    // ============================================================
+    match /announcements/{id} {
+      allow read:  if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    // QUIZ QUESTIONS  — admin write, all signed-in read
+    // (Fixes: previously any user could write quiz questions)
+    // ============================================================
+    match /quiz_questions/{id} {
+      allow read:  if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // QUIZ RESULTS  — user owns their own result
+    match /quiz_results/{id} {
+      allow read:   if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update, delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+    }
+
+    // ============================================================
+    // REPORTS  — reporter creates, admin handles
+    // (Fixes: previously any user could resolve/dismiss ANY report)
+    // ============================================================
+    match /reports/{id} {
+      allow read:   if isSignedIn() && (resource.data.reporterId == uid() || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.reporterId == uid();
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    // DICE GAMES  — players in the game only
+    // Doc must have a `playerIds` array.
+    // ============================================================
+    match /dice_games/{id} {
+      allow read:   if isSignedIn() && (resource.data.playerIds.hasAny([uid()]) || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.playerIds.hasAny([uid()]);
+      allow update, delete: if isSignedIn() && (resource.data.playerIds.hasAny([uid()]) || isAdmin());
+    }
+
+    // ============================================================
+    // COMMUNITIES  — owner owns; members can join/leave
+    // ============================================================
     match /communities/{id} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.resource.data.createdBy == request.auth.uid;
-      allow update: if request.auth != null; // membersCount updated by any joining/leaving member
-      allow delete: if request.auth != null && (
-        resource.data.createdBy == request.auth.uid || isAdmin()
-      );
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.createdBy == uid();
+      allow update: if isSignedIn() && (
+                      resource.data.createdBy == uid()
+                      || isAdmin()
+                      || changedOnly(['membersCount', 'members'])
+                    );
+      allow delete: if isSignedIn() && (resource.data.createdBy == uid() || isAdmin());
     }
 
-    // Follows (doc id pattern: `${followerId}_${followingId}`)
+    // ============================================================
+    // FOLLOWS  (doc id: `${followerId}_${followingId}`)
+    // ============================================================
     match /follows/{id} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.resource.data.followerId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.followerId == request.auth.uid;
+      allow read:   if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.followerId == uid();
+      allow delete: if isSignedIn() && resource.data.followerId == uid();
     }
 
-    // Notifications (created by the actor, read/cleared only by the recipient)
+    // ============================================================
+    // NOTIFICATIONS  (actor creates, recipient reads/clears)
+    // ============================================================
     match /notifications/{id} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.actorId == request.auth.uid;
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && (
-        resource.data.userId == request.auth.uid || isAdmin()
-      );
+      allow read:   if isSignedIn() && resource.data.userId == uid();
+      allow create: if isSignedIn() && request.resource.data.actorId == uid();
+      allow update: if isSignedIn() && resource.data.userId == uid();
+      allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
 
-    // Saved posts / bookmarks (doc id pattern: `${uid}_${postId}`, private to owner)
+    // ============================================================
+    // SAVED POSTS / BOOKMARKS  (private to owner)
+    // ============================================================
     match /savedPosts/{id} {
-      allow read: if request.auth != null && resource.data.userId == request.auth.uid;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow read:   if isSignedIn() && resource.data.userId == uid();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow delete: if isSignedIn() && resource.data.userId == uid();
     }
+
+    // ============================================================
+    // DEFAULT DENY
+    // Anything not matched above is implicitly denied by Firestore.
+    // No need for an explicit catch-all.
+    // ============================================================
   }
 }
