@@ -19,7 +19,7 @@
     <!-- Shared UI/UX helpers (button loading, lazy images, smooth scroll) -->
     <script src="ui-ux.js" defer></script>
     <!-- reCAPTCHA v2 widget (loaded async) -->
-    <script src="https://www.google.com/recaptcha/api.js?onload=onRecaptchaLoad&render=explicit" async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     <script>
         // Global callback for reCAPTCHA API load
         window.onRecaptchaLoad = function() {
@@ -872,7 +872,7 @@
                     <div class="action-grid-btn" id="logout-btn" data-nav="logout"><i class="fas fa-arrow-right-from-bracket"></i><span>Logout</span></div>
                     <div class="action-grid-btn" id="sound-settings-btn"><i class="fas fa-volume-high" id="sound-btn-icon"></i><span id="sound-btn-text">Sound On</span></div>
                     <div class="action-grid-btn" id="security-settings-btn"><i class="fas fa-shield-halved"></i><span>Security</span></div>
-                    <div class="action-grid-btn" id="admin-grid-btn" style="display:none;"><i class="fas fa-user-shield"></i><span>Admin</span></div>
+                    <div class="action-grid-btn" id="admin-grid-btn" data-nav="admin" style="display:none;"><i class="fas fa-user-shield"></i><span>Admin</span></div>
                     <!-- Communities removed in V3 -->
                 </div>
 
@@ -3380,9 +3380,7 @@
 
         function openAdminPanel() {
             if (!userData || userData.role !== 'admin') { showToast('Admin access only', 'error'); return; }
-            adminModal.classList.remove('hidden');
-            applySystemSettings(); // sync toggles
-            loadAdminReports();
+            window.location.href = 'admin.html';
         }
         closeAdminBtn.addEventListener('click', () => adminModal.classList.add('hidden'));
         adminModal.addEventListener('click', (e) => { if (e.target === adminModal) adminModal.classList.add('hidden'); });
