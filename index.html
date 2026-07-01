@@ -1435,7 +1435,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, query, where, or, onSnapshot, addDoc, getDocs, getDoc, updateDoc, deleteDoc, increment, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, collection, query, where, onSnapshot, addDoc, getDocs, getDoc, updateDoc, deleteDoc, increment, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
@@ -1781,10 +1781,8 @@
                 authTitle.innerText = "Join MR Chat";
                 authToggleLink.innerText = "Already have an account? Login";
                 rememberRow.style.display = 'flex';
-                // Show reCAPTCHA on signup (only if site key configured)
-                if (recaptchaContainer && RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== '6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi') {
-                    recaptchaContainer.style.display = 'block';
-                }
+                // Show reCAPTCHA on signup (key is always set now)
+                if (recaptchaContainer) recaptchaContainer.style.display = 'block';
                 if (twofaContainer) twofaContainer.classList.add('hidden');
             }
         }
@@ -1888,17 +1886,15 @@
 
                     // reCAPTCHA verification (signup only — bot protection)
                     const recaptchaResponse = (window.grecaptcha && typeof grecaptcha.getResponse === 'function') ? grecaptcha.getResponse() : '';
-                    if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== '6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi') {
-                        if (!recaptchaResponse) { showToast("Please complete the reCAPTCHA.", "error"); authSubmitBtn.disabled = false; authSubmitText.innerText = originalText; return; }
-                        try {
-                            await verifyRecaptchaCF({ token: recaptchaResponse });
-                        } catch (rcErr) {
-                            showToast("reCAPTCHA verification failed. Try again.", "error");
-                            if (window.grecaptcha) grecaptcha.reset();
-                            authSubmitBtn.disabled = false;
-                            authSubmitText.innerText = originalText;
-                            return;
-                        }
+                    if (!recaptchaResponse) { showToast("Please complete the reCAPTCHA.", "error"); authSubmitBtn.disabled = false; authSubmitText.innerText = originalText; return; }
+                    try {
+                        await verifyRecaptchaCF({ token: recaptchaResponse });
+                    } catch (rcErr) {
+                        showToast("reCAPTCHA verification failed. Try again.", "error");
+                        if (window.grecaptcha) grecaptcha.reset();
+                        authSubmitBtn.disabled = false;
+                        authSubmitText.innerText = originalText;
+                        return;
                     }
 
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
