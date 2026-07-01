@@ -641,6 +641,19 @@
                 if (ac) ac.classList.remove('hidden');
             }
         }, 5000);
+
+        // Check if module script failed to load (file:// protocol issue)
+        setTimeout(function() {
+            if (typeof window.MR_CHAT_LOADED === 'undefined') {
+                // Module failed — show error overlay
+                var overlay = document.createElement('div');
+                overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#FF007F,#9D00FF);color:#fff;padding:14px 20px;z-index:99999;font-size:0.85rem;font-family:Inter,sans-serif;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.5);';
+                overlay.innerHTML = '<i class="fas fa-triangle-exclamation"></i> <strong>Server required!</strong> Firebase features need a web server. Open via <code>localhost</code> or deploy to Vercel. Don\'t open HTML files directly.';
+                document.body.appendChild(overlay);
+                setTimeout(function() { overlay.style.transition='opacity 0.5s'; overlay.style.opacity='0'; }, 8000);
+                setTimeout(function() { overlay.remove(); }, 8500);
+            }
+        }, 6000);
     </script>
 
     <!-- Permission Modal -->
@@ -2263,18 +2276,29 @@
         let chatsBuffer = [];
         let chatsRenderTimer = null;
         function listenChats() {
-            const q = query(collection(db, 'friendships'),
-                or(where('user1', '==', currentUser.uid), where('user2', '==', currentUser.uid)));
-            onSnapshot(q, (snap) => {
-                chatsBuffer = [];
-                snap.forEach(d => chatsBuffer.push({ id: d.id, ...d.data() }));
+            // Use TWO separate queries (avoids or() which needs composite index)
+            let chatsMap = new Map();
+            const mergeAndRender = () => {
+                chatsBuffer = Array.from(chatsMap.values());
                 if (chatsRenderTimer) clearTimeout(chatsRenderTimer);
                 chatsRenderTimer = setTimeout(() => {
                     allChatsCache = chatsBuffer;
                     allFriendsCache = chatsBuffer;
                     if (activeTab === 'chats' || activeTab === 'friends') renderSidebarList();
                 }, 200);
-            }, (err) => { console.warn('Chats listener error:', err); });
+            };
+            // Query 1: user1 == me
+            const q1 = query(collection(db, 'friendships'), where('user1', '==', currentUser.uid));
+            onSnapshot(q1, (snap) => {
+                snap.forEach(d => chatsMap.set(d.id, { id: d.id, ...d.data() }));
+                mergeAndRender();
+            }, (err) => { console.warn('Chats listener 1 error:', err); });
+            // Query 2: user2 == me
+            const q2 = query(collection(db, 'friendships'), where('user2', '==', currentUser.uid));
+            onSnapshot(q2, (snap) => {
+                snap.forEach(d => chatsMap.set(d.id, { id: d.id, ...d.data() }));
+                mergeAndRender();
+            }, (err) => { console.warn('Chats listener 2 error:', err); });
         }
 
         // ==================== ROOMS LISTENER ====================
@@ -4159,19 +4183,15 @@
         // ==================== GLOBAL INCOMING MESSAGE NOTIFIER ====================
         let notifListenerInitialized = false;
         function listenGlobalIncomingMessagesForNotification() {
-            const q = query(collection(db, 'friendships'),
-                or(where('user1', '==', currentUser.uid), where('user2', '==', currentUser.uid)));
-            onSnapshot(q, (snap) => {
+            // Use two separate queries (avoids or() index requirement)
+            const handleSnap = (snap) => {
                 snap.docChanges().forEach(change => {
-                    // Skip the initial snapshot (all docs come as 'added' on first emit) — only notify on subsequent 'modified' changes
                     if (change.type !== 'modified') return;
                     if (!notifListenerInitialized) return;
                     const data = change.doc.data();
                     if (!data.lastMessageSenderId || data.lastMessageSenderId === currentUser.uid) return;
                     if (mutedChats.has(data.lastMessageSenderId)) return;
-                    // Skip if chat is open
                     if (activeChatPartnerUid === data.lastMessageSenderId && document.visibilityState === 'visible') return;
-                    // Dedup
                     const dedupKey = `${data.lastMessageSenderId}_${data.timestamp}`;
                     if (lastNotifiedMessageId === dedupKey) return;
                     lastNotifiedMessageId = dedupKey;
@@ -4188,7 +4208,10 @@
                     }
                 });
                 notifListenerInitialized = true;
-            }, (err) => console.warn('Notif listener error:', err));
+            };
+            // Two separate listeners
+            onSnapshot(query(collection(db, 'friendships'), where('user1', '==', currentUser.uid)), handleSnap, (err) => console.warn('Notif listener 1 error:', err));
+            onSnapshot(query(collection(db, 'friendships'), where('user2', '==', currentUser.uid)), handleSnap, (err) => console.warn('Notif listener 2 error:', err));
         }
         function requestNotificationPermission() {
             if ('Notification' in window && Notification.permission === 'default') {
@@ -4447,13 +4470,16 @@
         async function cleanupOldMessages() {
             try {
                 const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-                // Clean friendships messages — fetch friendships list directly (caches may be empty on boot)
-                let friendSnap;
+                // Clean friendships messages — fetch friendships list directly (two queries to avoid or() index)
+                let friendDocs = [];
                 try {
-                    friendSnap = await getDocs(query(collection(db, 'friendships'),
-                        or(where('user1', '==', currentUser.uid), where('user2', '==', currentUser.uid))));
-                } catch (e) { friendSnap = { forEach: () => {} }; }
-                for (const f of (friendSnap.docs || [])) {
+                    const snap1 = await getDocs(query(collection(db, 'friendships'), where('user1', '==', currentUser.uid)));
+                    const snap2 = await getDocs(query(collection(db, 'friendships'), where('user2', '==', currentUser.uid)));
+                    const seen = new Set();
+                    snap1.forEach(d => { if (!seen.has(d.id)) { seen.add(d.id); friendDocs.push(d); } });
+                    snap2.forEach(d => { if (!seen.has(d.id)) { seen.add(d.id); friendDocs.push(d); } });
+                } catch (e) { /* skip */ }
+                for (const f of friendDocs) {
                     const roomId = f.id;
                     let snap;
                     try { snap = await getDocs(collection(db, 'friendships', roomId, 'chat_messages')); } catch (e) { continue; }
@@ -4632,6 +4658,7 @@
         });
 
         console.log('✅ MR Chat Inbox upgraded module loaded (Phase 4 features active).');
+        window.MR_CHAT_LOADED = true;
     </script>
 </body>
 </html>

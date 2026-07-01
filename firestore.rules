@@ -45,8 +45,8 @@ service cloud.firestore {
     function isFriendshipParticipant(friendshipId) {
       return isSignedIn()
         && exists(/databases/$(database)/documents/friendships/$(friendshipId))
-        && (get(/databases/$(database)/documents/friendships/$(friendshipId)).data.user1Id == uid()
-            || get(/databases/$(database)/documents/friendships/$(friendshipId)).data.user2Id == uid());
+        && (get(/databases/$(database)/documents/friendships/$(friendshipId)).data.user1 == uid()
+            || get(/databases/$(database)/documents/friendships/$(friendshipId)).data.user2 == uid());
     }
 
     function isRoomMember(roomId) {
@@ -263,19 +263,19 @@ service cloud.firestore {
     // ============================================================
     match /friendships/{friendshipId} {
       allow read: if isSignedIn()
-        && (resource.data.user1Id == uid()
-            || resource.data.user2Id == uid()
+        && (resource.data.user1 == uid()
+            || resource.data.user2 == uid()
             || isAdmin());
       allow create: if isSignedIn()
-        && (request.resource.data.user1Id == uid()
-            || request.resource.data.user2Id == uid());
+        && (request.resource.data.user1 == uid()
+            || request.resource.data.user2 == uid());
       allow update: if isSignedIn()
-        && (resource.data.user1Id == uid()
-            || resource.data.user2Id == uid()
+        && (resource.data.user1 == uid()
+            || resource.data.user2 == uid()
             || isAdmin());
       allow delete: if isSignedIn()
-        && (resource.data.user1Id == uid()
-            || resource.data.user2Id == uid()
+        && (resource.data.user1 == uid()
+            || resource.data.user2 == uid()
             || isAdmin());
     }
 

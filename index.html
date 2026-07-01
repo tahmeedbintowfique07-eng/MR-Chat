@@ -773,7 +773,8 @@
                 <button class="nav-item" data-nav="feed"><i class="fas fa-newspaper"></i> Feed</button>
                 <button class="nav-item" data-nav="inbox"><i class="fas fa-comment-dots"></i> Inbox</button>
                 <button class="nav-item" data-nav="friends"><i class="fas fa-user-friends"></i> Friends</button>
-                <button class="nav-item" data-nav="communities"><i class="fas fa-people-group"></i> Communities</button>
+                <!-- Communities removed in V3 -->
+                <!-- <button class="nav-item" data-nav="communities"><i class="fas fa-people-group"></i> Communities</button> -->
                 <button class="nav-item" data-nav="saved"><i class="fas fa-bookmark"></i> Saved</button>
                 <button class="nav-item" data-nav="notifications" id="nav-notifications">
                     <i class="fas fa-bell"></i> Notifications
@@ -872,7 +873,7 @@
                     <div class="action-grid-btn" id="sound-settings-btn"><i class="fas fa-volume-high" id="sound-btn-icon"></i><span id="sound-btn-text">Sound On</span></div>
                     <div class="action-grid-btn" id="security-settings-btn"><i class="fas fa-shield-halved"></i><span>Security</span></div>
                     <div class="action-grid-btn" id="admin-grid-btn" style="display:none;"><i class="fas fa-user-shield"></i><span>Admin</span></div>
-                    <div class="action-grid-btn" data-nav="communities"><i class="fas fa-people-group"></i><span>Community</span></div>
+                    <!-- Communities removed in V3 -->
                 </div>
 
                 <!-- Friends Section (mobile/tablet view) -->
@@ -2512,8 +2513,11 @@
         async function loadDashboardFriends() {
             if (!currentUser) return;
             try {
-                const q = query(collection(db, "friendships"), or(where("user1", "==", currentUser.uid), where("user2", "==", currentUser.uid)));
-                const snap = await getDocs(q);
+                // Two separate queries (avoids or() index requirement)
+                const [snap1, snap2] = await Promise.all([
+                    getDocs(query(collection(db, "friendships"), where("user1", "==", currentUser.uid))),
+                    getDocs(query(collection(db, "friendships"), where("user2", "==", currentUser.uid)))
+                ]);
                 const friendsRow = document.getElementById('friends-scroll-row');
                 if (!friendsRow) return;
                 friendsRow.innerHTML = `
@@ -2525,10 +2529,15 @@
                 // Re-bind click for the Add tile
                 friendsRow.querySelector('[data-nav="friends"]').addEventListener('click', () => handleNav('friends'));
                 dashboardFriends = [];
-                if (snap.empty) return;
-                const friendFetches = snap.docs.map(async (fDoc) => {
+                // Merge both snapshots, dedup by doc id
+                const seenIds = new Set();
+                const allDocs = [];
+                snap1.forEach(d => { if (!seenIds.has(d.id)) { seenIds.add(d.id); allDocs.push(d); } });
+                snap2.forEach(d => { if (!seenIds.has(d.id)) { seenIds.add(d.id); allDocs.push(d); } });
+                if (allDocs.length === 0) return;
+                const friendFetches = allDocs.map(async (fDoc) => {
                     const fData = fDoc.data();
-                    const targetUid = fData.user1Id === currentUser.uid ? fData.user2Id : fData.user1Id;
+                    const targetUid = fData.user1 === currentUser.uid ? fData.user2 : fData.user1;
                     try {
                         const uSnap = await getDoc(doc(db, "users", targetUid));
                         if (uSnap.exists()) return { ...uSnap.data(), friendshipId: fDoc.id };
@@ -3606,33 +3615,33 @@
             let isFirstRequestSnapshot = true;
             let isFirstNotifSnapshot = true;
 
-            // Friendships → new-message notifier
-            if (unsubNotifFriendships) unsubNotifFriendships();
-            unsubNotifFriendships = onSnapshot(
-                query(collection(db, "friendships"), or(where("user1", "==", currentUser.uid), where("user2", "==", currentUser.uid))),
-                (snapshot) => {
-                    if (isFirstFriendshipSnapshot) { isFirstFriendshipSnapshot = false; return; }
-                    snapshot.docChanges().forEach((change) => {
-                        if (change.type === "modified" || change.type === "added") {
-                            const data = change.doc.data();
-                            if (data.lastMessageSenderId && data.lastMessageSenderId !== currentUser.uid) {
-                                const targetUid = data.user1Id === currentUser.uid ? data.user2Id : data.user1Id;
-                                if (mutedChats.has(targetUid)) return;
-                                const ts = safeTimestamp(data.timestamp);
-                                addNotification({
-                                    id: `msg_${targetUid}_${ts}`,
-                                    type: 'message',
-                                    text: `<b>${escapeHtml(data.lastMessageSenderName || 'Someone')}</b>: ${escapeHtml((data.lastMessage || 'New message').substring(0, 50))}${(data.lastMessage || '').length > 50 ? '...' : ''}`,
-                                    timestamp: ts,
-                                    photoURL: data.lastMessageSenderPhoto,
-                                    read: false
-                                });
-                                SoundManager.playNotif();
-                            }
+            // Friendships → new-message notifier (two queries to avoid or() index)
+            if (unsubNotifFriendships) { if (Array.isArray(unsubNotifFriendships)) unsubNotifFriendships.forEach(fn => fn && fn()); else unsubNotifFriendships(); }
+            const handleFriendshipNotif = (snapshot) => {
+                if (isFirstFriendshipSnapshot) { isFirstFriendshipSnapshot = false; return; }
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "modified" || change.type === "added") {
+                        const data = change.doc.data();
+                        if (data.lastMessageSenderId && data.lastMessageSenderId !== currentUser.uid) {
+                            const targetUid = data.user1 === currentUser.uid ? data.user2 : data.user1;
+                            if (mutedChats.has(targetUid)) return;
+                            const ts = safeTimestamp(data.timestamp);
+                            addNotification({
+                                id: `msg_${targetUid}_${ts}`,
+                                type: 'message',
+                                text: `<b>${escapeHtml(data.lastMessageSenderName || 'Someone')}</b>: ${escapeHtml((data.lastMessage || 'New message').substring(0, 50))}${(data.lastMessage || '').length > 50 ? '...' : ''}`,
+                                timestamp: ts,
+                                photoURL: data.lastMessageSenderPhoto,
+                                read: false
+                            });
+                            SoundManager.playNotif();
                         }
-                    });
-                }
-            );
+                    }
+                });
+            };
+            const unsub1 = onSnapshot(query(collection(db, "friendships"), where("user1", "==", currentUser.uid)), handleFriendshipNotif);
+            const unsub2 = onSnapshot(query(collection(db, "friendships"), where("user2", "==", currentUser.uid)), handleFriendshipNotif);
+            unsubNotifFriendships = [unsub1, unsub2];
 
             // Friend requests → new-request notifier
             if (unsubNotifRequests) unsubNotifRequests();

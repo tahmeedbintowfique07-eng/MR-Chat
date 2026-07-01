@@ -23,6 +23,7 @@
                 document.documentElement.setAttribute("data-theme", savedTheme);
             }
         })();
+        window.MR_CHAT_LOADED = true;
     </script>
     <style>
         /* ============================================================
@@ -636,6 +637,7 @@
             var ls = document.getElementById('loading-screen');
             if (ls) ls.classList.add('hidden');
         }, 5000);
+        window.MR_CHAT_LOADED = true;
     </script>
 
     <!-- ============================================================
@@ -676,7 +678,8 @@
                 <button class="nav-item active" data-nav="feed"><i class="fas fa-newspaper"></i> <span>Feed</span></button>
                 <button class="nav-item" data-nav="inbox"><i class="fas fa-inbox"></i> <span>Inbox</span> <span class="nav-badge hidden" id="nav-inbox-badge"></span></button>
                 <button class="nav-item" data-nav="friends"><i class="fas fa-user-group"></i> <span>Friends</span></button>
-                <button class="nav-item" data-nav="communities"><i class="fas fa-people-group"></i> <span>Communities</span></button>
+                <!-- Communities removed in V3 -->
+                <!-- <button class="nav-item" data-nav="communities"><i class="fas fa-people-group"></i> <span>Communities</span></button> -->
                 <button class="nav-item" data-nav="saved"><i class="fas fa-bookmark"></i> <span>Saved</span></button>
                 <button class="nav-item" data-nav="notifications"><i class="fas fa-bell"></i> <span>Notifications</span> <span class="nav-badge hidden" id="nav-notif-badge"></span></button>
                 <button class="nav-item" data-nav="profile"><i class="fas fa-user"></i> <span>Profile</span></button>
@@ -828,7 +831,8 @@
         <button class="nav-item active" data-nav="feed"><i class="fas fa-newspaper"></i> Feed</button>
         <button class="nav-item" data-nav="inbox"><i class="fas fa-inbox"></i> Inbox</button>
         <button class="nav-item" data-nav="friends"><i class="fas fa-user-group"></i> Friends</button>
-        <button class="nav-item" data-nav="communities"><i class="fas fa-people-group"></i> Communities</button>
+        <!-- Communities removed in V3 -->
+        <!-- <button class="nav-item" data-nav="communities"><i class="fas fa-people-group"></i> Communities</button> -->
         <button class="nav-item" data-nav="saved"><i class="fas fa-bookmark"></i> Saved</button>
         <button class="nav-item" data-nav="notifications"><i class="fas fa-bell"></i> Notifications</button>
         <button class="nav-item" data-nav="profile"><i class="fas fa-user"></i> Profile</button>
@@ -840,7 +844,8 @@
     <div class="mobile-bottom-nav">
         <button class="active" data-mnav="feed"><i class="fas fa-newspaper"></i> Feed</button>
         <button data-mnav="search"><i class="fas fa-search"></i> Search</button>
-        <button data-mnav="communities"><i class="fas fa-people-group"></i> Groups</button>
+        <!-- Communities removed in V3 -->
+        <!-- <button data-mnav="communities"><i class="fas fa-people-group"></i> Groups</button> -->
         <button data-mnav="notifications"><i class="fas fa-bell"></i> Alerts <span class="mb-badge hidden" id="mb-notif-badge"></span></button>
         <button data-mnav="profile"><i class="fas fa-user"></i> Me</button>
     </div>
@@ -1401,17 +1406,19 @@
 
         async function loadFriends() {
             try {
-                // inbox.html creates friendships docs with `user1` and `user2`
-                // fields (sorted). Query both directions via OR. Also defensively
-                // check legacy `members` array and accepted friendRequests.
-                const snaps = await Promise.all([
-                    getDocs(query(collection(db, "friendships"), or(where("user1", "==", currentUser.uid), where("user2", "==", currentUser.uid)))).catch(()=>({docs:[]})),
-                    getDocs(query(collection(db, "friendships"), where("members", "array-contains", currentUser.uid))).catch(()=>({docs:[]})),
-                    getDocs(query(collection(db, "friendRequests"), where("to", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
-                    getDocs(query(collection(db, "friendRequests"), where("from", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
-                    getDocs(query(collection(db, "friendRequests"), where("receiverId", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
-                    getDocs(query(collection(db, "friendRequests"), where("senderId", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]}))
+                // Two separate queries (avoids or() index requirement)
+                const [fs1, fs2] = await Promise.all([
+                    getDocs(query(collection(db, "friendships"), where("user1", "==", currentUser.uid))).catch(()=>({docs:[]})),
+                    getDocs(query(collection(db, "friendships"), where("user2", "==", currentUser.uid))).catch(()=>({docs:[]}))
                 ]);
+                const snaps = [
+                    fs1, fs2,
+                    await getDocs(query(collection(db, "friendships"), where("members", "array-contains", currentUser.uid))).catch(()=>({docs:[]})),
+                    await getDocs(query(collection(db, "friendRequests"), where("to", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
+                    await getDocs(query(collection(db, "friendRequests"), where("from", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
+                    await getDocs(query(collection(db, "friendRequests"), where("receiverId", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
+                    await getDocs(query(collection(db, "friendRequests"), where("senderId", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]}))
+                ];
                 friendsSet = new Set();
                 snaps.forEach(snap => {
                     (snap.docs || []).forEach(d => {
@@ -3972,6 +3979,7 @@
         window.showToast = showToast;
         window.showFeedView = showFeedView;
         window.closeSearchPanel = closeSearchPanel;
+        window.MR_CHAT_LOADED = true;
     </script>
 </body>
 </html>
