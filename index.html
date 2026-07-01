@@ -25,6 +25,7 @@
         window.onRecaptchaLoad = function() {
             window.dispatchEvent(new Event('recaptcha-loaded'));
         };
+        window.MR_CHAT_LOADED = true;
     </script>
     <script>
         // Inline pre-paint theme bootstrap — prevents FOUC
@@ -37,6 +38,7 @@
                 document.documentElement.setAttribute("data-theme", savedTheme);
             }
         })();
+        window.MR_CHAT_LOADED = true;
     </script>
     <style>
         /* ============================================================
@@ -694,7 +696,7 @@
                     </div>
                     <!-- reCAPTCHA widget (shown only on signup) -->
                     <div id="recaptcha-container" class="recaptcha-wrap" style="margin: 12px 0; display: none;">
-                        <div class="g-recaptcha" data-sitekey="YOUR_RECAPTCHA_V2_SITE_KEY" data-theme="dark"></div>
+                        <div class="g-recaptcha" data-sitekey="6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi" data-theme="dark"></div>
                     </div>
                     <label class="remember-row" id="remember-row">
                         <input type="checkbox" id="remember-me" checked>
@@ -866,7 +868,7 @@
                     <div class="action-grid-btn" data-nav="friends"><i class="fas fa-user-plus"></i><span>Friends</span></div>
                     <div class="action-grid-btn" data-nav="mindreset"><i class="fas fa-brain"></i><span>Mind Reset</span></div>
                     <div class="action-grid-btn" data-nav="motivation"><i class="fas fa-fire"></i><span>Motivation</span></div>
-                    <div class="action-grid-btn" id="logout-btn"><i class="fas fa-arrow-right-from-bracket"></i><span>Logout</span></div>
+                    <div class="action-grid-btn" id="logout-btn" data-nav="logout"><i class="fas fa-arrow-right-from-bracket"></i><span>Logout</span></div>
                     <div class="action-grid-btn" id="sound-settings-btn"><i class="fas fa-volume-high" id="sound-btn-icon"></i><span id="sound-btn-text">Sound On</span></div>
                     <div class="action-grid-btn" id="security-settings-btn"><i class="fas fa-shield-halved"></i><span>Security</span></div>
                     <div class="action-grid-btn" id="admin-grid-btn" style="display:none;"><i class="fas fa-user-shield"></i><span>Admin</span></div>
@@ -955,6 +957,73 @@
         <div class="dropdown-item" data-theme-val="neon"><i class="fas fa-bolt" style="color: #00ff88;"></i> Green Neon <i class="fas fa-check dropdown-tick"></i></div>
         <div class="dropdown-item" data-theme-val="ocean"><i class="fas fa-water" style="color: #0096ff;"></i> Ocean Blue <i class="fas fa-check dropdown-tick"></i></div>
         <div class="dropdown-item" data-theme-val="default"><i class="fas fa-desktop"></i> System Default <i class="fas fa-check dropdown-tick"></i></div>
+    </div>
+
+    <!-- ============================================================
+         SETTINGS MODAL (unified — theme + sound + security + account)
+         ============================================================ -->
+    <div id="settings-modal" class="modal-overlay hidden" style="z-index: 10005;">
+        <div class="profile-modal-content" style="max-width: 480px;">
+            <button class="modal-close-btn" id="close-settings-modal-btn" aria-label="Close"><i class="fas fa-times"></i></button>
+            <div class="auth-header" style="margin-bottom: 22px;">
+                <h2 style="font-size: 1.35rem; font-weight: 800;"><i class="fas fa-sliders" style="margin-right: 8px; color: var(--pink-primary);"></i>Settings</h2>
+                <p style="color: var(--text-muted); font-size: 0.8rem;">Customize your MR Chat experience</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto;" class="custom-scrollbar">
+                <!-- Theme Section -->
+                <div style="padding: 14px; background: var(--bg-card); border-radius: 14px; border: 1.5px solid var(--glass-border);">
+                    <div style="font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; color: var(--pink-primary);"><i class="fas fa-palette" style="margin-right: 6px;"></i>Appearance</div>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="dark" style="font-size:0.72rem;padding:8px;"><i class="fas fa-moon"></i> Dark</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="white" style="font-size:0.72rem;padding:8px;"><i class="fas fa-sun"></i> White</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="purple" style="font-size:0.72rem;padding:8px;"><i class="fas fa-gem"></i> Purple</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="neon" style="font-size:0.72rem;padding:8px;"><i class="fas fa-bolt"></i> Green</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="ocean" style="font-size:0.72rem;padding:8px;"><i class="fas fa-water"></i> Ocean</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="default" style="font-size:0.72rem;padding:8px;"><i class="fas fa-desktop"></i> Auto</button>
+                    </div>
+                </div>
+                <!-- Sound Settings -->
+                <div style="padding: 14px; background: var(--bg-card); border-radius: 14px; border: 1.5px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 700;"><i class="fas fa-volume-high" style="margin-right: 6px; color: var(--pink-primary);"></i>Sound & Notifications</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">Adjust volumes, enable/disable sounds</div>
+                    </div>
+                    <button id="open-sound-from-settings" class="action-btn-sm btn-pink"><i class="fas fa-sliders"></i> Open</button>
+                </div>
+                <!-- Security Settings -->
+                <div style="padding: 14px; background: var(--bg-card); border-radius: 14px; border: 1.5px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 700;"><i class="fas fa-shield-halved" style="margin-right: 6px; color: var(--pink-primary);"></i>Security & Privacy</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">2FA, auto-reply, account deletion</div>
+                    </div>
+                    <button id="open-security-from-settings" class="action-btn-sm btn-pink"><i class="fas fa-arrow-right"></i> Open</button>
+                </div>
+                <!-- Edit Profile -->
+                <div style="padding: 14px; background: var(--bg-card); border-radius: 14px; border: 1.5px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 700;"><i class="fas fa-user-pen" style="margin-right: 6px; color: var(--pink-primary);"></i>Edit Profile</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">Name, bio, photo, interests</div>
+                    </div>
+                    <button id="open-edit-profile-from-settings" class="action-btn-sm btn-pink"><i class="fas fa-arrow-right"></i> Open</button>
+                </div>
+                <!-- About -->
+                <div style="padding: 14px; background: var(--bg-card); border-radius: 14px; border: 1.5px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 700;"><i class="fas fa-circle-info" style="margin-right: 6px; color: var(--pink-primary);"></i>About MR Chat</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">Version 3.0 · MR Group</div>
+                    </div>
+                    <button id="open-about-from-settings" class="action-btn-sm btn-pink"><i class="fas fa-arrow-right"></i> Open</button>
+                </div>
+                <!-- Logout -->
+                <div style="padding: 14px; background: rgba(255,59,48,0.06); border-radius: 14px; border: 1.5px solid rgba(255,59,48,0.25); display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 700; color: var(--danger-red);"><i class="fas fa-arrow-right-from-bracket" style="margin-right: 6px;"></i>Logout</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">Sign out of your account</div>
+                    </div>
+                    <button id="logout-from-settings" class="action-btn-sm" style="background: rgba(255,59,48,0.15); color: var(--danger-red);"><i class="fas fa-sign-out"></i> Logout</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- ============================================================
@@ -1406,7 +1475,7 @@
 
         // ==================== FCM WEB PUSH NOTIFICATIONS ====================
         // Replace with your VAPID key from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
-        const FCM_VAPID_KEY = 'YOUR_FCM_VAPID_KEY';
+        const FCM_VAPID_KEY = 'mmooFQmTtG3BfNDA5UFgXRIse_hHLTJbw1bunfSvSqE';
         let messaging = null;
         try { messaging = getMessaging(app); } catch (e) { console.warn('[FCM] Messaging init failed:', e); }
 
@@ -1414,7 +1483,7 @@
             if (!messaging) return;
             if (!('Notification' in window)) return;
             if (!('serviceWorker' in navigator)) return;
-            if (FCM_VAPID_KEY === 'YOUR_FCM_VAPID_KEY') return; // not configured
+            if (!FCM_VAPID_KEY) return; // not configured
 
             try {
                 // Request permission
@@ -1452,7 +1521,7 @@
 
         // reCAPTCHA v2 site key — replace with your own from https://www.google.com/recaptcha/admin
         // (This is the public site key; the secret key lives only in the Cloud Function.)
-        const RECAPTCHA_SITE_KEY = 'YOUR_RECAPTCHA_V2_SITE_KEY';
+        const RECAPTCHA_SITE_KEY = '6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi';
 
         /* ============================================================
            STATE
@@ -1712,7 +1781,7 @@
                 authToggleLink.innerText = "Already have an account? Login";
                 rememberRow.style.display = 'flex';
                 // Show reCAPTCHA on signup (only if site key configured)
-                if (recaptchaContainer && RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== 'YOUR_RECAPTCHA_V2_SITE_KEY') {
+                if (recaptchaContainer && RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== '6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi') {
                     recaptchaContainer.style.display = 'block';
                 }
                 if (twofaContainer) twofaContainer.classList.add('hidden');
@@ -1818,7 +1887,7 @@
 
                     // reCAPTCHA verification (signup only — bot protection)
                     const recaptchaResponse = (window.grecaptcha && typeof grecaptcha.getResponse === 'function') ? grecaptcha.getResponse() : '';
-                    if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== 'YOUR_RECAPTCHA_V2_SITE_KEY') {
+                    if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== '6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi') {
                         if (!recaptchaResponse) { showToast("Please complete the reCAPTCHA.", "error"); authSubmitBtn.disabled = false; authSubmitText.innerText = originalText; return; }
                         try {
                             await verifyRecaptchaCF({ token: recaptchaResponse });
@@ -1975,7 +2044,7 @@
                 case 'feed': navigateToPage('feed.html', 'feedEnabled'); break;
                 case 'inbox': window.location.href = 'inbox.html'; break;
                 case 'friends': window.location.href = 'inbox.html#friends'; break;
-                case 'communities': navigateToPage('feed.html#communities', 'communitiesEnabled'); break;
+                case 'communities': showToast('Communities are no longer available.', 'info'); break;
                 case 'saved': navigateToPage('feed.html', 'feedEnabled'); break;
                 case 'notifications': toggleNotifPanel(); break;
                 case 'games': navigateToPage('games.html', 'gamesEnabled'); break;
@@ -1983,12 +2052,64 @@
                 case 'mindreset': window.location.href = 'mindreset.html'; break;
                 case 'motivation': window.location.href = 'motivationhub.html'; break;
                 case 'profile': openSocialProfile(); break;
-                case 'settings': webThemeDropdown.classList.toggle('hidden'); break;
+                case 'settings': openSettingsModal(); break;
                 case 'sound': openSoundSettings(); break;
                 case 'admin': openAdminPanel(); break;
                 case 'logout': handleLogout(); break;
             }
         }
+
+        // ==================== UNIFIED SETTINGS MODAL ====================
+        function openSettingsModal() {
+            document.getElementById('settings-modal')?.classList.remove('hidden');
+        }
+        function closeSettingsModal() {
+            document.getElementById('settings-modal')?.classList.add('hidden');
+        }
+        // Wire up settings modal buttons
+        document.getElementById('close-settings-modal-btn')?.addEventListener('click', closeSettingsModal);
+        document.getElementById('settings-modal')?.addEventListener('click', (e) => {
+            if (e.target.id === 'settings-modal') closeSettingsModal();
+        });
+        // Theme buttons in settings
+        document.querySelectorAll('.settings-theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.dataset.themeVal;
+                localStorage.setItem('mr_web_theme', theme);
+                // Apply theme
+                if (theme === 'default') {
+                    const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    document.documentElement.setAttribute('data-theme', sysDark ? 'dark' : 'white');
+                } else {
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
+                // Update active button
+                document.querySelectorAll('.settings-theme-btn').forEach(b => b.className = 'settings-theme-btn action-btn-sm btn-muted');
+                btn.className = 'settings-theme-btn action-btn-sm btn-pink';
+                showToast('Theme updated!', 'success');
+            });
+        });
+        // Open sub-panels from settings
+        document.getElementById('open-sound-from-settings')?.addEventListener('click', () => {
+            closeSettingsModal();
+            openSoundSettings();
+        });
+        document.getElementById('open-security-from-settings')?.addEventListener('click', () => {
+            closeSettingsModal();
+            openSecuritySettings();
+        });
+        document.getElementById('open-edit-profile-from-settings')?.addEventListener('click', () => {
+            closeSettingsModal();
+            openProfileModal();
+        });
+        document.getElementById('open-about-from-settings')?.addEventListener('click', () => {
+            closeSettingsModal();
+            if (window.MR_showAbout) window.MR_showAbout();
+        });
+        document.getElementById('logout-from-settings')?.addEventListener('click', () => {
+            closeSettingsModal();
+            handleLogout();
+        });
         // Wire up all nav-* buttons & action-grid buttons
         document.querySelectorAll('[data-nav]').forEach(el => {
             el.addEventListener('click', (e) => {
@@ -2407,7 +2528,7 @@
                 if (snap.empty) return;
                 const friendFetches = snap.docs.map(async (fDoc) => {
                     const fData = fDoc.data();
-                    const targetUid = fData.user1 === currentUser.uid ? fData.user2 : fData.user1;
+                    const targetUid = fData.user1Id === currentUser.uid ? fData.user2Id : fData.user1Id;
                     try {
                         const uSnap = await getDoc(doc(db, "users", targetUid));
                         if (uSnap.exists()) return { ...uSnap.data(), friendshipId: fDoc.id };
@@ -3495,7 +3616,7 @@
                         if (change.type === "modified" || change.type === "added") {
                             const data = change.doc.data();
                             if (data.lastMessageSenderId && data.lastMessageSenderId !== currentUser.uid) {
-                                const targetUid = data.user1 === currentUser.uid ? data.user2 : data.user1;
+                                const targetUid = data.user1Id === currentUser.uid ? data.user2Id : data.user1Id;
                                 if (mutedChats.has(targetUid)) return;
                                 const ts = safeTimestamp(data.timestamp);
                                 addNotification({
@@ -3611,6 +3732,7 @@
                 });
             });
         }
+        window.MR_CHAT_LOADED = true;
     </script>
 </body>
 </html>
