@@ -1,0 +1,199 @@
+/* ============================================================
+   MR Chat — Shared UI/UX Optimizations (v3)
+   Skeleton loaders, smooth transitions, button loading states,
+   fade-in animations, custom scrollbars.
+   ============================================================ */
+
+/* ==================== SKELETON LOADING ==================== */
+.skeleton {
+    background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-hover) 50%, var(--bg-card) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: 6px;
+}
+.skeleton-line { height: 12px; margin-bottom: 6px; width: 100%; }
+.skeleton-line.short { width: 60%; }
+.skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+.skeleton-card { padding: 14px; border-radius: 14px; background: var(--bg-card); border: 1px solid var(--glass-border); }
+.skeleton-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ==================== SMOOTH PAGE TRANSITIONS ==================== */
+.page-fade-in {
+    animation: pageFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes pageFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Section transition (for admin panel) */
+.section-wrap {
+    animation: sectionFadeIn 0.3s ease-out;
+}
+@keyframes sectionFadeIn {
+    from { opacity: 0; transform: translateX(10px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* ==================== BUTTON LOADING STATES ==================== */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    opacity: 0.8;
+}
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: btnSpin 0.7s linear infinite;
+}
+@keyframes btnSpin { to { transform: rotate(360deg); } }
+
+/* ==================== LAZY IMAGE LOADING ==================== */
+img.lazy-load {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+img.lazy-load.loaded {
+    opacity: 1;
+}
+/* Placeholder for unloaded images */
+img[data-src]:not(.loaded) {
+    background: linear-gradient(90deg, var(--bg-card), var(--bg-hover), var(--bg-card));
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+}
+
+/* ==================== CUSTOM SCROLLBAR ==================== */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--glass-border);
+    border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--pink-primary);
+}
+
+/* ==================== SMOOTH MODAL ANIMATIONS ==================== */
+.modal-overlay {
+    animation: modalFadeIn 0.25s ease-out;
+}
+.modal-overlay > * {
+    animation: modalSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==================== TOAST IMPROVEMENTS ==================== */
+.toast {
+    animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-width: 340px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ==================== INTERACTIVE FEEDBACK ==================== */
+button, .action-btn-sm, .main-btn, .icon-btn, .nav-item, .action-grid-btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, opacity 0.15s ease;
+}
+button:active, .action-btn-sm:active, .main-btn:active, .icon-btn:active {
+    transform: scale(0.96);
+}
+
+/* Hover lift effect for cards */
+.hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255,0,127,0.15);
+}
+
+/* ==================== PROGRESS INDICATORS ==================== */
+.progress-bar {
+    height: 4px;
+    background: var(--bg-card);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pink-primary), var(--purple-primary));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+.progress-bar-indeterminate .progress-bar-fill {
+    width: 30% !important;
+    animation: indeterminate 1.5s infinite;
+}
+@keyframes indeterminate {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+}
+
+/* ==================== EMPTY STATES ==================== */
+.empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text-muted);
+}
+.empty-state i {
+    font-size: 2rem;
+    opacity: 0.5;
+    margin-bottom: 8px;
+    display: block;
+}
+.empty-state p {
+    font-size: 0.85rem;
+    margin: 4px 0;
+}
+
+/* ==================== RESPONSIVE LOADING ==================== */
+/* Hide non-critical elements during initial load */
+.preload-hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+.loaded .preload-hidden {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease;
+}
+
+/* ==================== PREFERS-REDUCED-MOTION ==================== */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

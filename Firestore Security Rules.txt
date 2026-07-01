@@ -1,0 +1,28 @@
+=================================================================
+  MR Chat — Firestore Security Rules
+  =================================================
+  This file is kept for reference. The canonical rules now live
+  in `firestore.rules` (deployed via `firebase deploy --only
+  firestore:rules`).
+
+  If you prefer to paste rules manually into the Firebase Console:
+  1. Go to: https://console.firebase.google.com/project/mr-chatting-ff2b6/firestore/rules
+  2. Copy the contents of `firestore.rules` and paste it there.
+  3. Click "Publish".
+
+  IMPORTANT: Deploy Cloud Functions BEFORE publishing these rules.
+  The rules block direct client writes to:
+    - gold_transactions, diamond_transactions, storeTransactions
+    - admin_logs
+    - role field on users
+    - isBanned, forceLogout, etc.
+
+  All such operations now go through Cloud Functions (Admin SDK
+  bypasses rules). If you publish rules without deploying CFs,
+  the app's gold/diamond/store/admin features will break.
+
+  Deploy order:
+    1. firebase deploy --only functions
+    2. firebase deploy --only firestore:rules
+    3. git push (Vercel auto-deploys frontend)
+=================================================================

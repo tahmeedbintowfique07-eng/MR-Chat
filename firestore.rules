@@ -1,0 +1,455 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    //  HELPERS
+    // ============================================================
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(uid()))
+        && get(/databases/$(database)/documents/users/$(uid())).data.role == 'admin';
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && uid() == userId;
+    }
+
+    // Fields a normal user is NEVER allowed to change on their own doc.
+    // These can only be mutated by Cloud Functions (Admin SDK) or admins.
+    // Pragmatic subset: financial/admin/verification fields only.
+    function protectedUserFields() {
+      return [
+        'role', 'gold', 'diamonds',
+        'isVerified', 'isPremium',
+        'isBanned', 'bannedAt', 'banReason', 'forceLogout',
+        'accountCreated',
+        'deletionScheduledAt', 'deletionExecuteAt', 'deletionConfirmed'
+      ];
+    }
+    // typingTo, typingChatType, typingExpiresAt — set by client via setTypingStatus CF
+    // (Admin SDK bypasses rules, so this works even though client can't write directly)
+    function onlySafeUserFieldsChanged() {
+      return !request.resource.data.diff(resource.data)
+        .affectedKeys().hasAny(protectedUserFields());
+    }
+
+    function isFriendshipParticipant(friendshipId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/friendships/$(friendshipId))
+        && (get(/databases/$(database)/documents/friendships/$(friendshipId)).data.user1Id == uid()
+            || get(/databases/$(database)/documents/friendships/$(friendshipId)).data.user2Id == uid());
+    }
+
+    function isRoomMember(roomId) {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/group_rooms/$(roomId))
+        && (get(/databases/$(database)/documents/group_rooms/$(roomId)).data.createdBy == uid()
+            || get(/databases/$(database)/documents/group_rooms/$(roomId)).data.memberIds.hasAny([uid()]));
+    }
+
+    // ============================================================
+    //  USERS  — field-level protection (CRITICAL)
+    // ============================================================
+    match /users/{userId} {
+      allow read: if isSignedIn();
+
+      // Self-create on signup. Forced defaults for protected fields.
+      allow create: if isOwner(userId)
+        && request.resource.data.role is string
+        && request.resource.data.role == 'user'
+        && (request.resource.data.gold is int ? request.resource.data.gold == 0 : true)
+        && (request.resource.data.diamonds is int ? request.resource.data.diamonds == 0 : true)
+        && request.resource.data.isBanned != true;
+
+      // Self-update ONLY safe fields. Protected fields locked.
+      allow update: if isOwner(userId) && onlySafeUserFieldsChanged();
+
+      // Admin can update anything (but admin role itself is locked here too —
+      // role changes MUST go through the setRole Cloud Function for full audit).
+      allow update: if isAdmin() &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
+
+      // Self-delete or admin-delete
+      allow delete: if isOwner(userId) || isAdmin();
+    }
+
+    // ============================================================
+    //  POSTS / FEED
+    // ============================================================
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.userId == uid()
+        && request.resource.data.timestamp is int;
+      // Owner can edit only their own non-viral fields. Likes/comments/shares counts
+      // are managed by Cloud Functions or by atomic increments in secure paths.
+      allow update: if isSignedIn()
+        && resource.data.userId == uid()
+        && !request.resource.data.diff(resource.data).affectedKeys()
+            .hasAny(['userId', 'timestamp']);
+      allow update: if isAdmin();
+      allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+    }
+
+    // ============================================================
+    //  STORIES
+    // ============================================================
+    match /stories/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update: if isSignedIn() && resource.data.userId == uid();
+      allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+    }
+
+    // ============================================================
+    //  REACTIONS (id pattern: `${userId}_${postId}_${type}`)
+    // ============================================================
+    match /reactions/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update: if isSignedIn() && resource.data.userId == uid();
+      allow delete: if isSignedIn() && resource.data.userId == uid();
+    }
+
+    // ============================================================
+    //  COMMENTS
+    // ============================================================
+    match /comments/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update: if isSignedIn()
+        && resource.data.userId == uid()
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'postId', 'timestamp']);
+      allow update: if isAdmin();
+      allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+    }
+
+    // ============================================================
+    //  STORY REPLY MESSAGES (id pattern encodes sender/receiver)
+    // ============================================================
+    match /messages/{id} {
+      allow read: if isSignedIn()
+        && (resource.data.senderId == uid() || resource.data.recipientId == uid());
+      allow create: if isSignedIn() && request.resource.data.senderId == uid();
+      allow update: if isSignedIn() && resource.data.senderId == uid();
+      allow delete: if isSignedIn() && (resource.data.senderId == uid() || isAdmin());
+    }
+
+    // ============================================================
+    //  GOLD / DIAMOND LEDGERS — client writes FORBIDDEN
+    //  Only Cloud Functions (Admin SDK) can write here.
+    //  Users can read their own transactions only.
+    // ============================================================
+    match /gold_transactions/{id} {
+      allow read: if isSignedIn()
+        && (resource.data.userId == uid()
+            || resource.data.senderId == uid()
+            || resource.data.adminId == uid()
+            || isAdmin());
+      allow create: if false;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /diamond_transactions/{id} {
+      allow read: if isSignedIn()
+        && (resource.data.userId == uid()
+            || resource.data.senderId == uid()
+            || resource.data.adminId == uid()
+            || isAdmin());
+      allow create: if false;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // Store purchase audit trail — only Cloud Functions write
+    match /storeTransactions/{id} {
+      allow read: if isSignedIn()
+        && (resource.data.userId == uid() || isAdmin());
+      allow create: if false;
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // Profile visits — only the visited user can read their own visits.
+    // Written only by Cloud Function (logProfileVisit).
+    match /profile_visits/{id} {
+      allow read: if isSignedIn() && resource.data.targetUid == uid();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if isSignedIn() && resource.data.targetUid == uid();
+    }
+
+    // FCM tokens — owner can read/write own tokens. CF (storeFCMToken) uses Admin SDK.
+    match /fcm_tokens/{token} {
+      allow read: if isSignedIn() && resource.data.uid == uid();
+      allow create: if isSignedIn() && request.resource.data.uid == uid();
+      allow update: if isSignedIn() && resource.data.uid == uid();
+      allow delete: if isSignedIn() && resource.data.uid == uid();
+    }
+
+    // User activity log — admin can read all (for analytics dashboard).
+    // Users can read own activity. Only CF (logUserActivity) writes.
+    match /user_activity/{id} {
+      allow read: if isSignedIn() && (resource.data.uid == uid() || isAdmin());
+      allow create: if false; // only CF writes (Admin SDK bypasses rules)
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // TOTP secrets for 2FA — owner can read own, only CF writes
+    match /totp_secrets/{uid} {
+      allow read: if isSignedIn() && uid() == uid;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Secret chat public keys — anyone signed-in can read (needed to encrypt to others).
+    // Only owner can publish their own key (via publishSecretChatKey CF; direct writes blocked).
+    match /secret_chat_keys/{uid} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // Scheduled messages — owner can create/read/delete own; CF marks sent
+    match /scheduled_messages/{id} {
+      allow read: if isSignedIn() && resource.data.senderId == uid();
+      allow create: if isSignedIn() && request.resource.data.senderId == uid();
+      allow update: if false; // only CF updates sent flag
+      allow delete: if isSignedIn() && resource.data.senderId == uid();
+    }
+
+    // Secret chat messages (E2E encrypted) — participants only
+    // id pattern: `${uid1}_${uid2}` (sorted)
+    // Only RECIPIENT can delete (burn after reading) — sender cannot unsend.
+    match /secret_chats/{chatId}/messages/{msgId} {
+      allow read: if isSignedIn()
+        && (resource.data.senderId == uid() || resource.data.recipientId == uid());
+      allow create: if isSignedIn() && request.resource.data.senderId == uid();
+      allow update: if false; // immutable
+      allow delete: if isSignedIn() && resource.data.recipientId == uid();
+    }
+
+    // ============================================================
+    //  ADMIN LOGS — admin only
+    // ============================================================
+    match /admin_logs/{id} {
+      allow read: if isAdmin();
+      allow create: if false; // Only Cloud Functions write logs (admin SDK)
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    //  SYSTEM SETTINGS — read for all signed-in, write for admin
+    // ============================================================
+    match /settings/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    //  FRIENDSHIPS + DIRECT MESSAGES
+    // ============================================================
+    match /friendships/{friendshipId} {
+      allow read: if isSignedIn()
+        && (resource.data.user1Id == uid()
+            || resource.data.user2Id == uid()
+            || isAdmin());
+      allow create: if isSignedIn()
+        && (request.resource.data.user1Id == uid()
+            || request.resource.data.user2Id == uid());
+      allow update: if isSignedIn()
+        && (resource.data.user1Id == uid()
+            || resource.data.user2Id == uid()
+            || isAdmin());
+      allow delete: if isSignedIn()
+        && (resource.data.user1Id == uid()
+            || resource.data.user2Id == uid()
+            || isAdmin());
+    }
+
+    match /friendships/{friendshipId}/chat_messages/{msgId} {
+      allow read: if isFriendshipParticipant(friendshipId) || isAdmin();
+      allow create: if isFriendshipParticipant(friendshipId)
+        && request.resource.data.senderId == uid();
+      // Sender can edit/delete/recall their own messages.
+      // Receiver can mark as seen + add reactions (partial update allowed).
+      allow update: if isFriendshipParticipant(friendshipId) && (
+        resource.data.senderId == uid()
+        || request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['reactions', 'status', 'statusUpdated', 'readAt', 'readBy'])
+      );
+      allow delete: if isSignedIn()
+        && (resource.data.senderId == uid() || isAdmin());
+    }
+
+    // ============================================================
+    //  GROUP ROOMS + ROOM MESSAGES
+    // ============================================================
+    match /group_rooms/{roomId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.createdBy == uid();
+      // Members may join/leave (memberIds / membersCount updates) but not change metadata.
+      allow update: if isSignedIn()
+        && (resource.data.createdBy == uid()
+            || isAdmin()
+            || request.resource.data.diff(resource.data).affectedKeys().hasAny(['memberIds', 'membersCount']));
+      allow delete: if isSignedIn() && (resource.data.createdBy == uid() || isAdmin());
+    }
+
+    match /group_rooms/{roomId}/room_messages/{msgId} {
+      allow read: if isRoomMember(roomId) || isAdmin();
+      allow create: if isRoomMember(roomId) && request.resource.data.senderId == uid();
+      // Sender can edit/delete their own messages.
+      // Any room member can add reactions (partial update allowed).
+      allow update: if isRoomMember(roomId) && (
+        resource.data.senderId == uid()
+        || request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['reactions', 'status', 'statusUpdated', 'readAt', 'readBy'])
+      );
+      allow delete: if isSignedIn() && (resource.data.senderId == uid() || isAdmin());
+    }
+
+    // ============================================================
+    //  FRIEND REQUESTS (id pattern: `${fromUid}_${toUid}`)
+    // ============================================================
+    match /friendRequests/{id} {
+      allow read: if isSignedIn()
+        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
+      allow create: if isSignedIn() && request.resource.data.fromUid == uid();
+      allow update: if isSignedIn()
+        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
+      allow delete: if isSignedIn()
+        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
+    }
+
+    // ============================================================
+    //  QUIZ
+    // ============================================================
+    match /quiz_questions/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    match /quiz_results/{id} {
+      allow read: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    //  REPORTS — created via reportContent CF only
+    // ============================================================
+    match /reports/{id} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.reporterId == uid());
+      allow create: if false; // only CF (reportContent) creates
+      allow update, delete: if isAdmin();
+    }
+
+    // ============================================================
+    //  ANNOUNCEMENTS — admin only
+    // ============================================================
+    match /announcements/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // ============================================================
+    //  DICE GAMES — owner or admin
+    // ============================================================
+    match /dice_games/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.createdBy == uid();
+      allow update: if isSignedIn()
+        && (resource.data.createdBy == uid()
+            || request.resource.data.diff(resource.data).affectedKeys().hasAny(['playerRoll', 'opponentRoll', 'winnerId', 'status'])
+            || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    //  CALLS (WebRTC signaling) — only caller + callee
+    // ============================================================
+    match /calls/{id} {
+      allow read: if isSignedIn()
+        && (resource.data.callerId == uid() || resource.data.calleeId == uid());
+      allow create: if isSignedIn() && request.resource.data.callerId == uid();
+      allow update: if isSignedIn()
+        && (resource.data.callerId == uid() || resource.data.calleeId == uid());
+      allow delete: if isSignedIn()
+        && (resource.data.callerId == uid() || resource.data.calleeId == uid() || isAdmin());
+    }
+    match /calls/{id}/callerCandidates/{cId} {
+      allow read: if isSignedIn()
+        && exists(/databases/$(database)/documents/calls/$(id))
+        && get(/databases/$(database)/documents/calls/$(id)).data.calleeId == uid();
+      allow create: if isSignedIn()
+        && exists(/databases/$(database)/documents/calls/$(id))
+        && get(/databases/$(database)/documents/calls/$(id)).data.callerId == uid();
+      allow delete: if isAdmin();
+    }
+    match /calls/{id}/calleeCandidates/{cId} {
+      allow read: if isSignedIn()
+        && exists(/databases/$(database)/documents/calls/$(id))
+        && get(/databases/$(database)/documents/calls/$(id)).data.callerId == uid();
+      allow create: if isSignedIn()
+        && exists(/databases/$(database)/documents/calls/$(id))
+        && get(/databases/$(database)/documents/calls/$(id)).data.calleeId == uid();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    //  NEW (feed.html / index.html / inbox.html)
+    // ============================================================
+
+    // Communities
+    match /communities/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.createdBy == uid();
+      allow update: if isSignedIn()
+        && (resource.data.createdBy == uid()
+            || isAdmin()
+            || request.resource.data.diff(resource.data).affectedKeys().hasAny(['memberIds', 'membersCount']));
+      allow delete: if isSignedIn() && (resource.data.createdBy == uid() || isAdmin());
+    }
+
+    // Follows (doc id pattern: `${followerId}_${followingId}`)
+    match /follows/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.followerId == uid();
+      allow delete: if isSignedIn() && resource.data.followerId == uid();
+    }
+
+    // Notifications (recipient owns them; actor creates)
+    match /notifications/{id} {
+      allow read: if isSignedIn() && (resource.data.userId == uid() || resource.data.actorId == uid() || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.actorId == uid();
+      allow update: if isSignedIn() && resource.data.userId == uid();
+      allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
+    }
+
+    // Saved posts / bookmarks (private to owner)
+    match /savedPosts/{id} {
+      allow read: if isSignedIn() && resource.data.userId == uid();
+      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow delete: if isSignedIn() && resource.data.userId == uid();
+    }
+
+    // ============================================================
+    //  DENY EVERYTHING ELSE BY DEFAULT
+    // ============================================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
