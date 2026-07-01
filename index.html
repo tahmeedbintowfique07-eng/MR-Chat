@@ -695,7 +695,7 @@
                         </button>
                     </div>
                     <!-- reCAPTCHA widget (shown only on signup) -->
-                    <div id="recaptcha-container" class="recaptcha-wrap" style="margin: 12px 0; display: none;">
+                    <div id="recaptcha-container" class="recaptcha-wrap" style="margin: 12px 0; display: block;">
                         <div class="g-recaptcha" data-sitekey="6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi" data-theme="dark"></div>
                     </div>
                     <label class="remember-row" id="remember-row">
@@ -1795,6 +1795,8 @@
             SoundManager.playClick();
             setAuthMode(authMode === 'login' ? 'signup' : 'login');
         });
+        // Initialize auth mode on page load (default is 'signup', so recaptcha shows)
+        setAuthMode(authMode);
         // Password visibility toggle
         const pwToggleBtn = document.getElementById("pw-toggle-btn");
         pwToggleBtn.addEventListener("click", () => {
