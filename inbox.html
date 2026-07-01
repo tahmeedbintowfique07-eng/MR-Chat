@@ -4355,7 +4355,7 @@
             }, (err) => console.warn('Incoming calls listener error:', err));
         }
         let currentIncomingCallId = null;
-        function showIncomingCall(callId, callData) {
+        async function showIncomingCall(callId, callData) {
             currentIncomingCallId = callId;
             currentCallType = callData.type || 'voice';
             incomingCallerAvatar.src = safeB64PhotoURL(callData.callerPhoto, callData.callerName);
