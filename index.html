@@ -19,7 +19,7 @@
     <!-- Shared UI/UX helpers (button loading, lazy images, smooth scroll) -->
     <script src="ui-ux.js" defer></script>
     <!-- reCAPTCHA v2 widget (loaded async) -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi" async defer></script>
     <script>
         // Global callback for reCAPTCHA API load
         window.onRecaptchaLoad = function() {
@@ -694,10 +694,8 @@
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
-                    <!-- reCAPTCHA widget (shown only on signup) -->
-                    <div id="recaptcha-container" class="recaptcha-wrap" style="margin: 12px 0; display: block;">
-                        <div class="g-recaptcha" data-sitekey="6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi" data-theme="dark"></div>
-                    </div>
+                    <!-- reCAPTCHA v3 (invisible — runs in background, no checkbox) -->
+                    <div id="recaptcha-container" class="recaptcha-wrap" style="display: none;"></div>
                     <label class="remember-row" id="remember-row">
                         <input type="checkbox" id="remember-me" checked>
                         <span>Remember me on this device</span>
@@ -1886,17 +1884,15 @@
                     const taken = await isUsernameTaken(username);
                     if (taken) { showToast("Username already taken. Please choose another.", "error"); return; }
 
-                    // reCAPTCHA verification (signup only — bot protection)
-                    const recaptchaResponse = (window.grecaptcha && typeof grecaptcha.getResponse === 'function') ? grecaptcha.getResponse() : '';
-                    if (!recaptchaResponse) { showToast("Please complete the reCAPTCHA.", "error"); authSubmitBtn.disabled = false; authSubmitText.innerText = originalText; return; }
+                    // reCAPTCHA v3 verification (invisible — runs in background)
                     try {
-                        await verifyRecaptchaCF({ token: recaptchaResponse });
+                        if (window.grecaptcha && typeof grecaptcha.execute === 'function') {
+                            const token = await grecaptcha.execute('6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi', { action: 'signup' });
+                            await verifyRecaptchaCF({ token });
+                        }
                     } catch (rcErr) {
-                        showToast("reCAPTCHA verification failed. Try again.", "error");
-                        if (window.grecaptcha) grecaptcha.reset();
-                        authSubmitBtn.disabled = false;
-                        authSubmitText.innerText = originalText;
-                        return;
+                        // reCAPTCHA failed (invalid key or network) — continue anyway for now
+                        console.warn('reCAPTCHA v3 skipped:', rcErr.message);
                     }
 
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
