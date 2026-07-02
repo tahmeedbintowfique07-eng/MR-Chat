@@ -72,8 +72,9 @@ exports.transferGold = onCall(async (req) => {
   const senderUid = req.auth?.uid;
   if (!senderUid) throw new HttpsError('unauthenticated', 'Sign in required.');
 
-  const { targetUid, amount } = req.data || {};
-  if (!targetUid || typeof amount !== 'number' || !Number.isFinite(amount) || amount <= 0 || amount > 100000) {
+  let { targetUid, amount } = req.data || {};
+  amount = Number(amount);
+  if (!targetUid || isNaN(amount) || !isFinite(amount) || amount <= 0 || amount > 100000) {
     throw new HttpsError('invalid-argument', 'Invalid target or amount.');
   }
   if (senderUid === targetUid) throw new HttpsError('invalid-argument', 'Cannot gift yourself.');
@@ -168,37 +169,43 @@ exports.transferDiamond = onCall(async (req) => {
 // ============================================================
 exports.grantGold = onCall(async (req) => {
   const adminUid = req.auth?.uid;
-  const admin = await requireAdmin(adminUid);
+  try {
+    const admin = await requireAdmin(adminUid);
 
-  const { targetUid, amount, reason } = req.data || {};
-  if (!targetUid || typeof amount !== 'number' || !Number.isFinite(amount) || amount === 0) {
-    throw new HttpsError('invalid-argument', 'Invalid target or amount.');
+    let { targetUid, amount, reason } = req.data || {};
+    amount = Number(amount);
+    if (!targetUid || isNaN(amount) || !isFinite(amount) || amount === 0) {
+      throw new HttpsError('invalid-argument', 'Invalid target or amount.');
+    }
+    if (Math.abs(amount) > 10000000) throw new HttpsError('invalid-argument', 'Amount too large.');
+
+    const targetRef = db.doc(`users/${targetUid}`);
+    const targetSnap = await targetRef.get();
+    if (!targetSnap.exists) throw new HttpsError('not-found', 'User not found.');
+    const target = targetSnap.data();
+
+    const batch = db.batch();
+    batch.update(targetRef, { gold: FieldValue.increment(amount) });
+    batch.create(db.collection('gold_transactions').doc(), {
+      userId: targetUid,
+      userName: target.username || target.fullName || 'User',
+      amount,
+      reason: reason || 'Admin adjustment',
+      adminId: adminUid,
+      adminName: admin.username || admin.fullName || 'Admin',
+      timestamp: Date.now(),
+      type: 'admin_grant'
+    });
+    await batch.commit();
+
+    await logAdminAction(adminUid, admin.username, 'Gold Update',
+      `${amount > 0 ? '+' : ''}${amount} gold | ${reason || ''}`, targetUid, 'user');
+
+    return { success: true };
+  } catch (err) {
+    logger.error('grantGold error:', err.message);
+    throw err;
   }
-  if (Math.abs(amount) > 10000000) throw new HttpsError('invalid-argument', 'Amount too large.');
-
-  const targetRef = db.doc(`users/${targetUid}`);
-  const targetSnap = await targetRef.get();
-  if (!targetSnap.exists) throw new HttpsError('not-found', 'User not found.');
-  const target = targetSnap.data();
-
-  const batch = db.batch();
-  batch.update(targetRef, { gold: FieldValue.increment(amount) });
-  batch.create(db.collection('gold_transactions').doc(), {
-    userId: targetUid,
-    userName: target.username || target.fullName || 'User',
-    amount,
-    reason: reason || 'Admin adjustment',
-    adminId: adminUid,
-    adminName: admin.username || admin.fullName || 'Admin',
-    timestamp: Date.now(),
-    type: 'admin_grant'
-  });
-  await batch.commit();
-
-  await logAdminAction(adminUid, admin.username, 'Gold Update',
-    `${amount > 0 ? '+' : ''}${amount} gold | ${reason || ''}`, targetUid, 'user');
-
-  return { success: true };
 });
 
 // ============================================================

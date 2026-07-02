@@ -78,6 +78,24 @@ service cloud.firestore {
       allow update: if isAdmin() &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
 
+      // Admin can write to gold_transactions and diamond_transactions
+      match /gold_transactions/{id} {
+        allow read: if isSignedIn() && (resource.data.userId == uid() || resource.data.adminId == uid() || isAdmin());
+        allow create: if isAdmin();
+        allow update, delete: if isAdmin();
+      }
+      match /diamond_transactions/{id} {
+        allow read: if isSignedIn() && (resource.data.userId == uid() || resource.data.adminId == uid() || isAdmin());
+        allow create: if isAdmin();
+        allow update, delete: if isAdmin();
+      }
+      // Admin can write to admin_logs
+      match /admin_logs/{id} {
+        allow read: if isAdmin();
+        allow create: if isAdmin();
+        allow update, delete: if isAdmin();
+      }
+
       // Self-delete or admin-delete
       allow delete: if isOwner(userId) || isAdmin();
     }

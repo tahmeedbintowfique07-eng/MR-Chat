@@ -2840,8 +2840,16 @@
             const reason = document.getElementById('gold-modal-reason').value.trim() || 'Admin adjustment';
             if (isNaN(amount) || amount === 0) { showToast('Please enter a valid non-zero number', 'error'); return; }
             try {
-                // Secure grant via Cloud Function (Firestore rules block direct writes to gold + ledger)
-                await grantGoldCF({ targetUid: selectedUserId, amount, reason });
+                // Direct Firestore write (admin is allowed by rules — no CF needed for Spark plan)
+                await updateDoc(doc(db, "users", selectedUserId), { gold: increment(amount) });
+                await addDoc(collection(db, "gold_transactions"), {
+                    userId: selectedUserId,
+                    userName: (selectedUserData && (selectedUserData.fullName || selectedUserData.username)) || 'User',
+                    amount: amount, reason: reason,
+                    adminId: currentAdmin ? currentAdmin.uid : SUPER_ADMIN_UID,
+                    adminName: currentAdmin ? (currentAdmin.displayName || 'Admin') : 'Admin',
+                    timestamp: Date.now()
+                });
                 logAction("Gold Update", `${amount > 0 ? '+' : ''}${amount} gold | ${reason}`, selectedUserId, "user");
                 showToast(`Gold updated: ${amount > 0 ? '+' : ''}${amount}`, 'success');
                 closeModal('gold');
@@ -2874,8 +2882,16 @@
             const reason = document.getElementById('diamond-modal-reason').value.trim() || 'Admin adjustment';
             if (isNaN(amount) || amount === 0) { showToast('Please enter a valid non-zero number', 'error'); return; }
             try {
-                // Secure grant via Cloud Function (Firestore rules block direct writes to diamonds + ledger)
-                await grantDiamondCF({ targetUid: selectedUserId, amount, reason });
+                // Direct Firestore write (admin is allowed by rules — no CF needed for Spark plan)
+                await updateDoc(doc(db, "users", selectedUserId), { diamonds: increment(amount) });
+                await addDoc(collection(db, "diamond_transactions"), {
+                    userId: selectedUserId,
+                    userName: (selectedUserData && (selectedUserData.fullName || selectedUserData.username)) || 'User',
+                    amount: amount, reason: reason,
+                    adminId: currentAdmin ? currentAdmin.uid : SUPER_ADMIN_UID,
+                    adminName: currentAdmin ? (currentAdmin.displayName || 'Admin') : 'Admin',
+                    timestamp: Date.now()
+                });
                 logAction("Diamond Update", `${amount > 0 ? '+' : ''}${amount} diamonds | ${reason}`, selectedUserId, "user");
                 showToast(`Diamonds updated: ${amount > 0 ? '+' : ''}${amount}`, 'success');
                 closeModal('diamond');
