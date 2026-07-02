@@ -3920,22 +3920,27 @@
                 }
                 if (!targetUid) { showToast('User not found.', 'error'); return; }
                 if (targetUid === currentUser.uid) { showToast('Cannot gift yourself.', 'error'); return; }
-                // Check balance (UX only — Cloud Function does the authoritative check)
+                // Check balance (UX only — Firestore rules will also block if insufficient)
                 const balance = giftMode === 'gold' ? (userData?.gold || 0) : (userData?.diamonds || 0);
                 if (amount > balance) { showToast(`Insufficient ${giftMode}.`, 'error'); return; }
-                // Secure transfer via Cloud Function (Firestore rules block direct writes)
+                // Direct Firestore transfer (no CF needed — Spark plan compatible)
                 try {
-                    const cf = giftMode === 'gold' ? transferGoldCF : transferDiamondCF;
-                    const result = await cf({ targetUid, amount });
+                    const batch = writeBatch(db);
+                    const field = giftMode === 'gold' ? 'gold' : 'diamonds';
+                    batch.update(doc(db, 'users', currentUser.uid), { [field]: increment(-amount) });
+                    batch.update(doc(db, 'users', targetUid), { [field]: increment(amount) });
+                    const txColl = giftMode === 'gold' ? 'gold_transactions' : 'diamond_transactions';
+                    batch.set(doc(collection(db, txColl)), {
+                        userId: targetUid, userName: target,
+                        amount, reason: 'Gift transfer',
+                        senderId: currentUser.uid, senderName: userData?.username || 'User',
+                        timestamp: Date.now(), type: 'transfer'
+                    });
+                    await batch.commit();
                     showToast(`${amount} ${giftMode} sent!`, 'success');
                     SoundManager.playSuccess();
                     giftGoldModal.classList.add('hidden');
                     document.getElementById('gift-amount').value = '';
-                    // Optionally update local balance from server response
-                    if (result?.data?.newBalance !== undefined && userData) {
-                        if (giftMode === 'gold') userData.gold = result.data.newBalance;
-                        else userData.diamonds = result.data.newBalance;
-                    }
                 } catch (err) {
                     console.error(err);
                     const msg = err?.message || 'Transfer failed.';
