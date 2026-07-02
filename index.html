@@ -923,17 +923,26 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- All Users Section (with friend request system) -->
+                <div class="section-card">
+                    <div class="section-card-header">
+                        <h3><i class="fas fa-users" style="color: var(--purple-primary);"></i> Users</h3>
+                        <button class="link-btn" data-nav="friends">Explore</button>
+                    </div>
+                    <div class="all-users-list" id="all-users-list">
+                        <div class="skeleton-row"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div></div>
+                        <div class="skeleton-row"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div></div>
+                        <div class="skeleton-row"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div></div>
+                    </div>
+                    <div class="load-more-row hidden" id="load-more-row">
+                        <button class="load-more-btn" id="load-more-btn">Load more users</button>
+                    </div>
+                </div>
             </main>
 
             <!-- Right Sidebar -->
             <aside class="right-sidebar">
-                <div class="sidebar-widget">
-                    <div class="sidebar-widget-title"><i class="fas fa-user-plus"></i> People You May Know</div>
-                    <div id="suggested-users-list">
-                        <div class="skeleton-row"><div class="skeleton skeleton-avatar" style="width: 40px; height: 40px;"></div><div style="flex:1;"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div></div>
-                        <div class="skeleton-row"><div class="skeleton skeleton-avatar" style="width: 40px; height: 40px;"></div><div style="flex:1;"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div></div>
-                    </div>
-                </div>
                 <div class="sidebar-widget">
                     <div class="sidebar-widget-title"><i class="fas fa-circle" style="color: var(--online-green); font-size: 0.7rem;"></i> Active Now</div>
                     <div id="active-now-list">
