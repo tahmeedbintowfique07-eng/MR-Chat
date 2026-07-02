@@ -197,9 +197,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 <div style="background:linear-gradient(145deg,#1a1a25,#12121a);border:1.5px solid rgba(255,0,127,0.3);border-radius:24px;padding:32px;max-width:380px;width:100%;text-align:center;position:relative;">
                     <button onclick="document.getElementById('mr-about-modal').remove()" style="position:absolute;top:14px;right:14px;background:none;border:none;color:#8b8b9e;font-size:1.2rem;cursor:pointer;">×</button>
                     <div style="font-size:3rem;margin-bottom:12px;">
-                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin:0 auto;">
-                            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.66 6 15 7.34 15 9C15 10.66 13.66 12 12 12C10.34 12 9 10.66 9 9C9 7.34 10.34 6 12 6Z" fill="#FF007F"/>
-                        </svg>
+                        <img src="logo.png" alt="MR Chat" style="width:64px;height:64px;border-radius:50%;margin:0 auto;box-shadow:0 0 20px rgba(255,0,127,0.3);">
                     </div>
                     <h2 style="font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#FF007F,#9D00FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">MR Chat</h2>
                     <p style="font-size:0.8rem;color:#8b8b9e;margin-bottom:16px;">Version 3.0 · Build 2025</p>
@@ -261,9 +259,7 @@ function showInstallBanner() {
 
     banner.innerHTML = `
         <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.66 6 15 7.34 15 9C15 10.66 13.66 12 12 12C10.34 12 9 10.66 9 9C9 7.34 10.34 6 12 6ZM12 20C9.5 20 7.2 19.1 5.5 17.6C6.8 16.8 9.3 16.5 12 16.5C14.7 16.5 17.2 16.8 18.5 17.6C16.8 19.1 14.5 20 12 20Z" fill="#fff"/>
-            </svg>
+            <img src="logo.png" alt="MR Chat" style="width:28px;height:28px;border-radius:50%;">
         </div>
         <div style="flex: 1; min-width: 0;">
             <div style="font-size: 0.9rem; font-weight: 800; margin-bottom: 2px;">Download MR Chat App</div>
