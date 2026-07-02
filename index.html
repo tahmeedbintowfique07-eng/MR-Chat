@@ -888,21 +888,26 @@
                     </div>
                 </div>
 
-                <!-- Action Grid (preserved) -->
+                <!-- Global Search Bar -->
+                <div class="dashboard-search-bar" style="margin-bottom: 16px; position: relative;">
+                    <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.9rem;"></i>
+                    <input type="text" id="dashboard-search-input" placeholder="Search users by name or username..." style="width: 100%; padding: 14px 16px 14px 44px; background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 16px; color: var(--text-main); font-size: 0.9rem; outline: none; transition: all 0.25s;">
+                    <div id="dashboard-search-results" style="position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px; background: var(--bg-sidebar); border: 1px solid var(--glass-border); border-radius: 16px; max-height: 320px; overflow-y: auto; z-index: 50; display: none; box-shadow: 0 12px 40px rgba(0,0,0,0.3);"></div>
+                </div>
+
+                <!-- Action Grid (exclusive lighting effect) -->
                 <div class="action-grid">
-                    <div class="action-grid-btn" id="web-theme-trigger-btn"><i class="fas fa-sliders"></i><span>Settings</span></div>
-                    <div class="action-grid-btn" data-nav="games"><i class="fas fa-gamepad"></i><span>Games</span></div>
                     <div class="action-grid-btn" data-nav="feed"><i class="fas fa-newspaper"></i><span>Feed</span></div>
                     <div class="action-grid-btn" data-nav="store"><i class="fas fa-store"></i><span>Store</span></div>
                     <div class="action-grid-btn inbox-btn" data-nav="inbox"><i class="fas fa-comment-dots"></i><span>Inbox</span></div>
                     <div class="action-grid-btn" data-nav="friends"><i class="fas fa-user-plus"></i><span>Friends</span></div>
+                    <div class="action-grid-btn" data-nav="games"><i class="fas fa-gamepad"></i><span>Games</span></div>
                     <div class="action-grid-btn" data-nav="mindreset"><i class="fas fa-brain"></i><span>Mind Reset</span></div>
                     <div class="action-grid-btn" data-nav="motivation"><i class="fas fa-fire"></i><span>Motivation</span></div>
-                    <div class="action-grid-btn" id="logout-btn" data-nav="logout"><i class="fas fa-arrow-right-from-bracket"></i><span>Logout</span></div>
-                    <div class="action-grid-btn" id="sound-settings-btn"><i class="fas fa-volume-high" id="sound-btn-icon"></i><span id="sound-btn-text">Sound On</span></div>
+                    <div class="action-grid-btn" id="sound-settings-btn"><i class="fas fa-volume-high" id="sound-btn-icon"></i><span id="sound-btn-text">Sound</span></div>
                     <div class="action-grid-btn" id="security-settings-btn"><i class="fas fa-shield-halved"></i><span>Security</span></div>
                     <div class="action-grid-btn" id="admin-grid-btn" data-nav="admin" style="display:none;"><i class="fas fa-user-shield"></i><span>Admin</span></div>
-                    <!-- Communities removed in V3 -->
+                    <div class="action-grid-btn" id="logout-btn" data-nav="logout"><i class="fas fa-arrow-right-from-bracket"></i><span>Logout</span></div>
                 </div>
 
                 <!-- Friends Section (mobile/tablet view) -->
@@ -916,22 +921,6 @@
                             <div class="add-btn"><i class="fas fa-plus"></i></div>
                             <span>Add</span>
                         </div>
-                    </div>
-                </div>
-
-                <!-- All Users Section -->
-                <div class="section-card">
-                    <div class="section-card-header">
-                        <h3><i class="fas fa-users" style="color: var(--purple-primary);"></i> People You May Know</h3>
-                        <button class="link-btn" data-nav="friends">Explore</button>
-                    </div>
-                    <div class="all-users-list" id="all-users-list">
-                        <div class="skeleton-row"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div></div>
-                        <div class="skeleton-row"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div></div>
-                        <div class="skeleton-row"><div class="skeleton skeleton-avatar"></div><div style="flex:1;"><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line short"></div></div></div>
-                    </div>
-                    <div class="load-more-row hidden" id="load-more-row">
-                        <button class="load-more-btn" id="load-more-btn">Load more users</button>
                     </div>
                 </div>
             </main>
@@ -2151,6 +2140,59 @@
                 e.preventDefault();
                 handleNav(el.dataset.nav);
             });
+        });
+
+        // ==================== DASHBOARD GLOBAL USER SEARCH ====================
+        const searchInput = document.getElementById('dashboard-search-input');
+        const searchResults = document.getElementById('dashboard-search-results');
+        let searchDebounce = null;
+        searchInput?.addEventListener('input', (e) => {
+            const term = e.target.value.trim().toLowerCase();
+            clearTimeout(searchDebounce);
+            if (!term) { searchResults.style.display = 'none'; searchResults.innerHTML = ''; return; }
+            searchDebounce = setTimeout(async () => {
+                try {
+                    const snap = await getDocs(query(collection(db, "users"), limit(50)));
+                    const matches = [];
+                    snap.forEach(d => {
+                        const u = d.data();
+                        if (u.uid !== currentUser.uid && !u.isBanned) {
+                            const name = (u.fullName || u.username || '').toLowerCase();
+                            const uname = (u.username || '').toLowerCase();
+                            if (name.includes(term) || uname.includes(term)) {
+                                matches.push(u);
+                            }
+                        }
+                    });
+                    if (matches.length === 0) {
+                        searchResults.innerHTML = '<div style="padding: 16px; text-align: center; color: var(--text-muted); font-size: 0.8rem;">No users found</div>';
+                    } else {
+                        searchResults.innerHTML = matches.slice(0, 10).map(u => `
+                            <div class="dashboard-search-results-item" data-uid="${escapeHtml(u.uid)}">
+                                <img src="${escapeHtml(safeB64PhotoURL(u.photoURL, u.username || u.uid))}" alt="">
+                                <div>
+                                    <div class="dsr-name">${escapeHtml(u.fullName || u.username || 'User')}</div>
+                                    <div class="dsr-meta">Lv.${u.level || 1} · @${escapeHtml(u.username || 'user')}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                        searchResults.querySelectorAll('.dashboard-search-results-item').forEach(item => {
+                            item.addEventListener('click', () => {
+                                searchResults.style.display = 'none';
+                                searchInput.value = '';
+                                openSocialProfile(item.dataset.uid);
+                            });
+                        });
+                    }
+                    searchResults.style.display = 'block';
+                } catch (err) { console.error('Search error:', err); }
+            }, 300);
+        });
+        // Close search on outside click
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dashboard-search-bar')) {
+                searchResults.style.display = 'none';
+            }
         });
         // Mobile notif button
         document.getElementById('mobile-notif-btn').addEventListener('click', () => { handleNav('notifications'); });
