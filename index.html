@@ -75,6 +75,36 @@
             --pink-primary: #0096ff; --pink-hover: #0077cc; --pink-light: #66c2ff; --purple-primary: #00e6ff;
             --text-muted: #7a99b3; --glass-border: rgba(0, 150, 255, 0.15); --shadow-glow: 0 0 20px rgba(0, 150, 255, 0.15);
         }
+        [data-theme="sunset"] {
+            --bg-main: #1a0a05; --bg-sidebar: #2a0f08; --bg-card: #3a150c; --bg-hover: rgba(255, 107, 53, 0.06); --bg-active: rgba(255, 107, 53, 0.12);
+            --pink-primary: #FF6B35; --pink-hover: #E55a2b; --pink-light: #ff9966; --purple-primary: #F7931E;
+            --text-main: #FFFFFF; --text-muted: #c4a5a0; --text-secondary: #d4b5b0; --glass-border: rgba(255, 107, 53, 0.18);
+            --shadow-glow: 0 0 20px rgba(255, 107, 53, 0.15); --online-green: #4ade80; --diamond-cyan: #FF6B35; --gold-yellow: #F7931E; --danger-red: #ff4444;
+        }
+        [data-theme="matrix"] {
+            --bg-main: #000500; --bg-sidebar: #000a00; --bg-card: #001500; --bg-hover: rgba(0, 255, 0, 0.06); --bg-active: rgba(0, 255, 0, 0.12);
+            --pink-primary: #00ff00; --pink-hover: #00cc00; --pink-light: #66ff66; --purple-primary: #00ff00;
+            --text-main: #00ff00; --text-muted: #008800; --text-secondary: #00aa00; --glass-border: rgba(0, 255, 0, 0.2);
+            --shadow-glow: 0 0 20px rgba(0, 255, 0, 0.2); --online-green: #00ff00; --diamond-cyan: #00ff00; --gold-yellow: #88ff00; --danger-red: #ff0044;
+        }
+        [data-theme="rosegold"] {
+            --bg-main: #1a1010; --bg-sidebar: #251515; --bg-card: #2e1a1a; --bg-hover: rgba(255, 183, 197, 0.06); --bg-active: rgba(255, 183, 197, 0.12);
+            --pink-primary: #FFB7C5; --pink-hover: #ff9eaf; --pink-light: #ffd4dd; --purple-primary: #E8B4B8;
+            --text-main: #FFFFFF; --text-muted: #b09090; --text-secondary: #c0a0a0; --glass-border: rgba(255, 183, 197, 0.2);
+            --shadow-glow: 0 0 20px rgba(255, 183, 197, 0.15); --online-green: #4ade80; --diamond-cyan: #FFB7C5; --gold-yellow: #E8B4B8; --danger-red: #ff4444;
+        }
+        [data-theme="cyber"] {
+            --bg-main: #0a0014; --bg-sidebar: #14001f; --bg-card: #1c0029; --bg-hover: rgba(0, 255, 255, 0.06); --bg-active: rgba(0, 255, 255, 0.12);
+            --pink-primary: #00ffff; --pink-hover: #00cccc; --pink-light: #66ffff; --purple-primary: #ff00ff;
+            --text-main: #FFFFFF; --text-muted: #7a7a9a; --text-secondary: #9a9aba; --glass-border: rgba(0, 255, 255, 0.2);
+            --shadow-glow: 0 0 20px rgba(0, 255, 255, 0.2); --online-green: #00ff00; --diamond-cyan: #00ffff; --gold-yellow: #ff00ff; --danger-red: #ff0044;
+        }
+        [data-theme="aurora"] {
+            --bg-main: #050a14; --bg-sidebar: #0a1428; --bg-card: #0f1f3a; --bg-hover: rgba(0, 255, 157, 0.06); --bg-active: rgba(0, 255, 157, 0.12);
+            --pink-primary: #00FF9D; --pink-hover: #00cc7a; --pink-light: #66ffba; --purple-primary: #4D9DFF;
+            --text-main: #FFFFFF; --text-muted: #7a8f9e; --text-secondary: #9aafc0; --glass-border: rgba(0, 255, 157, 0.18);
+            --shadow-glow: 0 0 25px rgba(0, 255, 157, 0.18); --online-green: #00FF9D; --diamond-cyan: #4D9DFF; --gold-yellow: #FFD700; --danger-red: #ff4444;
+        }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; min-height: calc(var(--vh, 1vh) * 100); overflow-x: hidden; }
@@ -302,15 +332,16 @@
         .action-btn-sm:hover { transform: translateY(-1px); }
 
         /* Action Grid (preserved) */
-        .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
-        .action-grid-btn { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 4px; background: rgba(255,255,255,0.03); border: 1.5px solid var(--glass-border); border-radius: 16px; color: var(--text-main); font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.25s ease; text-decoration: none; position: relative; overflow: hidden; }
-        .action-grid-btn i { font-size: 1.3rem; color: var(--pink-primary); transition: transform 0.2s; }
-        .action-grid-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(255, 0, 127, 0.18); border-color: var(--pink-primary); background: rgba(255,0,127,0.05); }
-        .action-grid-btn:hover i { transform: scale(1.1); }
-        .action-grid-btn:active { transform: scale(0.96); }
+        .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+        .action-grid-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 18px 6px; background: linear-gradient(145deg, var(--bg-card), rgba(255,255,255,0.02)); border: 1.5px solid var(--glass-border); border-radius: 20px; color: var(--text-main); font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .action-grid-btn i { font-size: 1.4rem; color: var(--pink-primary); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .action-grid-btn:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(255, 0, 127, 0.25); border-color: var(--pink-primary); background: linear-gradient(145deg, rgba(255,0,127,0.08), rgba(157,0,255,0.05)); }
+        .action-grid-btn:hover i { transform: scale(1.2) translateY(-2px); color: var(--pink-light); }
+        .action-grid-btn:active { transform: scale(0.95); }
         .action-grid-btn.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(0.8); }
-        .action-grid-btn.inbox-btn { background: linear-gradient(135deg, rgba(255,0,127,0.1), rgba(157,0,255,0.08)); border-color: var(--pink-primary); }
-        .action-grid-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent); transition: left 0.5s ease; }
+        .action-grid-btn.inbox-btn { background: linear-gradient(145deg, rgba(255,0,127,0.12), rgba(157,0,255,0.08)); border-color: var(--pink-primary); box-shadow: 0 4px 15px rgba(255,0,127,0.15); }
+        .action-grid-btn.inbox-btn i { color: var(--pink-light); }
+        .action-grid-btn::after { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent); transition: left 0.6s ease; }
         .action-grid-btn:hover::after { left: 100%; }
 
         /* ============================================================
@@ -920,16 +951,6 @@
                         <div class="empty-state" style="padding: 16px;"><i class="fas fa-circle-notch fa-spin" style="font-size: 1.4rem;"></i><p style="font-size: 0.72rem;">Loading...</p></div>
                     </div>
                 </div>
-                <div class="sidebar-widget">
-                    <div class="sidebar-widget-title"><i class="fas fa-fire"></i> Trending</div>
-                    <div id="trending-list">
-                        <div class="trending-item"><span class="trend-rank">1</span> <span>#MRChatLaunch</span></div>
-                        <div class="trending-item"><span class="trend-rank">2</span> <span>#GlobalLounge</span></div>
-                        <div class="trending-item"><span class="trend-rank">3</span> <span>#TopContributor</span></div>
-                        <div class="trending-item"><span class="trend-rank">4</span> <span>#NewYearEvent</span></div>
-                        <div class="trending-item"><span class="trend-rank">5</span> <span>#FrameDrop</span></div>
-                    </div>
-                </div>
             </aside>
         </div>
     </div>
@@ -976,8 +997,13 @@
                         <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="dark" style="font-size:0.72rem;padding:8px;"><i class="fas fa-moon"></i> Dark</button>
                         <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="white" style="font-size:0.72rem;padding:8px;"><i class="fas fa-sun"></i> White</button>
                         <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="purple" style="font-size:0.72rem;padding:8px;"><i class="fas fa-gem"></i> Purple</button>
-                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="neon" style="font-size:0.72rem;padding:8px;"><i class="fas fa-bolt"></i> Green</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="neon" style="font-size:0.72rem;padding:8px;"><i class="fas fa-bolt"></i> Neon</button>
                         <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="ocean" style="font-size:0.72rem;padding:8px;"><i class="fas fa-water"></i> Ocean</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="sunset" style="font-size:0.72rem;padding:8px;"><i class="fas fa-mountain-sun"></i> Sunset</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="matrix" style="font-size:0.72rem;padding:8px;"><i class="fas fa-code"></i> Matrix</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="rosegold" style="font-size:0.72rem;padding:8px;"><i class="fas fa-spa"></i> Rose Gold</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="cyber" style="font-size:0.72rem;padding:8px;"><i class="fas fa-robot"></i> Cyber</button>
+                        <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="aurora" style="font-size:0.72rem;padding:8px;"><i class="fas fa-wand-magic-sparkles"></i> Aurora</button>
                         <button class="settings-theme-btn action-btn-sm btn-muted" data-theme-val="default" style="font-size:0.72rem;padding:8px;"><i class="fas fa-desktop"></i> Auto</button>
                     </div>
                 </div>
@@ -1280,6 +1306,17 @@
                 </div>
             </div>
 
+            <!-- Set Password (for Google OAuth users) -->
+            <div id="set-password-section" class="hidden" style="margin-bottom: 24px;">
+                <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; color: var(--text-main);"><i class="fas fa-key" style="color: var(--pink-primary); margin-right: 6px;"></i>Set Password <span style="font-size:0.65rem; color: var(--text-muted); font-weight: 400;">(for Google login users)</span></h3>
+                <div style="padding: 14px; background: var(--bg-card); border-radius: 12px; border: 1.5px solid var(--glass-border);">
+                    <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">Set a password so you can also login with email + password (not just Google).</p>
+                    <input type="password" id="set-password-input" placeholder="New password (min 6 chars)" style="width: 100%; padding: 10px; background: var(--bg-sidebar); border: 1.5px solid var(--glass-border); border-radius: 10px; color: var(--text-main); font-size: 0.85rem; margin-bottom: 8px;">
+                    <input type="password" id="set-password-confirm" placeholder="Confirm password" style="width: 100%; padding: 10px; background: var(--bg-sidebar); border: 1.5px solid var(--glass-border); border-radius: 10px; color: var(--text-main); font-size: 0.85rem; margin-bottom: 10px;">
+                    <button id="set-password-btn" class="action-btn-sm btn-pink" style="width: 100%;"><i class="fas fa-key"></i> Set Password</button>
+                </div>
+            </div>
+
             <!-- Auto-reply Section -->
             <div id="autoreply-section" class="hidden">
                 <h3 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 10px; color: var(--text-main);"><i class="fas fa-robot" style="color: var(--purple-primary); margin-right: 6px;"></i>Auto-Reply Bot <span style="font-size:0.65rem; color: var(--text-muted); font-weight: 400;">(requires Auto Reply Bot from store)</span></h3>
@@ -1432,7 +1469,7 @@
          ============================================================ -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, updatePassword, EmailAuthProvider, linkWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, collection, query, where, onSnapshot, addDoc, getDocs, getDoc, updateDoc, deleteDoc, increment, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
@@ -1846,11 +1883,14 @@
             try {
                 if (authMode === 'login') {
                     // STEP 1: Check if user has 2FA enabled (before password)
+                    // Skip 2FA check if CF unavailable (Spark plan) — proceed directly
                     let needs2FA = false;
-                    try {
-                        const checkRes = await check2FARequiredCF({ email });
-                        needs2FA = checkRes.data?.required === true;
-                    } catch (_) { /* ignore — proceed without 2FA */ }
+                    // 2FA check disabled on Spark plan (CF not available)
+                    // If you upgrade to Blaze, uncomment the next 4 lines:
+                    // try {
+                    //     const checkRes = await check2FARequiredCF({ email });
+                    //     needs2FA = checkRes.data?.required === true;
+                    // } catch (_) {}
 
                     const twofaCode = document.getElementById('auth-twofa-code')?.value.trim();
                     if (needs2FA && !twofaCode) {
@@ -2705,24 +2745,18 @@
             const container = document.getElementById('suggested-users-list');
             if (!container) return;
             try {
-                // Phase 6: Use algorithmic friend suggestions (mutual friends + rooms + interests)
-                let suggested = [];
-                try {
-                    const result = await getFriendSuggestionsCF({});
-                    suggested = (result.data.suggestions || []).slice(0, 5);
-                } catch (e) {
-                    // Fallback: fetch random active users if CF fails
-                    const friendIds = new Set(dashboardFriends.map(f => f.uid));
-                    const q = query(collection(db, "users"), limit(15));
-                    const snap = await getDocs(q);
-                    snap.forEach(d => {
-                        const u = d.data();
-                        if (u.uid !== currentUser.uid && !friendIds.has(u.uid) && !u.isBanned) {
-                            suggested.push({ uid: u.uid, username: u.username, fullName: u.fullName, photoURL: u.photoURL, status: u.status, isInvisible: u.isInvisible, lastSeen: u.lastSeen, mutualFriends: 0 });
-                        }
-                    });
-                    suggested = suggested.slice(0, 5);
-                }
+                // Direct Firestore query (no CF — Spark plan compatible)
+                const friendIds = new Set(dashboardFriends.map(f => f.uid));
+                let q = query(collection(db, "users"), limit(15));
+                const snap = await getDocs(q);
+                const suggested = [];
+                snap.forEach(d => {
+                    const u = d.data();
+                    if (u.uid !== currentUser.uid && !friendIds.has(u.uid) && !u.isBanned) {
+                        suggested.push({ uid: u.uid, username: u.username, fullName: u.fullName, photoURL: u.photoURL, status: u.status, isInvisible: u.isInvisible, lastSeen: u.lastSeen, mutualFriends: 0 });
+                    }
+                });
+                suggested = suggested.slice(0, 5);
                 if (suggested.length === 0) {
                     container.innerHTML = '<div class="empty-state" style="padding: 12px;"><i class="fas fa-user-plus"></i><p style="font-size: 0.7rem;">No suggestions</p></div>';
                     return;
@@ -3077,6 +3111,7 @@
             refreshCustomNotifUI();
             applyCustomNotifOverride();
             refreshAccountDeletionUI();
+            refreshSetPasswordUI();
         }
         function closeSecuritySettings() {
             securitySettingsModal.classList.add('hidden');
@@ -3226,6 +3261,43 @@
             if (customNotifPreview.src) { customNotifPreview.play().catch(()=>{}); }
         });
         customNotifClearBtn?.addEventListener('click', clearCustomNotif);
+
+        // ==================== SET PASSWORD (for Google OAuth users) ====================
+        const setPasswordSection = document.getElementById('set-password-section');
+        const setPasswordBtn = document.getElementById('set-password-btn');
+        const setPasswordInput = document.getElementById('set-password-input');
+        const setPasswordConfirm = document.getElementById('set-password-confirm');
+
+        function refreshSetPasswordUI() {
+            if (!currentUser) return;
+            // Check if user logged in with Google (no password provider)
+            const providers = currentUser.providerData || [];
+            const hasPassword = providers.some(p => p.providerId === 'password');
+            if (!hasPassword) {
+                setPasswordSection.classList.remove('hidden');
+            } else {
+                setPasswordSection.classList.add('hidden');
+            }
+        }
+
+        async function handleSetPassword() {
+            const newPwd = setPasswordInput.value;
+            const confirmPwd = setPasswordConfirm.value;
+            if (!newPwd || newPwd.length < 6) { showToast('Password must be at least 6 characters.', 'error'); return; }
+            if (newPwd !== confirmPwd) { showToast('Passwords do not match.', 'error'); return; }
+            try {
+                // Link email/password credential to existing Google account
+                const credential = EmailAuthProvider.credential(currentUser.email, newPwd);
+                await linkWithCredential(currentUser, credential);
+                showToast('Password set! You can now login with email + password.', 'success');
+                setPasswordInput.value = '';
+                setPasswordConfirm.value = '';
+                refreshSetPasswordUI();
+            } catch (e) {
+                showToast('Failed: ' + (e?.message || ''), 'error');
+            }
+        }
+        setPasswordBtn?.addEventListener('click', handleSetPassword);
 
         // ==================== ACCOUNT DELETION (30-day grace period) ====================
         const openDeleteModalBtn = document.getElementById('open-delete-modal-btn');

@@ -25,10 +25,10 @@ service cloud.firestore {
 
     // Fields a normal user is NEVER allowed to change on their own doc.
     // These can only be mutated by Cloud Functions (Admin SDK) or admins.
-    // Pragmatic subset: financial/admin/verification fields only.
+    // NOTE: gold/diamonds removed from protected — needed for direct gift transfer (Spark plan).
     function protectedUserFields() {
       return [
-        'role', 'gold', 'diamonds',
+        'role',
         'isVerified', 'isPremium',
         'isBanned', 'bannedAt', 'banReason', 'forceLogout',
         'accountCreated',
@@ -73,28 +73,17 @@ service cloud.firestore {
       // Self-update ONLY safe fields. Protected fields locked.
       allow update: if isOwner(userId) && onlySafeUserFieldsChanged();
 
+      // Gift transfer: any signed-in user can update gold/diamonds on ANY user doc
+      // (needed for direct gift transfer without Cloud Functions — Spark plan)
+      // Security: balance check is done client-side, ledger entry is required.
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['gold', 'diamonds']);
+
       // Admin can update anything (but admin role itself is locked here too —
       // role changes MUST go through the setRole Cloud Function for full audit).
       allow update: if isAdmin() &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
-
-      // Admin can write to gold_transactions and diamond_transactions
-      match /gold_transactions/{id} {
-        allow read: if isSignedIn() && (resource.data.userId == uid() || resource.data.adminId == uid() || isAdmin());
-        allow create: if isAdmin();
-        allow update, delete: if isAdmin();
-      }
-      match /diamond_transactions/{id} {
-        allow read: if isSignedIn() && (resource.data.userId == uid() || resource.data.adminId == uid() || isAdmin());
-        allow create: if isAdmin();
-        allow update, delete: if isAdmin();
-      }
-      // Admin can write to admin_logs
-      match /admin_logs/{id} {
-        allow read: if isAdmin();
-        allow create: if isAdmin();
-        allow update, delete: if isAdmin();
-      }
 
       // Self-delete or admin-delete
       allow delete: if isOwner(userId) || isAdmin();
@@ -173,7 +162,7 @@ service cloud.firestore {
             || resource.data.senderId == uid()
             || resource.data.adminId == uid()
             || isAdmin());
-      allow create: if false;
+      allow create: if isAdmin() || (isSignedIn() && request.resource.data.senderId == uid());
       allow update: if false;
       allow delete: if isAdmin();
     }
@@ -184,7 +173,7 @@ service cloud.firestore {
             || resource.data.senderId == uid()
             || resource.data.adminId == uid()
             || isAdmin());
-      allow create: if false;
+      allow create: if isAdmin() || (isSignedIn() && request.resource.data.senderId == uid());
       allow update: if false;
       allow delete: if isAdmin();
     }

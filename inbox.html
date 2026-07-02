@@ -3956,7 +3956,7 @@
             if (socialProfileUnsub) socialProfileUnsub();
             socialProfileModal.classList.remove('hidden');
             // Log profile visit (for Profile Tracker feature — only logs if target has tracker unlocked)
-            logProfileVisitCF({ targetUid }).catch(() => { /* silent fail */ });
+            logProfileVisitCF({ targetUid }).catch(() => {});
             // Show report button only for other users (not self)
             _updateSocialProfileActions(targetUid);
             socialProfileUnsub = onSnapshot(doc(db, 'users', targetUid), (snap) => {

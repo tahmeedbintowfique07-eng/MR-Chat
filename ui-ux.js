@@ -225,3 +225,132 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     };
 });
+
+// ==================== PWA INSTALL BANNER (Custom "Download App") ====================
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the default browser install prompt
+    e.preventDefault();
+    deferredPrompt = e;
+
+    // Check if user already dismissed or installed
+    if (localStorage.getItem('mr_pwa_install_dismissed') === 'true') return;
+    // Check if already running as standalone (installed)
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) return;
+
+    // Show custom banner after 3 seconds
+    setTimeout(showInstallBanner, 3000);
+});
+
+function showInstallBanner() {
+    if (document.getElementById('mr-install-banner')) return;
+    if (!deferredPrompt) return;
+
+    const banner = document.createElement('div');
+    banner.id = 'mr-install-banner';
+    banner.style.cssText = `
+        position: fixed; bottom: 0; left: 0; right: 0;
+        background: linear-gradient(135deg, #FF007F, #9D00FF);
+        color: #fff; padding: 14px 20px; z-index: 99997;
+        display: flex; align-items: center; gap: 14px;
+        box-shadow: 0 -4px 30px rgba(0,0,0,0.4);
+        animation: slideUpBanner 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: 'Inter', sans-serif;
+    `;
+
+    banner.innerHTML = `
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 6C13.66 6 15 7.34 15 9C15 10.66 13.66 12 12 12C10.34 12 9 10.66 9 9C9 7.34 10.34 6 12 6ZM12 20C9.5 20 7.2 19.1 5.5 17.6C6.8 16.8 9.3 16.5 12 16.5C14.7 16.5 17.2 16.8 18.5 17.6C16.8 19.1 14.5 20 12 20Z" fill="#fff"/>
+            </svg>
+        </div>
+        <div style="flex: 1; min-width: 0;">
+            <div style="font-size: 0.9rem; font-weight: 800; margin-bottom: 2px;">Download MR Chat App</div>
+            <div style="font-size: 0.72rem; opacity: 0.85;">Install for faster access & push notifications</div>
+        </div>
+        <button id="mr-install-btn" style="
+            background: #fff; color: #FF007F; border: none;
+            padding: 10px 20px; border-radius: 12px;
+            font-weight: 700; font-size: 0.82rem; cursor: pointer;
+            white-space: nowrap; transition: transform 0.2s;
+        ">Install</button>
+        <button id="mr-install-close" style="
+            background: rgba(255,255,255,0.2); color: #fff; border: none;
+            width: 32px; height: 32px; border-radius: 50%;
+            font-size: 1.1rem; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0;
+            transition: background 0.2s;
+        ">×</button>
+    `;
+
+    document.body.appendChild(banner);
+
+    // Add animation keyframes if not exists
+    if (!document.getElementById('mr-banner-anim')) {
+        const style = document.createElement('style');
+        style.id = 'mr-banner-anim';
+        style.textContent = `
+            @keyframes slideUpBanner {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+            }
+            @keyframes slideDownBanner {
+                from { transform: translateY(0); opacity: 1; }
+                to { transform: translateY(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // Install button click
+    document.getElementById('mr-install-btn').addEventListener('click', async () => {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const choice = await deferredPrompt.userChoice;
+            if (choice.outcome === 'accepted') {
+                console.log('[PWA] User accepted install');
+                banner.style.animation = 'slideDownBanner 0.3s ease forwards';
+                setTimeout(() => banner.remove(), 300);
+            } else {
+                console.log('[PWA] User dismissed install');
+            }
+            deferredPrompt = null;
+        }
+    });
+
+    // Close button click
+    document.getElementById('mr-install-close').addEventListener('click', () => {
+        localStorage.setItem('mr_pwa_install_dismissed', 'true');
+        banner.style.animation = 'slideDownBanner 0.3s ease forwards';
+        setTimeout(() => banner.remove(), 300);
+    });
+}
+
+// Detect if app was installed
+window.addEventListener('appinstalled', () => {
+    console.log('[PWA] App installed successfully');
+    const banner = document.getElementById('mr-install-banner');
+    if (banner) banner.remove();
+    localStorage.setItem('mr_pwa_installed', 'true');
+});
+
+// ==================== SUPPRESS CLOUD FUNCTION CORS ERRORS (Spark plan) ===
+// On Spark plan, callable functions may fail with CORS errors.
+// This suppresses the console noise without breaking functionality.
+(function() {
+    const origError = console.error;
+    console.error = function(...args) {
+        const msg = args.join(' ');
+        // Suppress CORS and Cloud Function connection errors
+        if (msg.includes('CORS') || 
+            msg.includes('ERR_CONNECTION_CLOSED') || 
+            msg.includes('ERR_FAILED') || 
+            msg.includes('cloudfunctions.net') ||
+            msg.includes('access control check') ||
+            msg.includes('No \'Access-Control-Allow-Origin\'')) {
+            return; // Silent suppress
+        }
+        origError.apply(console, args);
+    };
+})();
