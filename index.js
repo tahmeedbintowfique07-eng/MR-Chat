@@ -50,15 +50,19 @@ async function requireAdmin(uid) {
 }
 
 async function logAdminAction(adminUid, adminName, action, details, targetUid = null, targetType = null) {
-  await db.collection('admin_logs').add({
-    action,
-    details,
-    adminId: adminUid,
-    adminName: adminName || 'Admin',
-    targetUid,
-    targetType,
-    timestamp: Date.now()
-  });
+  try {
+    await db.collection('admin_logs').add({
+      action,
+      details,
+      adminId: adminUid,
+      adminName: adminName || 'Admin',
+      targetUid,
+      targetType,
+      timestamp: Date.now()
+    });
+  } catch (e) {
+    logger.error('logAdminAction failed (non-blocking):', e.message);
+  }
 }
 
 // ============================================================
