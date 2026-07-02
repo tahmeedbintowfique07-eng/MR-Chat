@@ -565,11 +565,17 @@
         <p>Verifying admin credentials…</p>
     </div>
 
-    <!-- FALLBACK: Hide loading screen after 5s even if module fails (file:// protocol issue) -->
+    <!-- FALLBACK: Hide loading screen + show admin-app after 5s (file:// protocol issue) -->
     <script>
         setTimeout(function() {
             var ls = document.getElementById('loading-screen');
+            var aa = document.getElementById('admin-app');
             if (ls) ls.classList.add('hidden');
+            // If module loaded successfully, onAuthStateChanged will handle showing admin-app.
+            // If module FAILED (file://), show admin-app anyway so page isn't blank.
+            if (typeof window.MR_CHAT_LOADED === 'undefined' && aa) {
+                aa.classList.remove('hidden');
+            }
         }, 5000);
     </script>
 
