@@ -9,15 +9,15 @@
     <meta name="apple-mobile-web-app-title" content="MR Chat">
     <meta name="theme-color" content="#FF007F">
     <!-- PWA manifest + icons -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=30">
     <link rel="apple-touch-icon" href="https://api.dicebear.com/7.x/adventurer/svg?seed=mrchat&backgroundColor=ff007f">
     <title>MR Chat — Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Shared UI/UX optimizations (skeleton loaders, smooth transitions, button states) -->
-    <link rel="stylesheet" href="ui-ux.css">
+    <link rel="stylesheet" href="ui-ux.css?v=30">
     <!-- Shared UI/UX helpers (button loading, lazy images, smooth scroll) -->
-    <script src="ui-ux.js" defer></script>
+    <script src="ui-ux.js?v=30" defer></script>
     <!-- reCAPTCHA v2 widget (loaded async) -->
     <script src="https://www.google.com/recaptcha/api.js?render=6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi" async defer></script>
     <script>
@@ -3798,7 +3798,7 @@
         // ==================== PWA SERVICE WORKER REGISTRATION ====================
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').then((reg) => {
+                navigator.serviceWorker.register('/sw.js?v=30').then((reg) => {
                     console.log('[PWA] Service Worker registered:', reg.scope);
                 }).catch((err) => {
                     console.warn('[PWA] SW registration failed:', err);
