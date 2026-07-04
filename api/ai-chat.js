@@ -16,9 +16,9 @@ module.exports = async (req, res) => {
         if (message.length > 2000) return res.status(400).json({ error: 'Too long' });
 
         const apiKey = process.env.GEMINI_API_KEY;
-        if (!apiKey) return res.status(500).json({ error: 'Set GEMINI_API_KEY in Vercel env vars. Go to https://aistudio.google.com/apikey to get one.' });
+        if (!apiKey) return res.status(500).json({ error: 'Set GEMINI_API_KEY in Vercel env vars. Get free key: https://aistudio.google.com/apikey' });
 
-        const systemPrompt = 'You are MR AI, the official AI assistant for MR Chat by MR Group. Founder: Tahmeed Bin Towfique. MR Chat features: Messaging (DMs, group rooms, E2E secret chat, voice/video calls), Social Feed (posts, stories, reactions), Premium Store (113 products, Gold & Diamonds), Games Arena (11 games), Mind Reset (free wellness), Motivation Hub (free motivation), Security (Firebase Auth, 2FA, E2E). Be friendly. Use user language.';
+        const systemPrompt = 'You are MR AI, the official AI assistant for MR Chat by MR Group. Founder: Tahmeed Bin Towfique. MR Chat features: Messaging (DMs, group rooms, E2E secret chat, voice/video calls), Social Feed (posts, stories, reactions), Premium Store (113 products, Gold & Diamonds), Games Arena (11 games), Mind Reset (free wellness), Motivation Hub (free motivation), Security (Firebase Auth, 2FA, E2E). Be friendly. Use user language (Bengali or English). If user mentions stress, recommend Mind Reset. If user mentions motivation, recommend Motivation Hub.';
 
         let contents = [];
         if (Array.isArray(history)) {
@@ -33,9 +33,13 @@ module.exports = async (req, res) => {
         }
         contents.push({ role: 'user', parts: [{ text: message }] });
 
-        // Try multiple model names — some may not be available on all accounts
-        const models = ['gemini-1.5-flash-latest', 'gemini-1.5-flash', 'gemini-1.5-flash-002', 'gemini-1.5-flash-001'];
-        
+        // Try models in order — lite versions have free tier quota
+        const models = [
+            'gemini-2.0-flash-lite',
+            'gemini-2.0-flash',
+            'gemini-flash-latest'
+        ];
+
         let reply = null;
         let lastError = null;
 
@@ -61,23 +65,23 @@ module.exports = async (req, res) => {
                     const data = await response.json();
                     reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
                     if (reply) {
-                        console.log('Success with model:', model);
+                        console.log('MR AI: Success with model:', model);
                         break;
                     }
                 } else {
-                    const errText = await response.text();
-                    lastError = response.status + ': ' + errText.substring(0, 200);
-                    console.log('Model ' + model + ' failed:', response.status);
+                    const errData = await response.json().catch(() => ({}));
+                    lastError = response.status + ' ' + (errData?.error?.message || '').substring(0, 150);
+                    console.log('MR AI: Model ' + model + ' failed:', response.status, errData?.error?.message?.substring(0, 100));
                     
+                    // Don't try next model if it's 429 (rate limit) or 400 (bad request)
                     if (response.status === 429) {
                         return res.status(200).json({ 
-                            reply: 'MR AI is getting too many requests. Please wait a minute and try again.' 
+                            reply: 'MR AI is getting too many requests right now. Please wait a minute and try again.' 
                         });
                     }
                 }
             } catch (e) {
                 lastError = e.message;
-                console.log('Model ' + model + ' error:', e.message);
             }
         }
 
@@ -85,8 +89,8 @@ module.exports = async (req, res) => {
             return res.status(200).json({ reply: reply });
         }
 
-        console.error('All models failed. Last error:', lastError);
-        return res.status(500).json({ error: 'AI service error. Please try again later.' });
+        console.error('MR AI: All models failed. Last error:', lastError);
+        return res.status(500).json({ error: 'AI service error. Please try again.' });
 
     } catch (error) {
         console.error('MR AI error:', error);
