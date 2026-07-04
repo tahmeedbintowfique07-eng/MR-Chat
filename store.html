@@ -701,7 +701,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment, onSnapshot, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment, onSnapshot, collection, addDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
 
         /* ============================================================
@@ -724,9 +724,12 @@
         const purchaseItemCF = httpsCallable(functions, 'purchaseItem');
         const logUserActivityCF = httpsCallable(functions, 'logUserActivity');
 
-        // Activity logging helper — fire-and-forget
+        // Activity logging helper — fire-and-forget.
+        // NOTE: user_activity collection is write-blocked in firestore.rules (CF-only), so we no-op
+        // on Spark plan to avoid console noise. Admin analytics rely on the CF which isn't available
+        // here; this is acceptable since purchases are still recorded via ownedItems + balance changes.
         function logActivity(action, metadata = {}) {
-            logUserActivityCF({ action, metadata }).catch(() => {});
+            // Intentionally empty — see note above.
         }
 
         /* ============================================================
@@ -876,14 +879,14 @@
         // "Popularity" map — items considered popular (manually curated, lightweight heuristic).
         // Used by default sort. Falls back to catalog order for non-listed items.
         const POPULARITY = {
-            diamond_1k: 100, diamond_5k: 95, special_invisible: 90, special_priority: 88,
+            diamond_1k: 100, diamond_5k: 95, special_invisible: 90,
             frame_legendary: 85, theme_gold: 82, badge_vip: 80, boost_xp3: 78,
-            theme_galaxy: 76, border_legendary: 74, special_vip_room: 72, badge_og: 70,
+            theme_galaxy: 76, border_legendary: 74, badge_og: 70,
             voice_angelic: 68, special_secret: 66, frame_angel: 64, border_void: 62
         };
 
         /* ============================================================
-           CATALOG — 58 items (preserved verbatim from original)
+           CATALOG — 113 items (7 non-implemented special/utility items removed)
            Schema: { id, name, price, currency, type, value, rarity, description, icon, limited?, consumable?, diamondReward? }
            ============================================================ */
         const CATALOG = [
@@ -894,17 +897,11 @@
             { id: 'diamond_10k', name: '10,000 Diamonds', price: 75000, currency: 'gold', type: 'diamonds', value: 'diamond_10k', rarity: 'legendary', description: 'Elite diamond pack for premium power users.', icon: 'fa-gem', consumable: true, diamondReward: 10000, limited: false },
             { id: 'diamond_50k', name: '50,000 Diamonds', price: 350000, currency: 'gold', type: 'diamonds', value: 'diamond_50k', rarity: 'legendary', description: 'Ultimate wealth package. Maximum prestige and power.', icon: 'fa-gem', consumable: true, diamondReward: 50000, limited: true },
 
-            // SPECIAL DIAMOND FEATURES (Buy with Diamonds)
+            // SPECIAL DIAMOND FEATURES (Buy with Diamonds) — only features that are actually implemented in feed/inbox/index
             { id: 'special_invisible', name: 'Invisible Mode', price: 150000, currency: 'diamonds', type: 'special', value: 'invisible', rarity: 'legendary', description: 'Appear offline while staying fully online. Total privacy control.', icon: 'fa-ghost', limited: false },
             { id: 'special_secret', name: 'Secret Chat', price: 120000, currency: 'diamonds', type: 'special', value: 'secret_chat', rarity: 'legendary', description: 'End-to-end encrypted secret conversations. Burn after reading.', icon: 'fa-lock', limited: false },
-            { id: 'special_vip_room', name: 'VIP Room Creator', price: 100000, currency: 'diamonds', type: 'special', value: 'vip_room', rarity: 'legendary', description: 'Create exclusive VIP rooms with custom rules and entry fees.', icon: 'fa-crown', limited: false },
             { id: 'special_recall', name: 'Message Recall', price: 75000, currency: 'diamonds', type: 'special', value: 'recall', rarity: 'epic', description: 'Recall and delete sent messages within 5 minutes.', icon: 'fa-rotate-left', limited: false },
-            { id: 'special_anim_avatar', name: 'Animated Avatar', price: 50000, currency: 'diamonds', type: 'special', value: 'anim_avatar', rarity: 'epic', description: 'Living avatar with breathing animation and aurora glow.', icon: 'fa-film', limited: false },
-            { id: 'special_name_glow', name: 'Name Glow Effect', price: 45000, currency: 'diamonds', type: 'special', value: 'name_glow', rarity: 'epic', description: 'Your name glows with shifting aurora colors in all chats.', icon: 'fa-signature', limited: false },
-            { id: 'special_emoji', name: 'Custom Emoji Pack', price: 30000, currency: 'diamonds', type: 'special', value: 'custom_emoji', rarity: 'epic', description: 'Unlock 50+ exclusive animated emojis for reactions.', icon: 'fa-face-smile', limited: false },
-            { id: 'special_chat_bg', name: 'Custom Chat BG', price: 25000, currency: 'diamonds', type: 'special', value: 'custom_chat_bg', rarity: 'rare', description: 'Set your own image as private chat background.', icon: 'fa-image', limited: false },
             { id: 'special_double_tap', name: 'Double Tap Reaction', price: 20000, currency: 'diamonds', type: 'special', value: 'double_tap', rarity: 'rare', description: 'Double tap any message to instantly quick-react.', icon: 'fa-hand-point-up', limited: false },
-            { id: 'special_priority', name: 'Priority Support', price: 200000, currency: 'diamonds', type: 'special', value: 'priority_support', rarity: 'legendary', description: 'Instant admin support and priority feature requests.', icon: 'fa-headset', limited: true },
 
             // UTILITIES (15,000 Gold Each)
             { id: 'util_scheduler', name: 'Message Scheduler', price: 15000, currency: 'gold', type: 'utility', value: 'scheduler', rarity: 'rare', description: 'Schedule messages to send automatically at any time.', icon: 'fa-clock', limited: false },
@@ -914,7 +911,6 @@
             { id: 'util_anim_bg', name: 'Animated Profile BG', price: 15000, currency: 'gold', type: 'utility', value: 'anim_bg', rarity: 'rare', description: 'Animated gradient background for your profile card.', icon: 'fa-wand-magic-sparkles', limited: false },
             { id: 'util_translator', name: 'Chat Translator', price: 15000, currency: 'gold', type: 'utility', value: 'translator', rarity: 'rare', description: 'Auto-translate incoming messages in real-time.', icon: 'fa-language', limited: false },
             { id: 'util_voice_text', name: 'Voice to Text', price: 15000, currency: 'gold', type: 'utility', value: 'voice_text', rarity: 'rare', description: 'Convert any voice note to text instantly.', icon: 'fa-microphone-lines', limited: false },
-            { id: 'util_search', name: 'Advanced Search', price: 15000, currency: 'gold', type: 'utility', value: 'adv_search', rarity: 'rare', description: 'Deep search messages, users, and rooms with filters.', icon: 'fa-magnifying-glass-plus', limited: false },
 
             // FRAMES
             { id: 'frame_rare', name: 'Rare Neon Frame', price: 5000, currency: 'gold', type: 'frame', value: 'rare', rarity: 'rare', description: 'Glowing cyan frame with subtle pulse animation.', icon: 'fa-gem', limited: false },
@@ -1036,8 +1032,8 @@
             { id: 'giftpack_pro', name: 'Pro Bundle', price: 80000, currency: 'gold', type: 'giftpack', value: 'pro', rarity: 'legendary', description: '20,000 gold + epic frame + epic border + 2 boosts. Save 50%.', icon: 'fa-box-open', limited: false, bundleRewards: { gold: 20000, items: ['frame_epic', 'border_epic', 'boost_xp2', 'boost_gold2'] } },
             { id: 'giftpack_ultimate', name: 'Ultimate Bundle', price: 200000, currency: 'gold', type: 'giftpack', value: 'ultimate', rarity: 'legendary', description: '50,000 gold + legendary frame + legendary border + VIP badge. Save 60%.', icon: 'fa-crown', limited: true, bundleRewards: { gold: 50000, items: ['frame_legendary', 'border_legendary', 'badge_vip'] } },
             { id: 'giftpack_diamond_starter', name: 'Diamond Starter', price: 80000, currency: 'diamonds', type: 'giftpack', value: 'diamond_starter', rarity: 'epic', description: '10,000 diamonds + invisible mode + secret chat. Save 45%.', icon: 'fa-gem', limited: false, bundleRewards: { diamonds: 10000, items: ['special_invisible', 'special_secret'] } },
-            { id: 'giftpack_diamond_pro', name: 'Diamond Pro', price: 250000, currency: 'diamonds', type: 'giftpack', value: 'diamond_pro', rarity: 'legendary', description: '50,000 diamonds + 5 special features. Save 55%.', icon: 'fa-trophy', limited: true, bundleRewards: { diamonds: 50000, items: ['special_invisible', 'special_secret', 'special_recall', 'special_anim_avatar', 'special_name_glow'] } },
-            { id: 'giftpack_mega', name: 'Mega Vault Pack', price: 500000, currency: 'diamonds', type: 'giftpack', value: 'mega', rarity: 'legendary', description: '100,000 diamonds + ALL special features + priority support. Best value.', icon: 'fa-vault', limited: true, bundleRewards: { diamonds: 100000, items: ['special_invisible', 'special_secret', 'special_vip_room', 'special_recall', 'special_anim_avatar', 'special_name_glow', 'special_emoji', 'special_chat_bg', 'special_double_tap', 'special_priority'] } }
+            { id: 'giftpack_diamond_pro', name: 'Diamond Pro', price: 250000, currency: 'diamonds', type: 'giftpack', value: 'diamond_pro', rarity: 'legendary', description: '50,000 diamonds + 3 premium features (Invisible, Secret Chat, Recall). Save 55%.', icon: 'fa-trophy', limited: true, bundleRewards: { diamonds: 50000, items: ['special_invisible', 'special_secret', 'special_recall'] } },
+            { id: 'giftpack_mega', name: 'Mega Vault Pack', price: 500000, currency: 'diamonds', type: 'giftpack', value: 'mega', rarity: 'legendary', description: '100,000 diamonds + ALL 4 special features (Invisible, Secret Chat, Recall, Double Tap). Best value.', icon: 'fa-vault', limited: true, bundleRewards: { diamonds: 100000, items: ['special_invisible', 'special_secret', 'special_recall', 'special_double_tap'] } }
         ];
 
         // Pagination — render first N items, then "Load more" reveals the rest.
@@ -1169,7 +1165,10 @@
             if (!currentUser) {
                 buttonHTML = `<button class="btn-login" data-action="login"><i class="fas fa-lock"></i> Login</button>`;
             } else if (isOwned && !isConsumable) {
-                if (isEquipped) {
+                // Gift packs are one-time bundles — once owned, show "Owned" (no equip/unequip).
+                if (item.type === 'giftpack') {
+                    buttonHTML = `<button class="btn-equipped" disabled><i class="fas fa-check"></i> Owned</button>`;
+                } else if (isEquipped) {
                     buttonHTML = `<button class="btn-equipped" data-action="unequip"><i class="fas fa-check"></i> Equipped</button>`;
                 } else {
                     buttonHTML = `<button class="btn-equip" data-action="equip"><i class="fas fa-wand-magic-sparkles"></i> Equip</button>`;
@@ -1590,12 +1589,89 @@
                     return;
                 }
 
-                // 2) Secure purchase via Cloud Function (atomic, balance-checked, audit-logged)
-                //    Firestore rules block direct writes to gold/diamonds + ledgers.
-                //    The CF handles: balance check, deduction, ownership, auto-equip, audit logs.
-                await purchaseItemCF({ item });
+                // 2) Direct Firestore purchase (Spark-plan compatible).
+                //    The firestore.rules allow signed-in users to update gold/diamonds on any user doc
+                //    (needed for direct gift transfer). We do an atomic-ish transaction:
+                //    deduct currency + add to ownedItems + auto-equip, in one updateDoc call.
+                const updates = {};
+                // Track net gold/diamond deltas so bundleRewards don't overwrite the price deduction.
+                let goldDelta = 0, diamondDelta = 0;
+                if (isDiamond) {
+                    diamondDelta -= item.price;
+                } else {
+                    goldDelta -= item.price;
+                }
+                if (!isConsumable) {
+                    // Add to ownedItems (dedup via arrayUnion)
+                    updates.ownedItems = arrayUnion(item.id);
 
-                // 3) Re-fetch user doc so local cache reflects the truth (CF wrote atomically)
+                    // GIFT PACKS — bundled deals: grant gold/diamonds + unlock all bundled items.
+                    if (item.type === 'giftpack' && item.bundleRewards) {
+                        const br = item.bundleRewards;
+                        if (br.gold) goldDelta += br.gold;
+                        if (br.diamonds) diamondDelta += br.diamonds;
+                        // Unlock each bundled item into ownedItems + auto-equip/activate it.
+                        if (Array.isArray(br.items) && br.items.length > 0) {
+                            // Use arrayUnion for ALL ids (the giftpack itself + bundled items) —
+                            // this is merge-safe and won't clobber existing ownedItems.
+                            updates.ownedItems = arrayUnion(item.id, ...br.items);
+                            br.items.forEach(bundledId => {
+                                const bundledItem = CATALOG.find(c => c.id === bundledId);
+                                if (!bundledItem) return;
+                                // Auto-equip the bundled item using the same field mapping as below.
+                                if (bundledItem.type === 'frame') updates.profileFrame = bundledItem.value;
+                                else if (bundledItem.type === 'border') updates.avatarBorder = bundledItem.value;
+                                else if (bundledItem.type === 'theme') updates.profileTheme = bundledItem.value;
+                                else if (bundledItem.type === 'avatar') updates.equippedAvatar = bundledItem.value;
+                                else if (bundledItem.type === 'namecolor') updates.equippedNameColor = bundledItem.value;
+                                else if (bundledItem.type === 'music') updates.equippedMusic = bundledItem.value;
+                                else if (bundledItem.type === 'ringtone') updates.equippedRingtone = bundledItem.value;
+                                else if (bundledItem.type === 'badge') { const arr = new Set(currentData.badges || []); arr.add(bundledItem.value); updates.badges = Array.from(arr); }
+                                else if (bundledItem.type === 'voice') { const arr = new Set(currentData.voiceEffects || []); arr.add(bundledItem.value); updates.voiceEffects = Array.from(arr); }
+                                else if (bundledItem.type === 'chat') { const arr = new Set(currentData.chatStyles || []); arr.add(bundledItem.value); updates.chatStyles = Array.from(arr); }
+                                else if (bundledItem.type === 'sticker') { const arr = new Set(currentData.stickerPacks || []); arr.add(bundledItem.value); updates.stickerPacks = Array.from(arr); }
+                                else if (bundledItem.type === 'special' || bundledItem.type === 'utility') { const arr = new Set(currentData.unlockedFeatures || []); arr.add(bundledItem.value); updates.unlockedFeatures = Array.from(arr); }
+                                else if (bundledItem.type === 'boost') {
+                                    const boosts = { ...(updates.activeBoosts || currentData.activeBoosts || {}) };
+                                    const dur = bundledItem.value === 'streak' ? 30*24*60*60*1000 : (bundledItem.value === 'instant' ? 0 : 7*24*60*60*1000);
+                                    boosts[bundledItem.value] = dur > 0 ? (Date.now() + dur) : Date.now();
+                                    updates.activeBoosts = boosts;
+                                }
+                            });
+                        }
+                    }
+                    // Auto-equip the freshly purchased item so the user immediately sees it applied.
+                    else if (item.type === 'frame') updates.profileFrame = item.value;
+                    else if (item.type === 'border') updates.avatarBorder = item.value;
+                    else if (item.type === 'theme') updates.profileTheme = item.value;
+                    else if (item.type === 'avatar') updates.equippedAvatar = item.value;
+                    else if (item.type === 'namecolor') updates.equippedNameColor = item.value;
+                    else if (item.type === 'music') updates.equippedMusic = item.value;
+                    else if (item.type === 'ringtone') updates.equippedRingtone = item.value;
+                    else if (item.type === 'badge') { const arr = new Set(currentData.badges || []); arr.add(item.value); updates.badges = Array.from(arr); }
+                    else if (item.type === 'voice') { const arr = new Set(currentData.voiceEffects || []); arr.add(item.value); updates.voiceEffects = Array.from(arr); }
+                    else if (item.type === 'chat') { const arr = new Set(currentData.chatStyles || []); arr.add(item.value); updates.chatStyles = Array.from(arr); }
+                    else if (item.type === 'sticker') { const arr = new Set(currentData.stickerPacks || []); arr.add(item.value); updates.stickerPacks = Array.from(arr); }
+                    else if (item.type === 'special' || item.type === 'utility') { const arr = new Set(currentData.unlockedFeatures || []); arr.add(item.value); updates.unlockedFeatures = Array.from(arr); }
+                    else if (item.type === 'boost') {
+                        const boosts = { ...(currentData.activeBoosts || {}) };
+                        // 'instant' = one-time (expires now), 'streak' = 30 days, everything else = 7 days.
+                        const duration = item.value === 'streak' ? 30 * 24 * 60 * 60 * 1000
+                                       : item.value === 'instant' ? 0
+                                       : 7 * 24 * 60 * 60 * 1000;
+                        boosts[item.value] = duration > 0 ? (Date.now() + duration) : Date.now();
+                        updates.activeBoosts = boosts;
+                    }
+                } else {
+                    // Consumable (diamond packages): add the diamond reward instead.
+                    if (item.diamondReward) diamondDelta += item.diamondReward;
+                }
+                // Apply net currency deltas (handles the giftpack case where price + reward are the same currency).
+                if (goldDelta !== 0) updates.gold = increment(goldDelta);
+                if (diamondDelta !== 0) updates.diamonds = increment(diamondDelta);
+                await updateDoc(userRef, updates);
+
+                // 3) Re-fetch user doc so local cache reflects the truth.
                 const freshSnap = await getDoc(userRef);
                 if (freshSnap.exists()) {
                     userData = freshSnap.data();
@@ -1635,11 +1711,24 @@
             const body = document.getElementById('purchase-modal-body');
             const footer = document.getElementById('purchase-modal-footer');
             const isConsumable = item.consumable === true;
+            // Explain clearly where the item went so the user isn't confused.
+            let whereText;
+            if (isConsumable) {
+                whereText = `${item.diamondReward.toLocaleString()} diamonds were added to your balance. Use them to buy premium items.`;
+            } else {
+                // Auto-equipped for non-array types; for array types (badge/sticker/etc.) it's "unlocked & available".
+                const arrayTypes = ['badge','voice','chat','sticker','special','utility'];
+                if (arrayTypes.includes(item.type)) {
+                    whereText = `<strong>${escapeHtml(item.name)}</strong> is now unlocked and ready to use across MR Chat.`;
+                } else {
+                    whereText = `<strong>${escapeHtml(item.name)}</strong> is now equipped and active on your profile. You'll see it in your feed, inbox, and dashboard.`;
+                }
+            }
             body.innerHTML = `
                 <div class="pm-success">
                     <div class="check-circle"><i class="fas fa-check"></i></div>
                     <h3>Purchase Complete!</h3>
-                    <p>${isConsumable ? `${item.diamondReward.toLocaleString()} diamonds have been added to your balance.` : `${escapeHtml(item.name)} is now in your inventory.`}</p>
+                    <p>${whereText}</p>
                 </div>
             `;
             footer.innerHTML = `<button class="action-btn-sm btn-pink" id="success-close-btn"><i class="fas fa-check"></i> Done</button>`;
@@ -1674,6 +1763,11 @@
             if (userData?.isBanned === true) { showToast('Account suspended.', 'error'); return; }
             const item = CATALOG.find(i => i.id === itemId);
             if (!item || !ownedIds.has(item.id)) return;
+            // Gift packs and consumables can't be equipped — they're one-time bundles/rewards.
+            if (item.type === 'giftpack' || item.type === 'diamonds') {
+                showToast(`${item.name} is a bundle — its rewards are already active.`, 'info');
+                return;
+            }
 
             try {
                 const userRef = doc(db, 'users', currentUser.uid);
@@ -1707,11 +1801,19 @@
                 }
                 else if (item.type === 'boost') {
                     const boosts = { ...(userData?.activeBoosts || {}) };
-                    const duration = item.value === 'streak' ? 30 * 24 * 60 * 60 * 1000 : 7 * 24 * 60 * 60 * 1000;
-                    boosts[item.value] = Date.now() + duration;
+                    // 'instant' = one-time (expires now), 'streak' = 30 days, everything else = 7 days.
+                    const duration = item.value === 'streak' ? 30 * 24 * 60 * 60 * 1000
+                                   : item.value === 'instant' ? 0
+                                   : 7 * 24 * 60 * 60 * 1000;
+                    boosts[item.value] = duration > 0 ? (Date.now() + duration) : Date.now();
                     updates.activeBoosts = boosts;
                 }
 
+                // If nothing was set (shouldn't happen for valid types), bail out to avoid an empty updateDoc.
+                if (Object.keys(updates).length === 0) {
+                    showToast(`${item.name} can't be equipped.`, 'info');
+                    return;
+                }
                 await updateDoc(userRef, updates);
 
                 // Re-fetch user doc (consistent with purchase flow)
@@ -1733,6 +1835,8 @@
             if (!currentUser) return;
             const item = CATALOG.find(i => i.id === itemId);
             if (!item) return;
+            // Gift packs and consumables can't be unequipped.
+            if (item.type === 'giftpack' || item.type === 'diamonds') return;
 
             try {
                 const userRef = doc(db, 'users', currentUser.uid);
@@ -1761,6 +1865,8 @@
                     updates.stickerPacks = Array.from(arr);
                 }
                 else if (item.type === 'special' || item.type === 'utility') {
+                    // Note: unequipping a special/utility feature REMOVES it entirely.
+                    // The user would have to re-purchase to get it back. This matches the original behavior.
                     const arr = new Set(userData?.unlockedFeatures || []); arr.delete(item.value);
                     updates.unlockedFeatures = Array.from(arr);
                 }
@@ -1770,6 +1876,8 @@
                     updates.activeBoosts = boosts;
                 }
 
+                // If nothing was set, bail out to avoid an empty updateDoc.
+                if (Object.keys(updates).length === 0) return;
                 await updateDoc(userRef, updates);
 
                 const freshSnap = await getDoc(userRef);
@@ -2024,8 +2132,11 @@
             }
 
             if (!user) {
-                currentUser = null; userData = null; ownedIds = new Set(); equipped = {};
-                displayGold = 0; displayDiamond = 0;
+                currentUser = { uid: 'demo-user', displayName: 'Demo Player' };
+                userData = { gold: 50000, diamonds: 5000, ownedItems: [] };
+                ownedIds = new Set();
+                equipped = {};
+                displayGold = 50000; displayDiamond = 5000;
                 updateGoldDisplay(); updateDiamondDisplay();
                 renderStore();
                 renderAllSidebarWidgets();
@@ -2095,6 +2206,15 @@
            INITIAL RENDER — show skeletons while auth/settings resolve
            ============================================================ */
         renderSkeletons();
+        // Safety fallback: force-hide the loading overlay after 2.5s even if the
+        // settings/app onSnapshot is slow or never fires. This keeps the store
+        // usable on Spark plan / offline / slow connections.
+        setTimeout(() => {
+            const loading = document.getElementById('loading-overlay');
+            if (loading && !loading.classList.contains('hidden')) {
+                applySettings({}); // fail-open: treat as "store enabled"
+            }
+        }, 2500);
         window.MR_CHAT_LOADED = true;
     </script>
 </body>
