@@ -15,11 +15,10 @@ export default async function handler(req, res) {
         }
 
         const apiKey = process.env.ZAI_API_KEY;
-        const baseUrl = 'https://api.z.ai/api/paas/v4';
 
         if (!apiKey) {
             return res.status(500).json({
-                error: 'AI service not configured. Set ZAI_API_KEY in Vercel environment variables.'
+                error: 'AI not configured. Set ZAI_API_KEY in Vercel environment variables.'
             });
         }
 
@@ -40,17 +39,18 @@ export default async function handler(req, res) {
 
         messages.push({ role: 'user', content: message });
 
-        const response = await fetch(baseUrl + '/chat/completions', {
+        // Z.ai official API endpoint
+        const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + apiKey
             },
             body: JSON.stringify({
+                model: 'glm-4.6',
                 messages: messages,
                 temperature: 0.7,
-                max_tokens: 1000,
-                thinking: { type: 'disabled' }
+                max_tokens: 1000
             })
         });
 
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
             const errText = await response.text();
             console.error('Z.ai API error:', response.status, errText);
             return res.status(500).json({
-                error: 'AI service error. Please try again.'
+                error: 'AI service error: ' + response.status
             });
         }
 
