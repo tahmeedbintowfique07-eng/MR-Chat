@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+xport default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
@@ -57,8 +57,13 @@ export default async function handler(req, res) {
         if (!response.ok) {
             const errText = await response.text();
             console.error('Z.ai API error:', response.status, errText);
+            if (response.status === 429) {
+                return res.status(429).json({
+                    error: 'MR AI is getting too many requests right now. Please wait a minute and try again.'
+                });
+            }
             return res.status(500).json({
-                error: 'AI service error: ' + response.status
+                error: 'AI service error. Please try again.'
             });
         }
 
