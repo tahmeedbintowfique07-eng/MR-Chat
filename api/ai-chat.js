@@ -71,9 +71,7 @@ module.exports = async (req, res) => {
                 } else {
                     const errData = await response.json().catch(() => ({}));
                     lastError = response.status + ' ' + (errData?.error?.message || '').substring(0, 150);
-                    console.log('MR AI: Model ' + model + ' failed:', response.status, errData?.error?.message?.substring(0, 100));
-                    
-                    // Don't try next model if it's 429 (rate limit) or 400 (bad request)
+                    console.log('MR AI: Model ' + model + ' failed:', response.status, errData?.error?.message?.substring(0, 100));// Don't try next model if it's 429 (rate limit) or 400 (bad request)
                     if (response.status === 429) {
                         return res.status(200).json({ 
                             reply: 'MR AI is getting too many requests right now. Please wait a minute and try again.' 
