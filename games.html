@@ -9,7 +9,8 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="ui-ux.css?v=30">
     <style>
-        :root {
+        /* ===== THEME: DARK (default) ===== */
+        :root, :root[data-theme="dark"] {
             --bg-main: #0B0C10;
             --bg-sidebar: #12131C;
             --bg-card: #1F2029;
@@ -30,6 +31,57 @@
             --love-pink: #FF4081;
             --love-purple: #E040FB;
             --love-orange: #FF9100;
+            --header-grad-2: #1A1B2A;
+            --shadow-strong: rgba(0,0,0,0.3);
+            --card-overlay: rgba(255,255,255,0.02);
+        }
+        /* ===== THEME: WHITE ===== */
+        :root[data-theme="white"] {
+            --bg-main: #F5F6FA;
+            --bg-sidebar: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --bg-hover: #EEF0F5;
+            --pink-primary: #E60072;
+            --pink-hover: #CC0063;
+            --pink-light: #FF4DA6;
+            --text-main: #1A1B2A;
+            --text-muted: #6B7280;
+            --glass-border: rgba(230, 0, 114, 0.18);
+            --success: #16A34A;
+            --danger: #DC2626;
+            --warning: #D97706;
+            --info: #0891B2;
+            --love-red: #DC2626;
+            --love-pink: #EC4899;
+            --love-purple: #A855F7;
+            --love-orange: #EA580C;
+            --header-grad-2: #F9FAFB;
+            --shadow-strong: rgba(0,0,0,0.08);
+            --card-overlay: rgba(0,0,0,0.015);
+        }
+        /* ===== THEME: PINK ===== */
+        :root[data-theme="pink"] {
+            --bg-main: #1A0A14;
+            --bg-sidebar: #2A0F1F;
+            --bg-card: #3A1530;
+            --bg-hover: #4A1A3F;
+            --pink-primary: #FF1493;
+            --pink-hover: #E0107E;
+            --pink-light: #FF69B4;
+            --text-main: #FFE4EF;
+            --text-muted: #C992B0;
+            --glass-border: rgba(255, 20, 147, 0.22);
+            --success: #FF69B4;
+            --danger: #FF4466;
+            --warning: #FFC857;
+            --info: #FF66CC;
+            --love-red: #FF4466;
+            --love-pink: #FF69B4;
+            --love-purple: #FF66CC;
+            --love-orange: #FF9100;
+            --header-grad-2: #3A1530;
+            --shadow-strong: rgba(255,20,147,0.15);
+            --card-overlay: rgba(255,255,255,0.03);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: background-color 0.2s, border-color 0.2s, color 0.2s; }
         html, body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; }
@@ -1075,9 +1127,10 @@
 
         /* ===== HEADER UPGRADE ===== */
         .games-header {
-            background: linear-gradient(90deg, var(--bg-sidebar) 0%, #1A1B2A 50%, var(--bg-sidebar) 100%);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(90deg, var(--bg-sidebar) 0%, var(--header-grad-2) 50%, var(--bg-sidebar) 100%);
+            box-shadow: 0 4px 20px var(--shadow-strong);
             position: relative;
+            gap: 12px;
         }
         .games-header::after {
             content: '';
@@ -1087,21 +1140,51 @@
             background: linear-gradient(90deg, transparent, var(--pink-primary), transparent);
             opacity: 0.4;
         }
+        .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .header-brand {
+            display: flex; align-items: center; gap: 10px;
+            min-width: 0;
+        }
+        .header-logo {
+            width: 38px; height: 38px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, var(--pink-primary), #E040FB);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.1rem;
+            box-shadow: 0 4px 14px rgba(255,0,127,0.35);
+            flex-shrink: 0;
+        }
+        .header-titles { display: flex; flex-direction: column; min-width: 0; }
+        .header-title-main {
+            font-size: 1.05rem; font-weight: 800; line-height: 1.1;
+            background: linear-gradient(135deg, #fff, var(--pink-light));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .header-title-sub {
+            font-size: 0.68rem; color: var(--text-muted); font-weight: 600;
+            letter-spacing: 0.5px; text-transform: uppercase;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
         .header-gold-pill {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,145,0,0.08));
-            border: 1px solid rgba(255,215,0,0.3);
+            gap: 7px;
+            padding: 8px 14px;
+            background: linear-gradient(135deg, rgba(255,215,0,0.14), rgba(255,145,0,0.08));
+            border: 1px solid rgba(255,215,0,0.32);
             border-radius: 22px;
-            font-size: 0.9rem;
-            font-weight: 700;
+            font-size: 0.88rem;
+            font-weight: 800;
             color: #FFD700;
             transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-            min-height: 36px;
+            min-height: 38px;
+            cursor: pointer;
         }
+        .header-gold-pill:hover { border-color: #FFD700; box-shadow: 0 0 18px rgba(255,215,0,0.25); }
         .header-gold-pill i { transition: transform 0.3s; }
+        .header-gold-pill:hover i { transform: rotate(15deg) scale(1.1); }
         .header-gold-pill.bump { animation: goldBump 0.6s cubic-bezier(0.34,1.56,0.64,1); }
         @keyframes goldBump {
             0% { transform: scale(1); }
@@ -1113,7 +1196,7 @@
             display: inline-flex; align-items: center; justify-content: center;
             background: var(--bg-card);
             border: 1px solid var(--glass-border);
-            border-radius: 50%;
+            border-radius: 11px;
             color: var(--text-main);
             font-size: 0.95rem;
             cursor: pointer;
@@ -1122,6 +1205,29 @@
         .icon-btn:hover { border-color: var(--pink-primary); color: var(--pink-primary); transform: translateY(-1px); }
         .icon-btn:active { transform: scale(0.92); }
         .icon-btn.muted { color: var(--text-muted); }
+
+        /* Theme selector pill */
+        .theme-selector {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+        }
+        .theme-dot {
+            width: 24px; height: 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem;
+        }
+        .theme-dot:hover { transform: scale(1.1); }
+        .theme-dot.active { border-color: var(--pink-primary); box-shadow: 0 0 10px rgba(255,0,127,0.4); }
+        .theme-dot[data-theme="dark"] { background: linear-gradient(135deg, #0B0C10, #1F2029); }
+        .theme-dot[data-theme="white"] { background: linear-gradient(135deg, #ffffff, #f0f0f5); color: #333; }
+        .theme-dot[data-theme="pink"] { background: linear-gradient(135deg, #FF007F, #FF4081); }
 
         /* ===== STICKY TABS BAR ===== */
         .tabs-bar {
@@ -1766,18 +1872,29 @@
 <body>
     <div class="games-layout">
         <div class="games-header">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <button class="nav-btn" onclick="window.location.href='index.html'" aria-label="Back to App"><i class="fas fa-arrow-left"></i> <span>Back to App</span></button>
-                <h1><i class="fas fa-gamepad" aria-hidden="true"></i> Games Arena</h1>
+            <div class="header-left">
+                <button class="icon-btn" onclick="window.location.href='index.html'" aria-label="Back to App" title="Back to App"><i class="fas fa-arrow-left"></i></button>
+                <div class="header-brand">
+                    <div class="header-logo" aria-hidden="true"><i class="fas fa-gamepad"></i></div>
+                    <div class="header-titles">
+                        <div class="header-title-main">Games Arena</div>
+                        <div class="header-title-sub">MR Chat</div>
+                    </div>
+                </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="header-gold-pill" id="header-gold-pill" aria-live="polite" aria-label="Your gold balance">
+            <div class="header-actions">
+                <div class="theme-selector" role="radiogroup" aria-label="Theme selector">
+                    <div class="theme-dot active" data-theme="dark" onclick="setGameTheme('dark')" role="radio" aria-checked="true" aria-label="Dark theme" title="Dark theme"></div>
+                    <div class="theme-dot" data-theme="white" onclick="setGameTheme('white')" role="radio" aria-checked="false" aria-label="White theme" title="White theme"></div>
+                    <div class="theme-dot" data-theme="pink" onclick="setGameTheme('pink')" role="radio" aria-checked="false" aria-label="Pink theme" title="Pink theme"></div>
+                </div>
+                <div class="header-gold-pill" id="header-gold-pill" aria-live="polite" aria-label="Your gold balance" onclick="window.location.href='store.html'" title="Visit Store">
                     <i class="fas fa-coins" aria-hidden="true"></i> <span id="header-gold">0</span>
                 </div>
                 <button class="icon-btn" id="master-sound-toggle" onclick="toggleMasterSound()" aria-label="Toggle game sounds" aria-pressed="true" title="Toggle sound">
                     <i class="fas fa-volume-high" aria-hidden="true"></i>
                 </button>
-                <button class="nav-btn" onclick="window.location.href='store.html'" aria-label="Open Store"><i class="fas fa-store" aria-hidden="true"></i> <span>Store</span></button>
+                <button class="icon-btn" onclick="window.location.href='store.html'" aria-label="Open Store" title="Store"><i class="fas fa-store" aria-hidden="true"></i></button>
             </div>
         </div>
 
@@ -1835,45 +1952,45 @@
                             <div class="hub-card-icon"><i class="fas fa-th"></i></div>
                             <div>
                                 <div class="hub-card-name">2048</div>
-                                <div class="hub-card-desc">Merge tiles. Reach 2048. Win Gold per merge.</div>
+                                <div class="hub-card-desc">Merge tiles. Reach 2048. 1 Gold per point scored.</div>
                             </div>
-                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 50</span>
+                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 500</span>
                         </div>
                         <div class="hub-card" data-game="snake" onclick="switchGameTab('snake')" role="button" tabindex="0" aria-label="Play Snake">
                             <div class="hub-card-icon"><i class="fas fa-staff-snake"></i></div>
                             <div>
                                 <div class="hub-card-name">Snake</div>
-                                <div class="hub-card-desc">Eat, grow, survive. 20 Gold per food. Pause with P.</div>
+                                <div class="hub-card-desc">Eat, grow, survive. 100 Gold per food. Pause with P.</div>
                             </div>
-                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 50</span>
+                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 500</span>
                         </div>
                         <div class="hub-card" data-game="ttt" onclick="switchGameTab('ttt')" role="button" tabindex="0" aria-label="Play Tic-Tac-Toe">
                             <div class="hub-card-icon"><i class="fas fa-hashtag"></i></div>
                             <div>
                                 <div class="hub-card-name">Tic-Tac-Toe</div>
-                                <div class="hub-card-desc">Beat the AI. Win 60 Gold, draw 30.</div>
+                                <div class="hub-card-desc">Beat the AI. Win 1500 Gold, draw 750.</div>
                             </div>
-                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 20</span>
+                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 500</span>
                         </div>
                         <div class="hub-card" data-game="scramble" onclick="switchGameTab('scramble')" role="button" tabindex="0" aria-label="Play Word Scramble">
                             <div class="hub-card-icon"><i class="fas fa-spell-check"></i></div>
                             <div>
                                 <div class="hub-card-name">Word Scramble</div>
-                                <div class="hub-card-desc">Unscramble fast. Score = Gold. 20s each.</div>
+                                <div class="hub-card-desc">Unscramble fast. 5 Gold per point. 20s each.</div>
                             </div>
-                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 30</span>
+                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 500</span>
                         </div>
                         <div class="hub-card" data-game="mathblitz" onclick="switchGameTab('mathblitz')" role="button" tabindex="0" aria-label="Play Math Blitz">
                             <div class="hub-card-icon"><i class="fas fa-bolt"></i></div>
                             <div>
                                 <div class="hub-card-name">Math Blitz</div>
-                                <div class="hub-card-desc">60-second sprint. Half your score = Gold.</div>
+                                <div class="hub-card-desc">60-second sprint. 2 Gold per point.</div>
                             </div>
-                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 30</span>
+                            <span class="hub-card-badge gold"><i class="fas fa-coins"></i> Entry 500</span>
                         </div>
                     </div>
 
-                    <div class="hub-section-title"><i class="fas fa-external-link-alt"></i> More Games</div>
+                    <div class="hub-section-title"><i class="fas fa-trophy"></i> More Games</div>
                     <div class="hub-grid">
                         <div class="hub-card" data-game="cricket" onclick="window.location.href='cricket.html'" role="button" tabindex="0" aria-label="Play Cricket">
                             <i class="fas fa-arrow-up-right-from-square hub-card-external-arrow"></i>
@@ -1882,7 +1999,7 @@
                                 <div class="hub-card-name">Cricket</div>
                                 <div class="hub-card-desc">Swing for the boundary. Timing is everything.</div>
                             </div>
-                            <span class="hub-card-badge">External</span>
+                            <span class="hub-card-badge">Play</span>
                         </div>
                         <div class="hub-card" data-game="football" onclick="window.location.href='football.html'" role="button" tabindex="0" aria-label="Play Football">
                             <i class="fas fa-arrow-up-right-from-square hub-card-external-arrow"></i>
@@ -1891,7 +2008,7 @@
                                 <div class="hub-card-name">Football</div>
                                 <div class="hub-card-desc">Penalty shootout. Aim, power, score.</div>
                             </div>
-                            <span class="hub-card-badge">External</span>
+                            <span class="hub-card-badge">Play</span>
                         </div>
                         <div class="hub-card" data-game="mathematics" onclick="window.location.href='mathematics.html'" role="button" tabindex="0" aria-label="Play Mathematics">
                             <i class="fas fa-arrow-up-right-from-square hub-card-external-arrow"></i>
@@ -1900,7 +2017,7 @@
                                 <div class="hub-card-name">Mathematics</div>
                                 <div class="hub-card-desc">Operator puzzles. Speed-based challenges.</div>
                             </div>
-                            <span class="hub-card-badge">External</span>
+                            <span class="hub-card-badge">Play</span>
                         </div>
                         <div class="hub-card" data-game="leaderboards" onclick="switchGameTab('leaderboards')" role="button" tabindex="0" aria-label="View Leaderboards">
                             <div class="hub-card-icon"><i class="fas fa-trophy"></i></div>
@@ -2435,7 +2552,9 @@
 
         // ===== ARCADE GOLD SYSTEM — entry fee + reward helpers =====
         // Centralized so 2048/Snake/TTT/Scramble/MathBlitz all use the same logic.
-        const ARCADE_FEES = { g2048: 50, snake: 50, ttt: 20, scramble: 30, mathblitz: 30 };
+        // Minimum entry fee is 500 Gold for every arcade game.
+        // Rewards are scaled up proportionally so a decent run still pays out more than the fee.
+        const ARCADE_FEES = { g2048: 500, snake: 500, ttt: 500, scramble: 500, mathblitz: 500 };
         // Charges the entry fee for a game. Returns true if the player can play.
         // Deducts the gold from Firestore + updates all UI gold displays.
         async function chargeArcadeEntry(gameKey) {
@@ -4190,6 +4309,39 @@
             }
         };
 
+        // ===== THEME SWITCHER (persisted to localStorage) =====
+        // Sets data-theme on <html>, updates the active dot, and saves the choice.
+        window.setGameTheme = function(theme) {
+            const valid = ['dark', 'white', 'pink'];
+            if (!valid.includes(theme)) return;
+            document.documentElement.setAttribute('data-theme', theme);
+            try { localStorage.setItem('mr_games_theme', theme); } catch(e) {}
+            document.querySelectorAll('.theme-dot').forEach(d => {
+                const isActive = d.dataset.theme === theme;
+                d.classList.toggle('active', isActive);
+                d.setAttribute('aria-checked', isActive ? 'true' : 'false');
+            });
+            if (typeof GameSound !== 'undefined' && GameSound.enabled) { GameSound.resume(); GameSound.click(); }
+            // Redraw the snake canvas so its background matches the new theme.
+            if (typeof drawSnake === 'function') { try { drawSnake(); } catch(e) {} }
+        };
+        // Restore saved theme on load.
+        (function restoreGameTheme() {
+            let t = 'dark';
+            try { t = localStorage.getItem('mr_games_theme') || 'dark'; } catch(e) {}
+            if (t !== 'dark' && t !== 'white' && t !== 'pink') t = 'dark';
+            // Apply immediately (before paint would be ideal, but this runs after DOMContentLoaded in the module).
+            document.documentElement.setAttribute('data-theme', t);
+            // Defer the dot-active sync until the dots exist in the DOM.
+            window.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.theme-dot').forEach(d => {
+                    const isActive = d.dataset.theme === t;
+                    d.classList.toggle('active', isActive);
+                    d.setAttribute('aria-checked', isActive ? 'true' : 'false');
+                });
+            });
+        })();
+
         // Apply persisted mute state to header button on load
         (function applyPersistedSoundState() {
             const btn = document.getElementById('master-sound-toggle');
@@ -4260,7 +4412,7 @@
             if (!g2048Playing) return;
             g2048Playing = false;
             // Reward: 1 Gold per 10 points scored (rounded down), capped at 500.
-            const reward = Math.min(500, Math.floor(g2048Score / 10));
+            const reward = Math.min(5000, Math.floor(g2048Score));
             const credited = await creditArcadeReward('g2048', reward);
             if (credited > 0) {
                 showToast(`Game Over! Score ${g2048Score} — won ${credited} Gold!`, 'success');
@@ -4416,8 +4568,8 @@
             if (head.x<0||head.x>=SS||head.y<0||head.y>=SS||snake.some(s=>s.x===head.x&&s.y===head.y)) {
                 clearInterval(snakeLoop); snakeLoop = null; snakeStarted = false;
                 GameSound.gameOver();
-                // Reward: 2 Gold per point (each food = 10 points = 20 Gold). Cap at 1000.
-                const reward = Math.min(1000, snakeScore * 2);
+                // Reward: 10 Gold per point (each food = 10 points = 100 Gold). Cap at 10000.
+                const reward = Math.min(10000, snakeScore * 10);
                 const wasPlaying = snakePlaying;
                 snakePlaying = false;
                 if (snakeScore > snakeBest) {
@@ -4457,11 +4609,13 @@
         window.drawSnake = function() {
             const c = document.getElementById('snake-canvas'); if (!c) return;
             const ctx = c.getContext('2d');
-            // Background — match the CSS gradient bg of the canvas for a seamless look.
-            ctx.fillStyle = '#0E0F18';
+            // Background — read the theme's bg-sidebar so the canvas matches white/pink/dark themes.
+            const bg = getComputedStyle(document.documentElement).getPropertyValue('--bg-sidebar').trim() || '#12131C';
+            const isLight = bg.startsWith('#') && parseInt(bg.slice(1,3),16) > 150;
+            ctx.fillStyle = bg;
             ctx.fillRect(0,0,SS,SS);
-            // Subtle grid lines (already in CSS background-image, but draw on canvas too for clarity).
-            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            // Subtle grid lines — lighter on light themes, darker on dark themes.
+            ctx.strokeStyle = isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.03)';
             ctx.lineWidth = 1;
             for (let i = 0; i <= SS; i += SC) {
                 ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, SS); ctx.stroke();
@@ -4484,8 +4638,8 @@
                 roundRect(ctx, s.x + 1, s.y + 1, SC - 2, SC - 2, isHead ? 5 : 4);
                 ctx.fill();
                 if (isHead) {
-                    // Tiny eye on the head for character.
-                    ctx.fillStyle = '#0B0C10';
+                    // Tiny eye on the head for character — use the theme's text color.
+                    ctx.fillStyle = isLight ? '#1A1B2A' : '#0B0C10';
                     const ex = s.x + SC/2 + (snakeDirVal==='right'?3:snakeDirVal==='left'?-3:0);
                     const ey = s.y + SC/2 + (snakeDirVal==='down'?3:snakeDirVal==='up'?-3:0);
                     ctx.beginPath(); ctx.arc(ex, ey, 2, 0, Math.PI*2); ctx.fill();
@@ -4493,7 +4647,7 @@
             });
             // "Press a direction to start" hint overlay during grace period.
             if (!snakeStarted && snake.length === 1) {
-                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                ctx.fillStyle = isLight ? 'rgba(26,27,42,0.85)' : 'rgba(255,255,255,0.85)';
                 ctx.font = '600 12px Inter, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText('Swipe or press arrow keys', SS/2, SS - 12);
@@ -4542,7 +4696,7 @@
         async function creditTTTReward(kind) {
             if (tttRewarded) return;
             tttRewarded = true;
-            const reward = kind === 'win' ? 60 : (kind === 'draw' ? 30 : 0);
+            const reward = kind === 'win' ? 1500 : (kind === 'draw' ? 750 : 0);
             if (reward > 0) {
                 const credited = await creditArcadeReward('ttt', reward);
                 if (credited > 0) {
@@ -4621,13 +4775,69 @@
 
         // ===== WORD SCRAMBLE =====
         const SCRAMBLE_WORDS = [
+            // === IT / Tech (original, hard) ===
             {word:'JAVASCRIPT',hint:'Programming language'},{word:'FIREBASE',hint:'Google backend'},{word:'DATABASE',hint:'Data storage'},
             {word:'KEYBOARD',hint:'Input device'},{word:'INTERNET',hint:'Global network'},{word:'ALGORITHM',hint:'Step-by-step solution'},
             {word:'FUNCTION',hint:'Reusable code block'},{word:'VARIABLE',hint:'Data container'},{word:'RESPONSIVE',hint:'Adapts to screen'},
             {word:'ENCRYPTION',hint:'Security method'},{word:'NETWORK',hint:'Connected devices'},{word:'FRAMEWORK',hint:'App structure'},
             {word:'COMPILER',hint:'Code translator'},{word:'INTERFACE',hint:'User interaction layer'},{word:'DEPLOYMENT',hint:'Going live'},
             {word:'AUTHENTICATION',hint:'Login verification'},{word:'NOTIFICATION',hint:'Alert message'},{word:'BANDWIDTH',hint:'Data capacity'},
-            {word:'PROTOCOL',hint:'Communication rules'},{word:'RECURSION',hint:'Self-calling function'}
+            {word:'PROTOCOL',hint:'Communication rules'},{word:'RECURSION',hint:'Self-calling function'},
+            // === Animals (easy→medium) ===
+            {word:'ELEPHANT',hint:'Largest land animal'},{word:'GIRAFFE',hint:'Tallest animal'},{word:'PENGUIN',hint:'Flightless bird'},
+            {word:'DOLPHIN',hint:'Smart sea mammal'},{word:'BUTTERFLY',hint:'Colorful insect'},{word:'KANGAROO',hint:'Australian hopper'},
+            {word:'OCTOPUS',hint:'Eight-armed sea creature'},{word:'LEOPARD',hint:'Spotted big cat'},{word:'CROCODILE',hint:'River reptile'},
+            {word:'HEDGEHOG',hint:'Spiky little mammal'},{word:'FLAMINGO',hint:'Pink long-legged bird'},{word:'SQUIRREL',hint:'Tree climber with bushy tail'},
+            // === Food (easy→medium) ===
+            {word:'PIZZA',hint:'Italian flatbread'},{word:'BURGER',hint:'Patty in a bun'},{word:'CHOCOLATE',hint:'Sweet cocoa treat'},
+            {word:'PINEAPPLE',hint:'Tropical spiky fruit'},{word:'NOODLES',hint:'Long pasta'},{word:'SANDWICH',hint:'Filled bread snack'},
+            {word:'BANANA',hint:'Yellow curved fruit'},{word:'STRAWBERRY',hint:'Red tiny fruit'},{word:'CUCUMBER',hint:'Green salad veggie'},
+            {word:'PANCAKE',hint:'Flat breakfast cake'},{word:'POPCORN',hint:'Movie snack'},{word:'CINNAMON',hint:'Warm brown spice'},
+            // === Countries (medium→hard) ===
+            {word:'BANGLADESH',hint:'South Asian country'},{word:'JAPAN',hint:'Land of the rising sun'},{word:'BRAZIL',hint:'Amazon country'},
+            {word:'CANADA',hint:'Maple leaf nation'},{word:'AUSTRALIA',hint:'Continent country'},{word:'GERMANY',hint:'European car hub'},
+            {word:'EGYPT',hint:'Pyramids country'},{word:'THAILAND',hint:'Southeast Asian kingdom'},{word:'NORWAY',hint:'Fjord country'},
+            {word:'ARGENTINA',hint:'South American tango land'},{word:'PORTUGAL',hint:'Iberian peninsula'},{word:'MOROCCO',hint:'North African nation'},
+            // === Sports (easy→medium) ===
+            {word:'CRICKET',hint:'Bat-and-ball sport'},{word:'FOOTBALL',hint:'Global ball sport'},{word:'TENNIS',hint:'Racket sport'},
+            {word:'HOCKEY',hint:'Stick sport'},{word:'BOXING',hint:'Fist fighting sport'},{word:'SWIMMING',hint:'Water sport'},
+            {word:'CYCLING',hint:'Bike racing'},{word:'BASKETBALL',hint:'Hoop sport'},{word:'VOLLEYBALL',hint:'Net sport'},
+            {word:'SKATING',hint:'Ice or roller sport'},{word:'BASEBALL',hint:'American bat sport'},{word:'ARCHERY',hint:'Bow and arrow sport'},
+            // === Nature (easy→hard) ===
+            {word:'MOUNTAIN',hint:'Tall landform'},{word:'OCEAN',hint:'Vast salty water'},{word:'RAINBOW',hint:'Colorful sky arc'},
+            {word:'VOLCANO',hint:'Erupting mountain'},{word:'WATERFALL',hint:'Falling water'},{word:'FOREST',hint:'Dense trees'},
+            {word:'DESERT',hint:'Sandy dryland'},{word:'GLACIER',hint:'Slow river of ice'},{word:'THUNDER',hint:'Storm sound'},
+            {word:'HORIZON',hint:'Where sky meets land'},{word:'AVALANCHE',hint:'Snow slide'},{word:'TORNADO',hint:'Spinning wind funnel'},
+            // === Music (easy→medium) ===
+            {word:'GUITAR',hint:'String instrument'},{word:'PIANO',hint:'Keyed instrument'},{word:'DRUMS',hint:'Percussion'},
+            {word:'VIOLIN',hint:'Bowed string instrument'},{word:'MELODY',hint:'Tune'},{word:'RHYTHM',hint:'Beat pattern'},
+            {word:'HARMONY',hint:'Pleasing chord combo'},{word:'ORCHESTRA',hint:'Large music group'},{word:'SYMPHONY',hint:'Long music piece'},
+            {word:'TRUMPET',hint:'Brass horn'},{word:'UKULELE',hint:'Small Hawaiian guitar'},{word:'SAXOPHONE',hint:'Jazz curved horn'},
+            // === Space (medium→hard) ===
+            {word:'GALAXY',hint:'Star system'},{word:'PLANET',hint:'Orbits a star'},{word:'COMET',hint:'Icy space wanderer'},
+            {word:'ASTEROID',hint:'Space rock'},{word:'TELESCOPE',hint:'Sky viewer'},{word:'UNIVERSE',hint:'Everything'},
+            {word:'SATELLITE',hint:'Orbital device'},{word:'METEOR',hint:'Shooting star'},{word:'NEBULA',hint:'Space cloud'},
+            {word:'GRAVITY',hint:'Pulls things down'},{word:'ECLIPSE',hint:'Sun/moon alignment'},{word:'COSMOS',hint:'The universe'},
+            // === Movies (medium→hard) ===
+            {word:'AVATAR',hint:'Blue aliens film'},{word:'TITANIC',hint:'Ship film'},{word:'INCEPTION',hint:'Dream heist film'},
+            {word:'GLADIATOR',hint:'Roman epic film'},{word:'AVENGERS',hint:'Superhero team film'},{word:'JURASSIC',hint:'Dinosaur film'},
+            {word:'MATRIX',hint:'Red pill film'},{word:'FROZEN',hint:'Ice queen film'},{word:'ENCANTO',hint:'Magical family film'},
+            {word:'INTERSTELLAR',hint:'Space wormhole film'},{word:'GLADIATOR',hint:'Colosseum film'},{word:'SHREK',hint:'Green ogre film'},
+            // === Science (medium→hard) ===
+            {word:'OXYGEN',hint:'We breathe it'},{word:'HYDROGEN',hint:'Lightest element'},{word:'MOLECULE',hint:'Bonded atoms'},
+            {word:'ENERGY',hint:'Power to do work'},{word:'GRAVITY',hint:'Attracts masses'},{word:'VELOCITY',hint:'Speed with direction'},
+            {word:'CHEMISTRY',hint:'Study of substances'},{word:'BIOLOGY',hint:'Study of life'},{word:'PHYSICS',hint:'Study of forces'},
+            {word:'GENETICS',hint:'Study of heredity'},{word:'EVOLUTION',hint:'Species change over time'},{word:'MAGNETIC',hint:'Attracts iron'},
+            // === Daily life (easy) ===
+            {word:'UMBRELLA',hint:'Rain protector'},{word:'MIRROR',hint:'Reflects your image'},{word:'PENCIL',hint:'Writing stick'},
+            {word:'CLOCK',hint:'Tells time'},{word:'BRUSH',hint:'For hair or teeth'},{word:'WALLET',hint:'Holds money'},
+            {word:'BOTTLE',hint:'Holds drinks'},{word:'LANTERN',hint:'Portable light'},{word:'BLANKET',hint:'Keeps you warm'},
+            {word:'CALENDAR',hint:'Shows dates'},{word:'SCISSORS',hint:'Cuts paper'},{word:'PILLOW',hint:'Head rest for sleep'},
+            // === Emotions (easy→medium) ===
+            {word:'HAPPY',hint:'Feeling joyful'},{word:'ANGRY',hint:'Feeling mad'},{word:'EXCITED',hint:'Eager feeling'},
+            {word:'CURIOUS',hint:'Wanting to know'},{word:'BRAVE',hint:'Showing courage'},{word:'LONELY',hint:'Feeling alone'},
+            {word:'GRATEFUL',hint:'Feeling thankful'},{word:'SURPRISED',hint:'Caught off guard'},{word:'CONFIDENT',hint:'Self-assured'},
+            {word:'NOSTALGIC',hint:'Missing the past'},{word:'OPTIMISTIC',hint:'Hopeful view'},{word:'ADVENTUROUS',hint:'Loves new experiences'}
         ];
         let scrambleScore = 0, scrambleStreak = 0, scrambleCurrent = '', scrambleTimer = null, scrambleTimeLeft = 0,
             scrambleBest = parseInt((function(){ try { return localStorage.getItem('mr_scramble_best') || '0'; } catch(e) { return '0'; } })(), 10) || 0,
@@ -4653,7 +4863,7 @@
             clearInterval(scrambleTimer);
             const coBtn = document.getElementById('scramble-cashout-btn');
             if (coBtn) coBtn.style.display = 'none';
-            const reward = Math.min(500, scrambleScore);
+            const reward = Math.min(5000, scrambleScore * 5);
             if (scrambleScore > scrambleBest) {
                 scrambleBest = scrambleScore;
                 try { localStorage.setItem('mr_scramble_best', String(scrambleBest)); } catch(e) {}
@@ -4681,7 +4891,7 @@
                 try { localStorage.setItem('mr_scramble_best', String(scrambleBest)); } catch(e) {}
                 const sb = document.getElementById('scramble-best'); if (sb) sb.textContent = scrambleBest;
             }
-            const reward = Math.min(500, scrambleScore);
+            const reward = Math.min(5000, scrambleScore * 5);
             const credited = await creditArcadeReward('scramble', reward);
             if (credited > 0) {
                 showToast(`${reason} Score ${scrambleScore} — won ${credited} Gold!`, 'success');
@@ -4797,7 +5007,7 @@
                 try { localStorage.setItem('mr_mathblitz_best', String(mbBest)); } catch(e) {}
                 const bb2 = document.getElementById('mb-best'); if (bb2) bb2.textContent = mbBest;
             }
-            const reward = Math.min(500, Math.floor(mbScore / 2));
+            const reward = Math.min(5000, Math.floor(mbScore * 2));
             const credited = await creditArcadeReward('mathblitz', reward);
             if (credited > 0) {
                 showToast(`⏰ Time! Score ${mbScore} — won ${credited} Gold!`, 'success');
