@@ -59,30 +59,6 @@
             --shadow-strong: rgba(0,0,0,0.08);
             --card-overlay: rgba(0,0,0,0.015);
         }
-        /* ===== THEME: PINK ===== */
-        :root[data-theme="pink"] {
-            --bg-main: #1A0A14;
-            --bg-sidebar: #2A0F1F;
-            --bg-card: #3A1530;
-            --bg-hover: #4A1A3F;
-            --pink-primary: #FF1493;
-            --pink-hover: #E0107E;
-            --pink-light: #FF69B4;
-            --text-main: #FFE4EF;
-            --text-muted: #C992B0;
-            --glass-border: rgba(255, 20, 147, 0.22);
-            --success: #FF69B4;
-            --danger: #FF4466;
-            --warning: #FFC857;
-            --info: #FF66CC;
-            --love-red: #FF4466;
-            --love-pink: #FF69B4;
-            --love-purple: #FF66CC;
-            --love-orange: #FF9100;
-            --header-grad-2: #3A1530;
-            --shadow-strong: rgba(255,20,147,0.15);
-            --card-overlay: rgba(255,255,255,0.03);
-        }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; transition: background-color 0.2s, border-color 0.2s, color 0.2s; }
         html, body { background-color: var(--bg-main); color: var(--text-main); min-height: 100vh; }
         body { overflow-x: hidden; }
@@ -1227,7 +1203,6 @@
         .theme-dot.active { border-color: var(--pink-primary); box-shadow: 0 0 10px rgba(255,0,127,0.4); }
         .theme-dot[data-theme="dark"] { background: linear-gradient(135deg, #0B0C10, #1F2029); }
         .theme-dot[data-theme="white"] { background: linear-gradient(135deg, #ffffff, #f0f0f5); color: #333; }
-        .theme-dot[data-theme="pink"] { background: linear-gradient(135deg, #FF007F, #FF4081); }
 
         /* ===== STICKY TABS BAR ===== */
         .tabs-bar {
@@ -1848,6 +1823,47 @@
             color: var(--text-muted);
             margin-top: 4px;
         }
+        /* Game Over overlay — reuses the pause-overlay look but with a red accent */
+        .snake-gameover-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(11, 12, 16, 0.85);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 10px;
+            border-radius: 14px;
+            z-index: 6;
+            text-align: center;
+            padding: 16px;
+        }
+        .snake-gameover-overlay.active { display: flex; animation: pauseFadeIn 0.3s ease-out; }
+        .snake-gameover-icon {
+            font-size: 2.6rem;
+            color: var(--danger);
+            filter: drop-shadow(0 0 18px rgba(255,59,48,0.5));
+        }
+        .snake-gameover-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .snake-gameover-score {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .snake-gameover-score strong { color: var(--pink-primary); font-size: 1.1rem; }
+        .snake-gameover-hint {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
         .snake-canvas-wrap { position: relative; max-width: 340px; margin: 0 auto; }
         .snake-control-row { display: flex; gap: 8px; justify-content: center; margin: 8px 0 4px; }
         .snake-pause-btn {
@@ -1886,7 +1902,6 @@
                 <div class="theme-selector" role="radiogroup" aria-label="Theme selector">
                     <div class="theme-dot active" data-theme="dark" onclick="setGameTheme('dark')" role="radio" aria-checked="true" aria-label="Dark theme" title="Dark theme"></div>
                     <div class="theme-dot" data-theme="white" onclick="setGameTheme('white')" role="radio" aria-checked="false" aria-label="White theme" title="White theme"></div>
-                    <div class="theme-dot" data-theme="pink" onclick="setGameTheme('pink')" role="radio" aria-checked="false" aria-label="Pink theme" title="Pink theme"></div>
                 </div>
                 <div class="header-gold-pill" id="header-gold-pill" aria-live="polite" aria-label="Your gold balance" onclick="window.location.href='store.html'" title="Visit Store">
                     <i class="fas fa-coins" aria-hidden="true"></i> <span id="header-gold">0</span>
@@ -2279,6 +2294,12 @@
                             <div class="snake-pause-icon"><i class="fas fa-pause"></i></div>
                             <div class="snake-pause-text">Paused</div>
                             <div class="snake-pause-hint">Press P / Space or tap Resume</div>
+                        </div>
+                        <div class="snake-gameover-overlay" id="snake-gameover-overlay" aria-hidden="true">
+                            <div class="snake-gameover-icon"><i class="fas fa-skull-crossbones"></i></div>
+                            <div class="snake-gameover-text">Game Over</div>
+                            <div class="snake-gameover-score">Score: <strong id="snake-gameover-score">0</strong></div>
+                            <div class="snake-gameover-hint">Tap "Start Game" to play again</div>
                         </div>
                     </div>
                     <p style="font-size:0.75rem;color:var(--text-muted);text-align:center;margin:10px 0 6px;">
@@ -4311,9 +4332,9 @@
 
         // ===== THEME SWITCHER (persisted to localStorage) =====
         // Sets data-theme on <html>, updates the active dot, and saves the choice.
+        // Only dark and white are supported (pink was removed per user request).
         window.setGameTheme = function(theme) {
-            const valid = ['dark', 'white', 'pink'];
-            if (!valid.includes(theme)) return;
+            if (theme !== 'dark' && theme !== 'white') return;
             document.documentElement.setAttribute('data-theme', theme);
             try { localStorage.setItem('mr_games_theme', theme); } catch(e) {}
             document.querySelectorAll('.theme-dot').forEach(d => {
@@ -4325,14 +4346,12 @@
             // Redraw the snake canvas so its background matches the new theme.
             if (typeof drawSnake === 'function') { try { drawSnake(); } catch(e) {} }
         };
-        // Restore saved theme on load.
+        // Restore saved theme on load. Falls back to dark if the saved value is pink (removed) or invalid.
         (function restoreGameTheme() {
             let t = 'dark';
             try { t = localStorage.getItem('mr_games_theme') || 'dark'; } catch(e) {}
-            if (t !== 'dark' && t !== 'white' && t !== 'pink') t = 'dark';
-            // Apply immediately (before paint would be ideal, but this runs after DOMContentLoaded in the module).
+            if (t !== 'dark' && t !== 'white') t = 'dark';
             document.documentElement.setAttribute('data-theme', t);
-            // Defer the dot-active sync until the dots exist in the DOM.
             window.addEventListener('DOMContentLoaded', () => {
                 document.querySelectorAll('.theme-dot').forEach(d => {
                     const isActive = d.dataset.theme === t;
@@ -4477,7 +4496,7 @@
         // uses requestAnimationFrame for smoother rendering, drawSnake called immediately on start.
         let snake = [{x:160,y:160}], snakeFood = {x:80,y:80}, snakeDirVal = 'right', snakeScore = 0,
             snakeBest = parseInt((function(){ try { return localStorage.getItem('mr_snake_best') || '0'; } catch(e) { return '0'; } })(), 10) || 0,
-            snakeLoop = null, snakeSpeed = 130, snakeStarted = false, snakePendingDir = null, snakePaused = false, snakePausedSpeed = 130, snakePlaying = false;
+            snakeLoop = null, snakeSpeed = 130, snakeStarted = false, snakePendingDir = null, snakePaused = false, snakePausedSpeed = 130, snakePlaying = false, snakeGameOver = false;
         const SC = 16, SS = 320;
         function randomFoodPos() {
             // Generate a food position that doesn't overlap the snake body.
@@ -4494,6 +4513,7 @@
             const ok = await chargeArcadeEntry('snake');
             if (!ok) return;
             snakePlaying = true;
+            snakeGameOver = false; // new game — clear any prior game-over state
             clearInterval(snakeLoop);
             snake = [{x:160,y:160}];
             snakeFood = randomFoodPos();
@@ -4512,6 +4532,7 @@
                 pauseBtn.innerHTML = '<i class="fas fa-pause" aria-hidden="true"></i> <span id="snake-pause-btn-text">Pause</span>';
             }
             document.getElementById('snake-pause-overlay')?.classList.remove('active');
+            document.getElementById('snake-gameover-overlay')?.classList.remove('active');
             GameSound.resume();
             GameSound.whoosh();
             drawSnake();
@@ -4525,6 +4546,8 @@
             }, 700);
         };
         window.toggleSnakePause = function() {
+            // No pausing once the game is over — the run has ended.
+            if (snakeGameOver) return;
             // Only allow pause/resume once the game has actually started moving.
             if (!snakeStarted) return;
             if (!snakePaused) {
@@ -4548,6 +4571,8 @@
             }
         };
         window.snakeDir = function(d) {
+            // Once the game is over, ignore ALL direction input until the player clicks Start Game again.
+            if (snakeGameOver) return;
             const opp = {up:'down',down:'up',left:'right',right:'left'};
             if (d === opp[snakeDirVal]) return; // can't reverse
             // Ignore direction changes while paused (prevents unexpected moves on resume)
@@ -4562,16 +4587,28 @@
             }
         };
         async function tickSnake() {
+            // Safety guard: never tick once the game is over (defends against any stray interval).
+            if (snakeGameOver) return;
             const head = {...snake[0]};
             if (snakeDirVal==='up') head.y -= SC; else if (snakeDirVal==='down') head.y += SC;
             else if (snakeDirVal==='left') head.x -= SC; else head.x += SC;
             if (head.x<0||head.x>=SS||head.y<0||head.y>=SS||snake.some(s=>s.x===head.x&&s.y===head.y)) {
+                // ===== GAME OVER =====
                 clearInterval(snakeLoop); snakeLoop = null; snakeStarted = false;
+                snakeGameOver = true; // locks out all input + future ticks until startSnake() resets it
+                snakePlaying = false;
+                // Hide the pause button — no longer meaningful once the game is over.
+                const pauseBtn = document.getElementById('snake-pause-btn');
+                if (pauseBtn) pauseBtn.style.display = 'none';
+                // Show the Game Over overlay so the player clearly sees the game has ended.
+                const goOverlay = document.getElementById('snake-gameover-overlay');
+                const goScore = document.getElementById('snake-gameover-score');
+                if (goScore) goScore.textContent = snakeScore;
+                goOverlay?.classList.add('active');
+                drawSnake(); // redraw final frame under the overlay
                 GameSound.gameOver();
                 // Reward: 10 Gold per point (each food = 10 points = 100 Gold). Cap at 10000.
                 const reward = Math.min(10000, snakeScore * 10);
-                const wasPlaying = snakePlaying;
-                snakePlaying = false;
                 if (snakeScore > snakeBest) {
                     snakeBest = snakeScore;
                     try { localStorage.setItem('mr_snake_best', String(snakeBest)); } catch(e) {}
@@ -4579,15 +4616,15 @@
                     if (bestEl) bestEl.textContent = snakeBest;
                     GameSound.jackpot();
                 }
-                if (wasPlaying && reward > 0) {
+                if (reward > 0) {
                     const credited = await creditArcadeReward('snake', reward);
                     if (credited > 0) {
-                        showToast(`Snake dead! Score ${snakeScore} — won ${credited} Gold!`, 'success');
+                        showToast(`Game Over! Score ${snakeScore} — won ${credited} Gold!`, 'success');
                     } else {
-                        showToast('Snake dead! Score: ' + snakeScore, 'error');
+                        showToast('Game Over! Score: ' + snakeScore, 'error');
                     }
                 } else {
-                    showToast('Snake dead! Score: ' + snakeScore, 'error');
+                    showToast('Game Over! Score: ' + snakeScore, 'error');
                 }
                 return;
             }
