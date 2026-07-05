@@ -13,6 +13,12 @@
     <link rel="stylesheet" href="ui-ux.css?v=30">
     <!-- Shared UI/UX helpers -->
     <script src="ui-ux.js?v=30" defer></script>
+    <!-- Performance: preconnect to Firebase hosts + preload SDK modules in parallel with HTML parse -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="modulepreload" fetchpriority="high" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js">
+    <link rel="modulepreload" fetchpriority="high" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js">
+    <link rel="modulepreload" fetchpriority="high" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js">
     <script>
         // Inline pre-paint theme bootstrap — prevents FOUC (matches index.html)
         (function() {
@@ -87,7 +93,7 @@
         .dash-grid { display: grid; grid-template-columns: 1fr; max-width: 1600px; margin: 0 auto; width: 100%; }
 
         /* Top mobile bar */
-        .mobile-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--bg-sidebar); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 50; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .mobile-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: var(--bg-sidebar); border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 50; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .mobile-topbar .brand-mini { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.05rem; }
         .brand-mini-logo { width: 32px; height: 32px; border-radius: 10px; background: linear-gradient(135deg, var(--pink-primary), var(--purple-primary)); display: flex; align-items: center; justify-content: center; color: #fff; }
         .mobile-topbar .topbar-actions { display: flex; gap: 8px; align-items: center; }
@@ -125,7 +131,7 @@
 
         /* Right Sidebar */
         .right-sidebar { padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-        .sidebar-widget { background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; padding: 16px; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); }
+        .sidebar-widget { background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; padding: 16px; backdrop-filter: blur(12px) saturate(160%); -webkit-backdrop-filter: blur(12px) saturate(160%); }
         .sidebar-widget-title { font-size: 0.88rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .sidebar-widget-title i { color: var(--pink-primary); }
         .sidebar-widget-title .see-all { margin-left: auto; font-size: 0.72rem; color: var(--pink-primary); font-weight: 600; cursor: pointer; }
@@ -182,7 +188,7 @@
         /* ============================================================
            CREATE POST COMPOSER
            ============================================================ */
-        .composer { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 22px; padding: 16px; margin-bottom: 20px; backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: var(--shadow-md); }
+        .composer { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 22px; padding: 16px; margin-bottom: 20px; backdrop-filter: blur(12px) saturate(160%); -webkit-backdrop-filter: blur(12px) saturate(160%); box-shadow: var(--shadow-md); }
         .composer-top { display: flex; gap: 12px; align-items: flex-start; }
         .composer-avatar { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2.5px solid transparent; background: linear-gradient(var(--bg-sidebar), var(--bg-sidebar)) padding-box, linear-gradient(135deg, var(--pink-primary), var(--purple-primary)) border-box; flex-shrink: 0; }
         .composer-textarea { flex: 1; background: transparent; border: none; color: var(--text-main); font-size: 0.95rem; resize: none; outline: none; min-height: 48px; max-height: 220px; font-family: inherit; line-height: 1.45; padding-top: 10px; }
@@ -216,7 +222,7 @@
         /* ============================================================
            POST CARD
            ============================================================ */
-        .post-card { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 22px; padding: 16px; margin-bottom: 16px; backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); box-shadow: var(--shadow-md); animation: fadeInUp 0.4s cubic-bezier(0.16,1,0.3,1); }
+        .post-card { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 22px; padding: 16px; margin-bottom: 16px; backdrop-filter: blur(12px) saturate(160%); -webkit-backdrop-filter: blur(12px) saturate(160%); box-shadow: var(--shadow-md); animation: fadeInUp 0.4s cubic-bezier(0.16,1,0.3,1); will-change: transform; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .post-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; gap: 8px; }
         .post-user { display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; min-width: 0; }
@@ -235,7 +241,7 @@
         .post-menu-wrap { position: relative; }
         .post-menu-btn { width: 34px; height: 34px; border-radius: 50%; background: transparent; border: none; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
         .post-menu-btn:hover { background: var(--bg-hover); color: var(--pink-primary); }
-        .post-menu-dropdown { position: absolute; top: 38px; right: 0; background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 14px; box-shadow: var(--shadow-lg); z-index: 50; min-width: 200px; padding: 6px; overflow: hidden; animation: dropFade 0.2s cubic-bezier(0.16,1,0.3,1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .post-menu-dropdown { position: absolute; top: 38px; right: 0; background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 14px; box-shadow: var(--shadow-lg); z-index: 50; min-width: 200px; padding: 6px; overflow: hidden; animation: dropFade 0.2s cubic-bezier(0.16,1,0.3,1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         @keyframes dropFade { from { opacity: 0; transform: scale(0.92) translateY(-6px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .post-menu-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; color: var(--text-main); font-size: 0.8rem; cursor: pointer; transition: all 0.15s; width: 100%; background: transparent; border: none; text-align: left; }
         .post-menu-item:hover { background: var(--bg-hover); }
@@ -363,8 +369,8 @@
         /* ============================================================
            MODALS
            ============================================================ */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); display: flex; align-items: flex-start; justify-content: center; z-index: 10000; padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .modal-card { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 24px; padding: 22px; width: 100%; max-width: 520px; box-shadow: var(--shadow-lg), var(--shadow-glow); position: relative; margin: 20px auto; backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px) saturate(160%); -webkit-backdrop-filter: blur(8px) saturate(160%); display: flex; align-items: flex-start; justify-content: center; z-index: 10000; padding: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; content-visibility: auto; contain-intrinsic-size: 600px 800px; }
+        .modal-card { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 24px; padding: 22px; width: 100%; max-width: 520px; box-shadow: var(--shadow-lg), var(--shadow-glow); position: relative; margin: 20px auto; backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%); animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); content-visibility: auto; contain-intrinsic-size: 520px 720px; will-change: transform; }
         .modal-card.wide { max-width: 760px; }
         .modal-card.full { max-width: 920px; }
         .modal-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--pink-primary), var(--purple-primary)); border-radius: 24px 24px 0 0; }
@@ -394,7 +400,7 @@
         .story-nav.left { left: 0; }
         .story-nav.right { right: 0; }
         .story-reply-bar { position: absolute; bottom: 16px; left: 16px; right: 16px; display: flex; gap: 8px; z-index: 5; }
-        .story-reply-bar input { flex: 1; padding: 12px 16px; border-radius: 24px; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.25); color: #fff; font-size: 0.85rem; outline: none; backdrop-filter: blur(10px); }
+        .story-reply-bar input { flex: 1; padding: 12px 16px; border-radius: 24px; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.25); color: #fff; font-size: 0.85rem; outline: none; backdrop-filter: blur(8px); }
         .story-reply-bar input::placeholder { color: rgba(255,255,255,0.7); }
         .story-reply-bar button { width: 44px; height: 44px; border-radius: 50%; background: var(--pink-primary); color: #fff; border: none; cursor: pointer; font-size: 1rem; }
 
@@ -419,7 +425,7 @@
 
         /* Theme dropdown */
         .dropdown-wrapper { position: relative; }
-        .custom-dropdown { position: absolute; top: 50px; right: 0; background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; box-shadow: var(--shadow-lg); z-index: 2000; min-width: 200px; padding: 8px; transform-origin: top right; animation: dropFade 0.22s cubic-bezier(0.16,1,0.3,1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .custom-dropdown { position: absolute; top: 50px; right: 0; background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; box-shadow: var(--shadow-lg); z-index: 2000; min-width: 200px; padding: 8px; transform-origin: top right; animation: dropFade 0.22s cubic-bezier(0.16,1,0.3,1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .dropdown-item { padding: 10px 14px; display: flex; align-items: center; gap: 12px; color: var(--text-main); font-size: 0.85rem; cursor: pointer; transition: all 0.15s; border-radius: 10px; }
         .dropdown-item:hover { background: var(--bg-hover); }
         .dropdown-item.active { color: var(--pink-primary); font-weight: 700; }
@@ -429,7 +435,7 @@
         .dropdown-divider { height: 1px; background: var(--glass-border); margin: 4px 0; }
 
         /* Search results dropdown */
-        .search-results-panel { position: absolute; top: 50px; left: 0; right: 0; background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; box-shadow: var(--shadow-lg); z-index: 2000; max-height: 480px; overflow-y: auto; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .search-results-panel { position: absolute; top: 50px; left: 0; right: 0; background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; box-shadow: var(--shadow-lg); z-index: 2000; max-height: 480px; overflow-y: auto; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .search-tabs { display: flex; gap: 4px; padding: 8px; border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; background: var(--bg-card); z-index: 1; }
         .search-tab { flex: 1; padding: 8px; border-radius: 10px; background: transparent; border: none; color: var(--text-muted); font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.2s; }
         .search-tab.active { background: linear-gradient(135deg, var(--pink-primary), var(--purple-primary)); color: #fff; }
@@ -442,7 +448,7 @@
         .search-result-row .sr-meta { font-size: 0.7rem; color: var(--text-muted); }
 
         /* Notifications panel */
-        .notif-panel { position: absolute; top: 50px; right: 0; width: 360px; max-width: calc(100vw - 24px); background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; box-shadow: var(--shadow-lg); z-index: 2000; max-height: 480px; overflow-y: auto; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .notif-panel { position: absolute; top: 50px; right: 0; width: 360px; max-width: calc(100vw - 24px); background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; box-shadow: var(--shadow-lg); z-index: 2000; max-height: 480px; overflow-y: auto; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
         .notif-panel-header { padding: 14px 16px; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--bg-card); z-index: 1; }
         .notif-panel-header h4 { font-size: 0.95rem; font-weight: 800; }
         .notif-panel-header button { background: transparent; border: none; color: var(--pink-primary); font-size: 0.72rem; font-weight: 700; cursor: pointer; }
@@ -572,7 +578,7 @@
         @media (min-width: 1024px) { .mobile-drawer, .mobile-drawer-backdrop { display: none; } }
 
         /* Mobile bottom nav */
-        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-sidebar); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; padding: 6px 4px; z-index: 60; backdrop-filter: blur(20px); padding-bottom: env(safe-area-inset-bottom, 6px); }
+        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-sidebar); border-top: 1px solid var(--glass-border); display: flex; justify-content: space-around; padding: 6px 4px; z-index: 60; backdrop-filter: blur(12px); padding-bottom: env(safe-area-inset-bottom, 6px); }
         .mobile-bottom-nav button { flex: 1; background: transparent; border: none; color: var(--text-muted); font-size: 0.6rem; font-weight: 600; padding: 8px 2px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: color 0.2s; position: relative; }
         .mobile-bottom-nav button i { font-size: 1.05rem; }
         .mobile-bottom-nav button.active { color: var(--pink-primary); }
@@ -710,16 +716,16 @@
                         <div class="dropdown-wrapper">
                             <button class="icon-btn" id="desktop-theme-btn" title="Theme"><i class="fas fa-palette"></i></button>
                         </div>
-                        <img id="header-avatar" class="header-avatar" alt="Me">
+                        <img id="header-avatar" class="header-avatar" alt="Me" loading="eager" decoding="async">
                     </div>
                 </div>
 
                 <!-- Stories tray -->
-                <div class="section-card" style="background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; padding: 6px 12px; margin-bottom: 16px; backdrop-filter: blur(20px);">
+                <div class="section-card" style="background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 18px; padding: 6px 12px; margin-bottom: 16px; backdrop-filter: blur(12px);">
                     <div class="stories-tray" id="stories-tray">
                         <div class="story-tile" onclick="openCreateStoryModal()">
                             <div class="story-ring own">
-                                <img id="my-story-img" class="story-ring-img" alt="Me">
+                                <img id="my-story-img" class="story-ring-img" alt="Me" loading="eager" decoding="async">
                                 <div class="story-add-plus"><i class="fas fa-plus"></i></div>
                             </div>
                             <span class="story-name">Your Story</span>
@@ -730,7 +736,7 @@
                 <!-- Create post composer -->
                 <div class="composer">
                     <div class="composer-top">
-                        <img id="composer-avatar" class="composer-avatar" alt="Me">
+                        <img id="composer-avatar" class="composer-avatar" alt="Me" loading="eager" decoding="async">
                         <textarea id="composer-textarea" class="composer-textarea" placeholder="What's on your mind?" maxlength="2000"></textarea>
                     </div>
                     <div class="composer-preview hidden" id="composer-preview"></div>
@@ -869,7 +875,7 @@
                     <input type="file" id="story-image-input" accept="image/*" class="hidden">
                     <button class="action-btn-sm btn-outline" id="story-select-btn" style="width:100%; justify-content:center; padding:14px;" onclick="document.getElementById('story-image-input').click()"><i class="fas fa-upload"></i> Choose a photo</button>
                     <div id="story-preview-container" class="hidden" style="margin-top:12px;">
-                        <img id="story-preview-img" style="width:100%; max-height:320px; object-fit:cover; border-radius:14px; border:1px solid var(--glass-border);">
+                        <img id="story-preview-img" style="width:100%; max-height:320px; object-fit:cover; border-radius:14px; border:1px solid var(--glass-border);" loading="lazy" decoding="async">
                     </div>
                 </div>
                 <div id="story-text-section" class="hidden">
@@ -889,7 +895,7 @@
         <div class="story-viewer-content">
             <div class="story-progress-bar" id="story-progress-bar"></div>
             <div class="story-header">
-                <img id="sv-avatar" alt="">
+                <img id="sv-avatar" alt="" loading="lazy" decoding="async">
                 <div class="sv-info">
                     <div class="sv-name" id="sv-name"></div>
                     <div class="sv-time" id="sv-time"></div>
@@ -899,7 +905,7 @@
                     <button onclick="closeStoryViewer()" title="Close"><i class="fas fa-times"></i></button>
                 </div>
             </div>
-            <img id="sv-image" class="story-media" alt="" style="display:none;">
+            <img id="sv-image" class="story-media" alt="" style="display:none;" loading="lazy" decoding="async">
             <div id="sv-text-display" class="story-text-display hidden"></div>
             <div class="story-caption" id="sv-caption"></div>
             <div class="story-nav left" onclick="prevStory()"></div>
@@ -914,7 +920,7 @@
     <!-- Image lightbox -->
     <div id="lightbox" class="lightbox hidden">
         <button class="lightbox-close" onclick="closeLightbox()"><i class="fas fa-times"></i></button>
-        <img id="lightbox-img" alt="">
+        <img id="lightbox-img" alt="" loading="lazy" decoding="async">
     </div>
 
     <!-- PDF viewer modal -->
@@ -1041,9 +1047,8 @@
         import {
             getFirestore, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc,
             collection, query, where, onSnapshot, addDoc, increment, limit,
-            orderBy, startAfter, writeBatch, serverTimestamp, or
+            orderBy, startAfter, writeBatch, serverTimestamp, or, arrayUnion
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
 
         // ============ FIREBASE INIT ============
         const firebaseConfig = {
@@ -1058,18 +1063,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const functions = getFunctions(app);
-        // AI moderation for posts — flags hate speech / adult / spam before saving
-        const moderateContentCF = httpsCallable(functions, 'moderateContent');
-        const logUserActivityCF = httpsCallable(functions, 'logUserActivity');
-        const getSmartFeedCF = httpsCallable(functions, 'getSmartFeed');
-        const getTrendingHashtagsCF = httpsCallable(functions, 'getTrendingHashtags');
-        const reportContentCF = httpsCallable(functions, 'reportContent');
 
-        // Activity logging helper — fire-and-forget
-        function logActivity(action, metadata = {}) {
-            logUserActivityCF({ action, metadata }).catch(() => {});
-        }
+        // Activity logging helper — no-op (CF removed; analytics not needed for feed UX)
+        function logActivity(action, metadata = {}) { /* no-op: CF removed */ }
 
         // ============ STATE ============
         let currentUser = null;
@@ -1079,6 +1075,57 @@
         let followingSet = new Set();
         let savedPostIds = new Set();
         let _userCache = {}; // uid -> user doc snapshot (for name colors, avatar effects)
+
+        // ============ SESSIONSTORAGE CACHE HELPERS ============
+        // Per-uid isolation so different accounts don't see each other's data.
+        function cacheGet(key) {
+            try { const v = sessionStorage.getItem(key); return v ? JSON.parse(v) : null; }
+            catch (_) { return null; }
+        }
+        function cacheSet(key, val) {
+            try { sessionStorage.setItem(key, JSON.stringify(val)); } catch (_) { /* quota / private mode */ }
+        }
+        function cacheDel(key) { try { sessionStorage.removeItem(key); } catch (_) {} }
+        function applyUserDataDefaults(u) {
+            if (!u) return;
+            u.badges = u.badges || [];
+            u.bio = u.bio || '';
+            u.defaultPrivacy = u.defaultPrivacy || 'public';
+            u.followerCount = u.followerCount || 0;
+            u.followingCount = u.followingCount || 0;
+            u.postCount = u.postCount || 0;
+            u.friendsCount = u.friendsCount || 0;
+            u.isEmailVerified = u.isEmailVerified || false;
+            u.joinedCommunities = u.joinedCommunities || [];
+            u.socialLinks = u.socialLinks || {};
+            u.interests = u.interests || [];
+        }
+
+        // ============ REAL-TIME LISTENERS (always-on, ≤3 total) ============
+        let ownProfileUnsub = null;
+        let settingsUnsub = null;
+        function subscribeOwnProfile(uid) {
+            if (ownProfileUnsub) ownProfileUnsub();
+            ownProfileUnsub = onSnapshot(doc(db, "users", uid), (snap) => {
+                if (!snap.exists()) return;
+                currentUserData = snap.data();
+                applyUserDataDefaults(currentUserData);
+                cacheSet(`mr_user_${uid}`, currentUserData);
+                updateHeaderUI();
+            }, (err) => console.warn('[OwnProfile] listener error', err));
+        }
+        function subscribeSettings() {
+            if (settingsUnsub) settingsUnsub();
+            settingsUnsub = onSnapshot(doc(db, "settings", "app"), (snap) => {
+                if (!snap.exists()) return;
+                systemSettings = { ...systemSettings, ...snap.data() };
+                cacheSet('mr_settings', systemSettings);
+                // Toggle PDF upload button visibility based on latest setting
+                const pdfBtn = document.getElementById('add-pdf-btn');
+                if (pdfBtn) pdfBtn.classList.toggle('disabled', !systemSettings.pdfUploadsEnabled);
+            }, (err) => console.warn('[Settings] listener error', err));
+        }
+
         // Async fetch user doc into cache (debounced — only fetches if not cached)
         const _userCachePending = new Set();
         async function ensureUserCached(uid) {
@@ -1109,13 +1156,13 @@
         let activeHashtag = null;
         let activeCommunityId = null;
         let renderedPosts = new Map(); // postId -> element
-        let postsReactionsUnsub = new Map(); // postId -> unsub
+        let postsReactionsUnsub = new Map(); // postId -> unsub (now one-shot markers)
         let commentsSectionUnsub = new Map(); // postId -> unsub
         let commentsState = new Map(); // postId -> { open, expandedReplies: Set }
 
-        // Stories
-        let storiesUnsub = null;
+        // Stories (now one-shot + polling instead of onSnapshot)
         let storiesByUser = new Map();
+        let storiesPollTimer = null;
         let storyQueue = [];
         let currentStoryIndex = 0;
         let storyTimer = null;
@@ -1131,9 +1178,10 @@
         // PDF cache for posts (avoid embedding base64 in HTML attributes)
         const postPdfCache = new Map(); // postId -> { name, url, size }
 
-        // Notifications
-        let notifUnsub = null;
+        // Notifications (now one-shot + polling instead of onSnapshot)
+        let notifPollTimer = null;
         let unreadNotifCount = 0;
+        let cachedNotifs = []; // last-fetched notification list
 
         // Search
         let searchDebounceTimer = null;
@@ -1147,6 +1195,9 @@
 
         // Profile
         let profileModalUid = null;
+
+        // Reaction click debounce tracker (200ms throttle per post)
+        const _reactClickLastTs = new Map(); // postId -> ts
 
         // Constants
         const POSTS_PER_PAGE = 10;
@@ -1334,32 +1385,49 @@
                 return;
             }
             currentUser = user;
-            try {
-                const userSnap = await getDoc(doc(db, "users", user.uid));
-                if (!userSnap.exists()) {
-                    showToast('User profile not found. Please re-login.', 'error');
-                    await signOut(auth);
-                    setTimeout(() => window.location.href = 'index.html', 1200);
-                    return;
-                }
-                currentUserData = userSnap.data();
-                // Defensive defaults for additive fields
-                currentUserData.badges = currentUserData.badges || [];
-                currentUserData.bio = currentUserData.bio || '';
-                currentUserData.defaultPrivacy = currentUserData.defaultPrivacy || 'public';
-                currentUserData.followerCount = currentUserData.followerCount || 0;
-                currentUserData.followingCount = currentUserData.followingCount || 0;
-                currentUserData.postCount = currentUserData.postCount || 0;
-                currentUserData.friendsCount = currentUserData.friendsCount || 0;
-                currentUserData.isEmailVerified = currentUserData.isEmailVerified || false;
-                currentUserData.joinedCommunities = currentUserData.joinedCommunities || [];
-                currentUserData.socialLinks = currentUserData.socialLinks || {};
-                currentUserData.interests = currentUserData.interests || [];
 
-                await loadFriends();
-                await loadFollowing();
-                await loadSavedPostsList();
-                await loadSystemSettings();
+            // === INSTANT RENDER FROM SESSION CACHE ===
+            // Restore own profile / friends / following / saved / settings from
+            // sessionStorage so the dashboard paints immediately, then refresh
+            // from Firestore in the background.
+            const cachedUser = cacheGet(`mr_user_${user.uid}`);
+            if (cachedUser) {
+                currentUserData = cachedUser;
+                applyUserDataDefaults(currentUserData);
+            }
+            const cachedFriends = cacheGet(`mr_friends_${user.uid}`);
+            if (cachedFriends && Array.isArray(cachedFriends)) friendsSet = new Set(cachedFriends);
+            const cachedFollowing = cacheGet(`mr_following_${user.uid}`);
+            if (cachedFollowing && Array.isArray(cachedFollowing)) followingSet = new Set(cachedFollowing);
+            const cachedSaved = cacheGet(`mr_saved_${user.uid}`);
+            if (cachedSaved && Array.isArray(cachedSaved)) savedPostIds = new Set(cachedSaved);
+            const cachedSettings = cacheGet('mr_settings');
+            if (cachedSettings) systemSettings = { ...systemSettings, ...cachedSettings };
+
+            try {
+                // If still no user data (first login on this device), fetch one-shot.
+                if (!currentUserData) {
+                    const userSnap = await getDoc(doc(db, "users", user.uid));
+                    if (!userSnap.exists()) {
+                        showToast('User profile not found. Please re-login.', 'error');
+                        await signOut(auth);
+                        setTimeout(() => window.location.href = 'index.html', 1200);
+                        return;
+                    }
+                    currentUserData = userSnap.data();
+                    applyUserDataDefaults(currentUserData);
+                    cacheSet(`mr_user_${user.uid}`, currentUserData);
+                }
+
+                // === REAL-TIME LISTENERS (3 always-on, ≤3 target met) ===
+                // 1) own profile (real-time)
+                subscribeOwnProfile(user.uid);
+                // 2) settings/app (real-time)
+                subscribeSettings();
+                // 3) posts first page — opened later in initFeed() (real-time)
+
+                // === ASYNC REFRESH (background, but awaited so privacy filter works) ===
+                await Promise.all([loadFriends(), loadFollowing(), loadSavedPostsList()]);
 
                 // Online presence
                 updateDoc(doc(db, "users", user.uid), { status: 'online' }).catch(() => {});
@@ -1398,6 +1466,7 @@
                 loadRightSidebar();
                 setupInfiniteScroll();
                 handleDeepLink();
+                setupVisibilityHandler();
             } catch (e) {
                 console.error('[Auth] Error:', e);
                 showToast('Failed to load user data', 'error');
@@ -1407,58 +1476,60 @@
 
         async function loadFriends() {
             try {
-                // Two separate queries (avoids or() index requirement)
-                const [fs1, fs2] = await Promise.all([
-                    getDocs(query(collection(db, "friendships"), where("user1", "==", currentUser.uid))).catch(()=>({docs:[]})),
-                    getDocs(query(collection(db, "friendships"), where("user2", "==", currentUser.uid))).catch(()=>({docs:[]}))
+                // Consolidated: 2 queries (was 7) using `or()`.
+                //   - friendships collection: where user1 OR user2 OR members array-contains uid
+                //   - friendRequests collection: where to OR from OR senderId OR receiverId == uid (status filter applied client-side for or() compatibility)
+                const uid = currentUser.uid;
+                const [fsSnap, frSnap] = await Promise.all([
+                    getDocs(query(collection(db, "friendships"),
+                        or(where("user1", "==", uid), where("user2", "==", uid), where("members", "array-contains", uid))
+                    )).catch(()=>({docs:[]})),
+                    getDocs(query(collection(db, "friendRequests"),
+                        or(where("to", "==", uid), where("from", "==", uid), where("senderId", "==", uid), where("receiverId", "==", uid))
+                    )).catch(()=>({docs:[]}))
                 ]);
-                const snaps = [
-                    fs1, fs2,
-                    await getDocs(query(collection(db, "friendships"), where("members", "array-contains", currentUser.uid))).catch(()=>({docs:[]})),
-                    await getDocs(query(collection(db, "friendRequests"), where("to", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
-                    await getDocs(query(collection(db, "friendRequests"), where("from", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
-                    await getDocs(query(collection(db, "friendRequests"), where("receiverId", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]})),
-                    await getDocs(query(collection(db, "friendRequests"), where("senderId", "==", currentUser.uid), where("status", "==", "accepted"))).catch(()=>({docs:[]}))
-                ];
-                friendsSet = new Set();
-                snaps.forEach(snap => {
-                    (snap.docs || []).forEach(d => {
-                        const data = d.data();
-                        if (data.user1 && data.user1 !== currentUser.uid) friendsSet.add(data.user1);
-                        if (data.user2 && data.user2 !== currentUser.uid) friendsSet.add(data.user2);
-                        if (Array.isArray(data.members)) data.members.forEach(u => { if (u !== currentUser.uid) friendsSet.add(u); });
-                        if (data.from && data.from !== currentUser.uid) friendsSet.add(data.from);
-                        if (data.to && data.to !== currentUser.uid) friendsSet.add(data.to);
-                        if (data.senderId && data.senderId !== currentUser.uid) friendsSet.add(data.senderId);
-                        if (data.receiverId && data.receiverId !== currentUser.uid) friendsSet.add(data.receiverId);
-                    });
+                const next = new Set();
+                fsSnap.docs.forEach(d => {
+                    const data = d.data();
+                    if (data.user1 && data.user1 !== uid) next.add(data.user1);
+                    if (data.user2 && data.user2 !== uid) next.add(data.user2);
+                    if (Array.isArray(data.members)) data.members.forEach(u => { if (u !== uid) next.add(u); });
                 });
+                frSnap.docs.forEach(d => {
+                    const data = d.data();
+                    if (data.status !== 'accepted') return;
+                    if (data.to && data.to !== uid) next.add(data.to);
+                    if (data.from && data.from !== uid) next.add(data.from);
+                    if (data.senderId && data.senderId !== uid) next.add(data.senderId);
+                    if (data.receiverId && data.receiverId !== uid) next.add(data.receiverId);
+                });
+                friendsSet = next;
+                cacheSet(`mr_friends_${uid}`, [...next]);
             } catch (e) { console.warn('[Friends] load failed', e); }
         }
 
         async function loadFollowing() {
             try {
-                const snap = await getDocs(query(collection(db, "follows"), where("followerId", "==", currentUser.uid))).catch(()=>({docs:[]}));
+                const uid = currentUser.uid;
+                const snap = await getDocs(query(collection(db, "follows"), where("followerId", "==", uid))).catch(()=>({docs:[]}));
                 followingSet = new Set();
                 snap.docs.forEach(d => followingSet.add(d.data().followingId));
+                cacheSet(`mr_following_${uid}`, [...followingSet]);
             } catch (e) { console.warn('[Following] load failed', e); }
         }
 
         async function loadSavedPostsList() {
             try {
-                const snap = await getDocs(query(collection(db, "savedPosts"), where("userId", "==", currentUser.uid)));
+                const uid = currentUser.uid;
+                const snap = await getDocs(query(collection(db, "savedPosts"), where("userId", "==", uid)));
                 savedPostIds = new Set(snap.docs.map(d => d.data().postId));
+                cacheSet(`mr_saved_${uid}`, [...savedPostIds]);
             } catch (e) { savedPostIds = new Set(); }
         }
 
-        async function loadSystemSettings() {
-            try {
-                const snap = await getDoc(doc(db, "settings", "app"));
-                if (snap.exists()) {
-                    systemSettings = { ...systemSettings, ...snap.data() };
-                }
-            } catch (e) { console.warn('[Settings] load failed', e); }
-        }
+        // loadSystemSettings is now a no-op: the onSnapshot listener
+        // (subscribeSettings) handles both initial fetch and real-time updates.
+        async function loadSystemSettings() { /* handled by subscribeSettings() */ }
 
         function updateHeaderUI() {
             const photo = currentUserData?.photoURL || currentUser?.photoURL || getAvatarUrl(currentUser?.uid);
@@ -1617,8 +1688,34 @@
         }
 
         // ============ POSTS — real-time first page + paginated older ============
+        // This is one of our 3 always-on onSnapshot listeners (own profile + settings + posts).
         function startPostsRealtime() {
             if (postsUnsub) return; // already listening
+
+            // === INSTANT RENDER FROM CACHE ===
+            // Paint cached posts immediately so the user sees content while Firestore round-trip is in flight.
+            try {
+                const cachedFeed = cacheGet('mr_feed_cache');
+                if (cachedFeed && Array.isArray(cachedFeed) && cachedFeed.length > 0) {
+                    // Clear skeletons before paint
+                    document.querySelectorAll('.post-skeleton').forEach(s => s.remove());
+                    const feed = document.getElementById('feed-container');
+                    feed.innerHTML = '';
+                    cachedFeed.forEach(p => {
+                        if (!shouldShowPost(p)) return;
+                        const el = document.createElement('div');
+                        el.className = 'post-card';
+                        el.id = `post-${p.id}`;
+                        el.dataset.postId = p.id;
+                        renderPostInto(el, p);
+                        feed.appendChild(el);
+                        renderedPosts.set(p.id, el);
+                        subscribePostReactions(p.id);
+                    });
+                    oldestPostTimestamp = cachedFeed[cachedFeed.length - 1].timestamp || null;
+                }
+            } catch (_) { /* cache corrupt; ignore */ }
+
             const q = query(collection(db, "posts"), orderBy("timestamp", "desc"), limit(POSTS_PER_PAGE));
             postsUnsub = onSnapshot(q, (snap) => {
                 // Clear skeletons on first load
@@ -1629,11 +1726,16 @@
                             <i class="fas fa-newspaper"></i>
                             <p>No posts yet. Be the first to share!</p>
                         </div>`;
+                    cacheSet('mr_feed_cache', []);
                     return;
                 }
                 const docs = snap.docs;
                 // Track oldest for pagination
                 oldestPostTimestamp = docs[docs.length - 1].data().timestamp || null;
+
+                // Cache the first page for instant render on next page load
+                const postsForCache = docs.map(d => ({ id: d.id, ...d.data() }));
+                cacheSet('mr_feed_cache', postsForCache);
 
                 // Insert/update each post incrementally
                 docs.forEach(d => {
@@ -1827,7 +1929,7 @@
                 <div class="post-header">
                     <div class="post-user" onclick="openProfileModal('${post.userId}')">
                         <div class="avatar-wrap">
-                            <img src="${escapeAttr(post.userPhoto)}" alt="${escapeAttr(post.userName)}" onerror="this.src='${getAvatarUrl(post.userId)}'" style="${avatarEffectStyle(_userCache[post.userId])}">
+                            <img src="${escapeAttr(post.userPhoto)}" alt="${escapeAttr(post.userName)}" loading="lazy" decoding="async" onerror="this.src='${getAvatarUrl(post.userId)}'" style="${avatarEffectStyle(_userCache[post.userId])}">
                         </div>
                         <div class="post-user-info">
                             <h4><span style="${nameColorStyle(_userCache[post.userId])}">${escapeHtml(post.userName)}</span> ${post.isVerified ? '<i class="fas fa-circle-check verified-check"></i>' : ''} ${post.userType ? `<span class="user-type-badge">${escapeHtml(post.userType)}</span>` : ''} <span class="post-type-badge">${escapeHtml(postTypeLabel)}</span> ${post.communityName ? `<span class="community-badge">${escapeHtml(post.communityName)}</span>` : ''}</h4>
@@ -1940,14 +2042,20 @@
             if (picker) picker.classList.add('show');
         }
 
-        // ============ INFINITE SCROLL ============
+        // ============ INFINITE SCROLL (100ms throttle) ============
+        let _scrollThrottleTs = 0;
         function setupInfiniteScroll() {
             const sentinel = document.getElementById('infinite-sentinel');
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
-                    if (entry.isIntersecting && currentFeedMode === 'feed' && hasMorePosts && !isLoadingMore) {
-                        loadMorePosts();
-                    }
+                    if (!entry.isIntersecting) return;
+                    if (currentFeedMode !== 'feed' || !hasMorePosts || isLoadingMore) return;
+                    // 100ms throttle — prevents rapid loadMorePosts() calls when the
+                    // user is fast-scrolling through the sentinel boundary.
+                    const now = Date.now();
+                    if (now - _scrollThrottleTs < 100) return;
+                    _scrollThrottleTs = now;
+                    loadMorePosts();
                 });
             }, { rootMargin: '200px' });
             observer.observe(sentinel);
@@ -1988,12 +2096,14 @@
             }
         }
 
-        // ============ REACTIONS ============
+        // ============ REACTIONS (one-shot fetch; onSnapshot removed to cut listener count) ============
         function subscribePostReactions(postId) {
-            if (postsReactionsUnsub.has(postId)) return;
+            if (postsReactionsUnsub.has(postId)) return; // already fetched
+            // Mark as fetched with a no-op unsubscribe fn (no realtime listener to clean up).
+            postsReactionsUnsub.set(postId, () => {});
             try {
                 const q = query(collection(db, "reactions"), where("postId", "==", postId));
-                const unsub = onSnapshot(q, (snap) => {
+                getDocs(q).then(snap => {
                     const counts = {};
                     let myReact = null;
                     snap.forEach(d => {
@@ -2002,9 +2112,24 @@
                         if (r.userId === currentUser.uid) myReact = r.type;
                     });
                     updatePostReactionsUI(postId, counts, myReact);
-                });
-                postsReactionsUnsub.set(postId, unsub);
-            } catch (e) { console.warn('[Reactions] subscribe failed', e); }
+                }).catch(()=>{});
+            } catch (e) { console.warn('[Reactions] fetch failed', e); }
+        }
+        // Refresh reactions for a single post (called after the user toggles their reaction)
+        function refreshPostReactions(postId) {
+            try {
+                const q = query(collection(db, "reactions"), where("postId", "==", postId));
+                getDocs(q).then(snap => {
+                    const counts = {};
+                    let myReact = null;
+                    snap.forEach(d => {
+                        const r = d.data();
+                        counts[r.type] = (counts[r.type] || 0) + 1;
+                        if (r.userId === currentUser.uid) myReact = r.type;
+                    });
+                    updatePostReactionsUI(postId, counts, myReact);
+                }).catch(()=>{});
+            } catch (e) { /* silent */ }
         }
 
         function updatePostReactionsUI(postId, counts, myReact) {
@@ -2042,6 +2167,11 @@
         }
 
         window.toggleHeartReaction = function(postId, event) {
+            // 200ms debounce per post (prevents accidental double-tap double-writes)
+            const now = Date.now();
+            const last = _reactClickLastTs.get(postId) || 0;
+            if (now - last < 200) return;
+            _reactClickLastTs.set(postId, now);
             // Quick toggle heart on click; long-press shows picker
             const docRef = doc(db, "reactions", `${currentUser.uid}_${postId}`);
             getDoc(docRef).then(snap => {
@@ -2059,11 +2189,21 @@
                     // notify post owner
                     notifyPostOwner(postId, 'like', 'reacted to your post');
                 }
+                refreshPostReactions(postId);
             }).catch(()=>{});
         };
 
         window.reactToPost = function(postId, type, event) {
             if (event) event.stopPropagation();
+            // 200ms debounce per post
+            const now = Date.now();
+            const last = _reactClickLastTs.get(postId) || 0;
+            if (now - last < 200) {
+                const picker = document.getElementById(`picker-${postId}`);
+                if (picker) picker.classList.remove('show');
+                return;
+            }
+            _reactClickLastTs.set(postId, now);
             const docRef = doc(db, "reactions", `${currentUser.uid}_${postId}`);
             getDoc(docRef).then(snap => {
                 if (snap.exists() && snap.data().type === type) {
@@ -2080,6 +2220,7 @@
                 }
                 const picker = document.getElementById(`picker-${postId}`);
                 if (picker) picker.classList.remove('show');
+                refreshPostReactions(postId);
             }).catch(()=>{});
         };
         window.showReactionPicker = showReactionPicker;
@@ -2359,7 +2500,7 @@
                     <div style="text-align:center; padding:10px; color:var(--text-muted); font-size:0.8rem;"><div class="spinner-sm" style="display:inline-block; border-color: rgba(255,0,127,0.2); border-top-color: var(--pink-primary);"></div> Loading comments…</div>
                 </div>
                 <div class="comment-composer">
-                    <img src="${escapeAttr(currentUserData?.photoURL || getAvatarUrl(currentUser.uid))}" alt="me">
+                    <img src="${escapeAttr(currentUserData?.photoURL || getAvatarUrl(currentUser.uid))}" alt="me" loading="lazy" decoding="async">
                     <input type="text" id="comment-input-${postId}" placeholder="Write a comment…" onkeypress="if(event.key==='Enter') addComment('${postId}', null)">
                     <button onclick="addComment('${postId}', null)"><i class="fas fa-paper-plane"></i></button>
                 </div>`;
@@ -2427,7 +2568,7 @@
             const text = c.isDeleted ? '<span class="deleted">Comment deleted</span>' : renderTextWithLinks(c.text);
             return `
                 <div class="comment-item ${isReply ? 'reply' : ''}" data-cid="${c.id}">
-                    <img class="c-avatar" src="${escapeAttr(photo)}" alt="${escapeAttr(name)}" onerror="this.src='${getAvatarUrl(c.userId)}'" onclick="openProfileModal('${c.userId}')">
+                    <img class="c-avatar" src="${escapeAttr(photo)}" alt="${escapeAttr(name)}" loading="lazy" decoding="async" onerror="this.src='${getAvatarUrl(c.userId)}'" onclick="openProfileModal('${c.userId}')">
                     <div class="comment-body">
                         <div class="comment-bubble">
                             <div class="c-name" onclick="openProfileModal('${c.userId}')">${escapeHtml(name)} ${c.isVerified ? '<i class="fas fa-circle-check" style="color:var(--diamond-cyan); font-size:0.7rem;"></i>' : ''}</div>
@@ -2661,7 +2802,7 @@
                 preview.className = `composer-preview ${cls}`;
                 preview.innerHTML = selectedComposerImages.map((img, i) => `
                     <div style="position:relative;">
-                        <img src="${img}" alt="">
+                        <img src="${img}" alt="" loading="lazy" decoding="async">
                         <button onclick="removeComposerImage(${i})" style="position:absolute; top:4px; right:4px; background:rgba(0,0,0,0.7); color:#fff; border:none; width:24px; height:24px; border-radius:50%; cursor:pointer;"><i class="fas fa-times"></i></button>
                     </div>`).join('');
             } else {
@@ -2704,22 +2845,11 @@
                 if (selectedPdf) postType = 'pdf';
                 else if (selectedComposerImages.length > 0) postType = 'image';
 
-                // AI content moderation — block hate speech / adult / spam
-                if (text && text.trim()) {
-                    try {
-                        const modRes = await moderateContentCF({ text });
-                        if (modRes.data?.safe === false) {
-                            const reasons = (modRes.data.reasons || []).join(', ');
-                            showToast(`Post blocked: ${reasons || 'inappropriate content'}`, 'error', 4000);
-                            btn.disabled = false;
-                            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Post';
-                            return;
-                        }
-                    } catch (modErr) {
-                        // Fail-open: if moderation service is down, allow the post
-                        console.warn('Moderation skipped:', modErr.message);
-                    }
-                }
+                // AI content moderation removed (CF no-op'd).
+                // Posts are now subject to community reporting post-publish instead of
+                // pre-publish moderation. Original UX preserved: any user can flag
+                // inappropriate content via the post-menu Report flow (now writes
+                // directly to the `reports` collection).
 
                 const postData = {
                     userId: currentUser.uid,
@@ -2781,29 +2911,56 @@
             showToast('Feed refreshed', 'success', 1800);
         });
 
-        // ============ STORIES ============
+        // ============ STORIES (one-shot getDocs + 60s polling; onSnapshot removed) ============
         function loadStories() {
             try {
-                if (storiesUnsub) { storiesUnsub(); storiesUnsub = null; }
+                // Restore from sessionStorage for instant render
+                const uid = currentUser?.uid;
+                if (uid) {
+                    const cached = cacheGet(`mr_stories_cache_${uid}`);
+                    if (cached && Array.isArray(cached)) {
+                        storiesByUser = new Map();
+                        cached.forEach(s => {
+                            if (!s.userId) return;
+                            if (!storiesByUser.has(s.userId)) {
+                                storiesByUser.set(s.userId, { user: s, stories: [] });
+                            }
+                            storiesByUser.get(s.userId).stories.push(s);
+                        });
+                        renderStories();
+                    }
+                }
+                fetchStoriesOnce();
+                // Restart 60s polling (cleared by setupVisibilityHandler when tab hidden)
+                if (storiesPollTimer) clearInterval(storiesPollTimer);
+                storiesPollTimer = setInterval(fetchStoriesOnce, 60000);
+            } catch (err) { console.error('[Stories] fatal', err); }
+        }
+        async function fetchStoriesOnce() {
+            try {
                 const twentyFourHoursAgo = Date.now() - 86400000;
                 const q = query(collection(db, "stories"), where("timestamp", ">", twentyFourHoursAgo));
-                storiesUnsub = onSnapshot(q, (snap) => {
-                    const sortedDocs = snap.docs.sort((a, b) => (b.data().timestamp || 0) - (a.data().timestamp || 0));
-                    storiesByUser = new Map();
-                    sortedDocs.forEach(d => {
-                        const data = d.data();
-                        if (!data.userId) return;
-                        if (!storiesByUser.has(data.userId)) {
-                            storiesByUser.set(data.userId, { user: data, stories: [] });
-                        }
-                        storiesByUser.get(data.userId).stories.push({ id: d.id, ...data });
-                    });
-                    renderStories();
-                }, (err) => {
-                    console.error('[Stories] error', err);
-                    renderStoriesError('Failed to load stories');
+                const snap = await getDocs(q);
+                const sortedDocs = snap.docs.sort((a, b) => (b.data().timestamp || 0) - (a.data().timestamp || 0));
+                storiesByUser = new Map();
+                const flat = [];
+                sortedDocs.forEach(d => {
+                    const data = d.data();
+                    if (!data.userId) return;
+                    const story = { id: d.id, ...data };
+                    flat.push(story);
+                    if (!storiesByUser.has(data.userId)) {
+                        storiesByUser.set(data.userId, { user: data, stories: [] });
+                    }
+                    storiesByUser.get(data.userId).stories.push(story);
                 });
-            } catch (err) { console.error('[Stories] fatal', err); }
+                renderStories();
+                // Cache for instant render on next page load
+                if (currentUser?.uid) cacheSet(`mr_stories_cache_${currentUser.uid}`, flat);
+            } catch (err) {
+                console.error('[Stories] fetch error', err);
+                renderStoriesError('Failed to load stories');
+            }
         }
 
         function renderStoriesError(msg) {
@@ -2811,7 +2968,7 @@
             tray.innerHTML = `
                 <div class="story-tile" onclick="openCreateStoryModal()">
                     <div class="story-ring own">
-                        <img src="${escapeAttr(currentUserData?.photoURL || getAvatarUrl(currentUser?.uid))}" class="story-ring-img" alt="Me">
+                        <img src="${escapeAttr(currentUserData?.photoURL || getAvatarUrl(currentUser?.uid))}" class="story-ring-img" alt="Me" loading="eager" decoding="async">
                         <div class="story-add-plus"><i class="fas fa-plus"></i></div>
                     </div>
                     <span class="story-name">Your Story</span>
@@ -2830,7 +2987,7 @@
             let html = `
                 <div class="story-tile" onclick="${myStories ? `openStoryViewer('${myUid}')` : 'openCreateStoryModal()'}">
                     <div class="story-ring ${myStories ? 'own' : 'own'}">
-                        <img src="${escapeAttr(myPhoto)}" class="story-ring-img" alt="Me" onerror="this.src='${getAvatarUrl(myUid)}'">
+                        <img src="${escapeAttr(myPhoto)}" class="story-ring-img" alt="Me" loading="eager" decoding="async" onerror="this.src='${getAvatarUrl(myUid)}'">
                         ${!myStories ? `<div class="story-add-plus"><i class="fas fa-plus"></i></div>` : ''}
                     </div>
                     <span class="story-name">${myStories ? 'Your Story' : 'Add Story'}</span>
@@ -2844,7 +3001,7 @@
                 const isTextStory = firstStory && firstStory.storyType === 'text';
                 const ringInner = isTextStory
                     ? `<div class="story-ring-text" style="background:${escapeAttr(firstStory.bgColor || STORY_COLORS[0].bg)};">${escapeHtml((firstStory.text || '✨').slice(0, 20))}</div>`
-                    : `<img src="${escapeAttr(userPhoto)}" class="story-ring-img" alt="${escapeAttr(userName)}" onerror="this.src='${getAvatarUrl(uid)}'">`;
+                    : `<img src="${escapeAttr(userPhoto)}" class="story-ring-img" alt="${escapeAttr(userName)}" loading="lazy" decoding="async" onerror="this.src='${getAvatarUrl(uid)}'">`;
                 html += `
                     <div class="story-tile" onclick="openStoryViewer('${uid}')">
                         <div class="story-ring ${unseen ? '' : 'seen'}">${ringInner}</div>
@@ -3179,7 +3336,7 @@
                     <div class="pm-cover" style="${coverStyle}"></div>
                     <div class="pm-body">
                         <div class="pm-avatar-wrap">
-                            <img src="${escapeAttr(u.photoURL)}" alt="${escapeAttr(u.fullName)}" onerror="this.src='${getAvatarUrl(uid)}'">
+                            <img src="${escapeAttr(u.photoURL)}" alt="${escapeAttr(u.fullName)}" loading="lazy" decoding="async" onerror="this.src='${getAvatarUrl(uid)}'">
                         </div>
                         <div class="pm-name-row">
                             <span class="pm-name">${escapeHtml(u.fullName)}</span>
@@ -3460,7 +3617,7 @@
                     list.innerHTML = snap.docs.map(d => {
                         const u = d.data();
                         return `<div class="search-result-row" onclick="closeSearchPanel(); openProfileModal('${d.id}')">
-                            <img src="${escapeAttr(u.photoURL || getAvatarUrl(d.id))}" alt="" onerror="this.src='${getAvatarUrl(d.id)}'">
+                            <img src="${escapeAttr(u.photoURL || getAvatarUrl(d.id))}" alt="" loading="lazy" decoding="async" onerror="this.src='${getAvatarUrl(d.id)}'">
                             <div class="sr-info"><div class="sr-name">${escapeHtml(u.fullName || 'User')} ${u.isEmailVerified ? '<i class="fas fa-circle-check" style="color:var(--diamond-cyan); font-size:0.7rem;"></i>' : ''}</div><div class="sr-meta">@${escapeHtml(u.username || 'user')}</div></div>
                         </div>`;
                     }).join('');
@@ -3580,17 +3737,29 @@
                 document.getElementById('create-community-btn').setAttribute('title', 'Community creation is disabled');
             }
             try {
-                const snap = await getDocs(query(collection(db, "communities"), orderBy("membersCount", "desc"), limit(30)));
+                // Cache communities view list (10-min TTL — communities change rarely).
+                // Reuses the same cache key as loadCommunitiesSuggest() when possible.
+                const cacheKey = 'mr_communities_view_cache';
+                const cached = cacheGet(cacheKey);
+                const now = Date.now();
+                let docs = null;
+                if (cached && cached.ts && (now - cached.ts < 10 * 60 * 1000) && Array.isArray(cached.docs)) {
+                    docs = cached.docs;
+                } else {
+                    const snap = await getDocs(query(collection(db, "communities"), orderBy("membersCount", "desc"), limit(30)));
+                    docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    cacheSet(cacheKey, { ts: now, docs });
+                }
                 const grid = document.getElementById('communities-grid');
-                if (snap.empty) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-people-group"></i><p>No communities yet.</p><p class="empty-sub">${systemSettings.communitiesEnabled ? 'Create the first one!' : ''}</p></div>`; return; }
-                grid.innerHTML = snap.docs.map(d => {
-                    const c = d.data();
+                if (!docs || docs.length === 0) { grid.innerHTML = `<div class="empty-state"><i class="fas fa-people-group"></i><p>No communities yet.</p><p class="empty-sub">${systemSettings.communitiesEnabled ? 'Create the first one!' : ''}</p></div>`; return; }
+                grid.innerHTML = docs.map(d => {
+                    const c = d;
                     const isMember = (currentUserData?.joinedCommunities || []).includes(d.id);
                     return `
                         <div class="community-card" onclick="viewCommunity('${d.id}')">
                             <div class="community-card-banner" style="${c.photoURL ? `background-image:url('${escapeAttr(c.photoURL)}');` : ''}"></div>
                             <div class="community-card-body">
-                                <div class="community-card-icon">${c.photoURL ? `<img src="${escapeAttr(c.photoURL)}" alt="">` : `<i class="fas fa-people-group"></i>`}</div>
+                                <div class="community-card-icon">${c.photoURL ? `<img src="${escapeAttr(c.photoURL)}" alt="" loading="lazy" decoding="async">` : `<i class="fas fa-people-group"></i>`}</div>
                                 <div class="community-card-name">${escapeHtml(c.name || 'Community')}</div>
                                 <div class="community-card-cat">${escapeHtml(c.category || 'general')}</div>
                                 <div class="community-card-desc">${escapeHtml(c.description || '')}</div>
@@ -3683,19 +3852,29 @@
             }
         };
 
-        // ============ NOTIFICATIONS ============
+        // ============ NOTIFICATIONS (one-shot + 30s polling; onSnapshot removed) ============
         function loadNotifications() {
             try {
-                const q = query(collection(db, "notifications"), where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"), limit(30));
-                notifUnsub = onSnapshot(q, (snap) => {
-                    let unread = 0;
-                    const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    notifs.forEach(n => { if (!n.read) unread++; });
-                    unreadNotifCount = unread;
-                    updateNotifBadge(unread);
-                    renderNotificationsPanel(notifs);
-                }, (err) => console.warn('[Notif] error', err));
+                fetchNotificationsOnce();
+                // 30s polling for badge refresh — paused when tab hidden
+                if (notifPollTimer) clearInterval(notifPollTimer);
+                notifPollTimer = setInterval(fetchNotificationsOnce, 30000);
             } catch (e) { console.warn('[Notif] init failed', e); }
+        }
+        async function fetchNotificationsOnce() {
+            try {
+                const q = query(collection(db, "notifications"), where("userId", "==", currentUser.uid), orderBy("timestamp", "desc"), limit(30));
+                const snap = await getDocs(q);
+                let unread = 0;
+                const notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                notifs.forEach(n => { if (!n.read) unread++; });
+                unreadNotifCount = unread;
+                cachedNotifs = notifs;
+                cacheSet(`mr_notifs_${currentUser.uid}`, notifs);
+                updateNotifBadge(unread);
+                // Only re-render the panel if it is currently open (avoids rebuilding DOM off-screen)
+                if (notifPanel) renderNotificationsPanel(notifs, true);
+            } catch (e) { console.warn('[Notif] fetch failed', e); }
         }
 
         function updateNotifBadge(count) {
@@ -3757,7 +3936,7 @@
                 const icon = iconMap[n.type] || 'fa-bell';
                 return `
                     <div class="notif-row ${n.read ? '' : 'unread'}" onclick="handleNotifClick('${n.id}', '${n.targetType || 'post'}', '${n.targetId || ''}', ${n.read})">
-                        ${n.actorPhoto ? `<img src="${escapeAttr(n.actorPhoto)}" alt="" onerror="this.src='${getAvatarUrl(n.actorId)}'">` : `<div class="n-icon"><i class="fas ${icon}"></i></div>`}
+                        ${n.actorPhoto ? `<img src="${escapeAttr(n.actorPhoto)}" alt="" loading="lazy" decoding="async" onerror="this.src='${getAvatarUrl(n.actorId)}'">` : `<div class="n-icon"><i class="fas ${icon}"></i></div>`}
                         <div class="n-info">
                             <div class="n-text"><b>${escapeHtml(n.actorName || 'Someone')}</b> ${escapeHtml(n.text || '')}</div>
                             <div class="n-time">${formatTimeAgo(n.timestamp)}</div>
@@ -3798,15 +3977,30 @@
 
         // ============ RIGHT SIDEBAR ============
         async function loadRightSidebar() {
+            // Combine PYMK + ActiveNow into a single `users` query (was 2 queries).
+            loadPeopleAndActiveNow();
             loadTrending();
-            loadPeopleYouMayKnow();
             loadCommunitiesSuggest();
-            loadActiveNow();
         }
 
         async function loadTrending() {
             try {
-                // Aggregate hashtags from recent posts
+                // Restore from cache (5-min TTL) for instant render
+                const cacheKey = 'mr_trending_cache';
+                const cached = cacheGet(cacheKey);
+                const now = Date.now();
+                if (cached && cached.ts && (now - cached.ts < 5 * 60 * 1000) && Array.isArray(cached.top)) {
+                    renderTrending(cached.top);
+                    // Refresh in background
+                    refreshTrending();
+                    return;
+                }
+                await refreshTrending();
+            } catch (e) { console.warn('[Trending] error', e); }
+        }
+        async function refreshTrending() {
+            try {
+                // Direct Firestore query (CF removed): aggregate hashtags from recent posts
                 const snap = await getDocs(query(collection(db, "posts"), orderBy("timestamp", "desc"), limit(80)));
                 const counts = new Map();
                 snap.docs.forEach(d => {
@@ -3814,53 +4008,85 @@
                     tags.forEach(t => counts.set(t, (counts.get(t) || 0) + 1));
                 });
                 const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
-                const list = document.getElementById('trending-list');
-                if (top.length === 0) {
-                    list.innerHTML = `<div class="empty-state" style="padding:14px;"><p style="font-size:0.78rem;">No trending tags yet.</p></div>`;
-                    return;
-                }
-                list.innerHTML = top.map(([tag, count], i) => `
-                    <div class="trending-item" onclick="searchHashtag('${escapeAttr(tag)}')">
-                        <div class="trend-rank">${i + 1}</div>
-                        <div class="trend-tag">${escapeHtml(tag)}</div>
-                        <div class="trend-count">${count} post${count !== 1 ? 's' : ''}</div>
-                    </div>`).join('');
-            } catch (e) { console.warn('[Trending] error', e); }
+                cacheSet('mr_trending_cache', { ts: Date.now(), top });
+                renderTrending(top);
+            } catch (e) { console.warn('[Trending] refresh error', e); }
+        }
+        function renderTrending(top) {
+            const list = document.getElementById('trending-list');
+            if (!top || top.length === 0) {
+                list.innerHTML = `<div class="empty-state" style="padding:14px;"><p style="font-size:0.78rem;">No trending tags yet.</p></div>`;
+                return;
+            }
+            list.innerHTML = top.map(([tag, count], i) => `
+                <div class="trending-item" onclick="searchHashtag('${escapeAttr(tag)}')">
+                    <div class="trend-rank">${i + 1}</div>
+                    <div class="trend-tag">${escapeHtml(tag)}</div>
+                    <div class="trend-count">${count} post${count !== 1 ? 's' : ''}</div>
+                </div>`).join('');
         }
 
-        async function loadPeopleYouMayKnow() {
+        // Combined: fetch users once and split into "people you may know" + "active now"
+        // (was 2 separate getDocs on `users` collection → now 1).
+        async function loadPeopleAndActiveNow() {
             try {
-                // Get users not already friends/following, limit 5
                 const snap = await getDocs(query(collection(db, "users"), limit(30)));
-                const candidates = snap.docs
-                    .map(d => ({ id: d.id, ...d.data() }))
-                    .filter(u => u.id !== currentUser.uid && !friendsSet.has(u.id) && !followingSet.has(u.id))
+                const all = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                const others = all.filter(u => u.id !== currentUser.uid);
+
+                // PYMK: not already friends/following, limit 5
+                const pymk = others
+                    .filter(u => !friendsSet.has(u.id) && !followingSet.has(u.id))
                     .slice(0, 5);
-                const list = document.getElementById('pymk-list');
-                if (candidates.length === 0) {
-                    list.innerHTML = `<div class="empty-state" style="padding:14px;"><p style="font-size:0.78rem;">No suggestions available.</p></div>`;
-                    return;
+                const pymkList = document.getElementById('pymk-list');
+                if (pymk.length === 0) {
+                    pymkList.innerHTML = `<div class="empty-state" style="padding:14px;"><p style="font-size:0.78rem;">No suggestions available.</p></div>`;
+                } else {
+                    pymkList.innerHTML = pymk.map(u => `
+                        <div class="pymk-row">
+                            <img src="${escapeAttr(u.photoURL || getAvatarUrl(u.id))}" alt="" loading="lazy" decoding="async" onerror="this.src='${getAvatarUrl(u.id)}'">
+                            <div class="pymk-info">
+                                <div class="pymk-name">${escapeHtml(u.fullName || 'User')}</div>
+                                <div class="pymk-meta">@${escapeHtml(u.username || 'user')}</div>
+                            </div>
+                            <button class="pymk-follow" onclick="toggleFollow('${u.id}')">+ Follow</button>
+                        </div>`).join('');
                 }
-                list.innerHTML = candidates.map(u => `
-                    <div class="pymk-row">
-                        <img src="${escapeAttr(u.photoURL || getAvatarUrl(u.id))}" alt="" onerror="this.src='${getAvatarUrl(u.id)}'">
-                        <div class="pymk-info">
-                            <div class="pymk-name">${escapeHtml(u.fullName || 'User')}</div>
-                            <div class="pymk-meta">@${escapeHtml(u.username || 'user')}</div>
-                        </div>
-                        <button class="pymk-follow" onclick="toggleFollow('${u.id}')">+ Follow</button>
-                    </div>`).join('');
-            } catch (e) { console.warn('[PYMK] error', e); }
+
+                // Active now: status == 'online'
+                const active = others.filter(u => u.status === 'online').slice(0, 8);
+                const activeList = document.getElementById('active-now-list');
+                if (active.length === 0) {
+                    activeList.innerHTML = `<div class="empty-state" style="padding:14px;"><p style="font-size:0.78rem;">No one active right now.</p></div>`;
+                } else {
+                    activeList.innerHTML = active.map(u => `
+                        <div class="active-now-row" onclick="openProfileModal('${u.id}')">
+                            <div class="an-avatar-wrap"><img src="${escapeAttr(u.photoURL || getAvatarUrl(u.id))}" alt="" loading="lazy" decoding="async" onerror="this.src='${getAvatarUrl(u.id)}'"></div>
+                            <div class="an-info">
+                                <div class="an-name">${escapeHtml(u.fullName || 'User')}</div>
+                                <div class="an-status">Active now</div>
+                            </div>
+                        </div>`).join('');
+                }
+            } catch (e) { console.warn('[People+Active] error', e); }
         }
 
         async function loadCommunitiesSuggest() {
             try {
-                const snap = await getDocs(query(collection(db, "communities"), limit(10)));
+                // Cache communities list (10-min TTL — communities change rarely)
+                const cacheKey = 'mr_communities_suggest_cache';
+                const cached = cacheGet(cacheKey);
+                const now = Date.now();
+                let docs = null;
+                if (cached && cached.ts && (now - cached.ts < 10 * 60 * 1000) && Array.isArray(cached.docs)) {
+                    docs = cached.docs;
+                } else {
+                    const snap = await getDocs(query(collection(db, "communities"), limit(10)));
+                    docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    cacheSet(cacheKey, { ts: now, docs });
+                }
                 const joined = currentUserData.joinedCommunities || [];
-                const candidates = snap.docs
-                    .map(d => ({ id: d.id, ...d.data() }))
-                    .filter(c => !joined.includes(c.id))
-                    .slice(0, 4);
+                const candidates = docs.filter(c => !joined.includes(c.id)).slice(0, 4);
                 const list = document.getElementById('communities-suggest-list');
                 if (candidates.length === 0) {
                     list.innerHTML = `<div class="empty-state" style="padding:14px;"><p style="font-size:0.78rem;">No communities to suggest.</p></div>`;
@@ -3868,7 +4094,7 @@
                 }
                 list.innerHTML = candidates.map(c => `
                     <div class="community-row" onclick="viewCommunity('${c.id}')">
-                        <div class="c-photo">${c.photoURL ? `<img src="${escapeAttr(c.photoURL)}" alt="">` : `<i class="fas fa-people-group"></i>`}</div>
+                        <div class="c-photo">${c.photoURL ? `<img src="${escapeAttr(c.photoURL)}" alt="" loading="lazy" decoding="async">` : `<i class="fas fa-people-group"></i>`}</div>
                         <div class="c-info">
                             <div class="c-name">${escapeHtml(c.name || 'Community')}</div>
                             <div class="c-meta">${c.membersCount || 0} members</div>
@@ -3877,25 +4103,12 @@
             } catch (e) { console.warn('[CommunitiesSuggest] error', e); }
         }
 
-        async function loadActiveNow() {
-            try {
-                const snap = await getDocs(query(collection(db, "users"), where("status", "==", "online"), limit(8)));
-                const list = document.getElementById('active-now-list');
-                const users = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(u => u.id !== currentUser.uid);
-                if (users.length === 0) {
-                    list.innerHTML = `<div class="empty-state" style="padding:14px;"><p style="font-size:0.78rem;">No one active right now.</p></div>`;
-                    return;
-                }
-                list.innerHTML = users.map(u => `
-                    <div class="active-now-row" onclick="openProfileModal('${u.id}')">
-                        <div class="an-avatar-wrap"><img src="${escapeAttr(u.photoURL || getAvatarUrl(u.id))}" alt="" onerror="this.src='${getAvatarUrl(u.id)}'"></div>
-                        <div class="an-info">
-                            <div class="an-name">${escapeHtml(u.fullName || 'User')}</div>
-                            <div class="an-status">Active now</div>
-                        </div>
-                    </div>`).join('');
-            } catch (e) { console.warn('[ActiveNow] error', e); }
-        }
+        // Old loadPeopleYouMayKnow + loadActiveNow replaced by combined loadPeopleAndActiveNow()
+        // above. Function declarations retained as no-op stubs in case any external caller
+        // (e.g. inline onclick) references them — both functions are no longer called by
+        // loadRightSidebar(), which now calls loadPeopleAndActiveNow() directly.
+        async function loadPeopleYouMayKnow() { await loadPeopleAndActiveNow(); }
+        async function loadActiveNow() { await loadPeopleAndActiveNow(); }
 
         document.getElementById('see-all-trends').addEventListener('click', () => showToast('Trending reflects recent posts', 'info', 1800));
         document.getElementById('see-all-communities').addEventListener('click', () => showCommunitiesView());
@@ -3915,8 +4128,17 @@
                 if (!reportTarget) return;
                 const reason = btn.dataset.reason;
                 try {
-                    // Use CF for reports (Firestore rules block direct writes to reports collection)
-                    await reportContentCF({ targetType: reportTarget.type, targetId: reportTarget.id, reason });
+                    // Direct Firestore write (CF removed) — reports collection holds
+                    // all community-flagged content for admin review.
+                    await addDoc(collection(db, "reports"), {
+                        targetType: reportTarget.type,
+                        targetId: reportTarget.id,
+                        reason,
+                        reporterId: currentUser.uid,
+                        reporterName: currentUserData?.fullName || currentUser?.displayName || 'User',
+                        timestamp: Date.now(),
+                        status: 'pending'
+                    });
                     showToast('Report submitted. Thank you!', 'success');
                     closeReportModal();
                 } catch (e) { showToast('Failed to submit report: ' + (e?.message || ''), 'error'); }
@@ -3969,6 +4191,38 @@
         function setVH() { document.documentElement.style.setProperty('--vh', (window.innerHeight * 0.01) + 'px'); }
         setVH();
         window.addEventListener('resize', setVH);
+
+        // ============ VISIBILITY CHANGE — pause/resume polling when tab hidden/visible ============
+        // Saves Firestore reads + bandwidth when user switches tabs. The 3 always-on
+        // onSnapshot listeners (posts / own profile / settings) stay active so the
+        // feed still updates when the user returns; only the polling timers are paused.
+        let _visibilityConfigured = false;
+        function setupVisibilityHandler() {
+            if (_visibilityConfigured) return;
+            _visibilityConfigured = true;
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    // Pause non-essential polling
+                    if (storiesPollTimer) { clearInterval(storiesPollTimer); storiesPollTimer = null; }
+                    if (notifPollTimer) { clearInterval(notifPollTimer); notifPollTimer = null; }
+                    // Mark user as offline (best-effort)
+                    if (currentUser) {
+                        try { updateDoc(doc(db, "users", currentUser.uid), { status: 'offline' }); } catch(e) {}
+                    }
+                } else {
+                    // Resume polling + mark online
+                    if (currentUser) {
+                        try { updateDoc(doc(db, "users", currentUser.uid), { status: 'online' }).catch(()=>{}); } catch(e) {}
+                    }
+                    if (currentFeedMode === 'feed' || currentFeedMode === 'hashtag') {
+                        fetchStoriesOnce();
+                        if (!storiesPollTimer) storiesPollTimer = setInterval(fetchStoriesOnce, 60000);
+                    }
+                    fetchNotificationsOnce();
+                    if (!notifPollTimer) notifPollTimer = setInterval(fetchNotificationsOnce, 30000);
+                }
+            });
+        }
 
         // Expose named-function helpers globally for inline onclick handlers.
         // (All other handlers are already assigned via `window.X = function...`

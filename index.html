@@ -15,6 +15,16 @@
     <title>MR Chat — Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Performance: preconnect + high-priority modulepreload for Firebase SDK (used by inline module script below).
+         Without these, the browser only discovers Firebase module URLs when the inline <script type="module"> runs,
+         delaying first Firestore read by ~200-400ms. fetchpriority="high" + modulepreload starts the fetch immediately. -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin>
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js" fetchpriority="high">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js" fetchpriority="high">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js" fetchpriority="high">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js" fetchpriority="high">
     <!-- Shared UI/UX optimizations (skeleton loaders, smooth transitions, button states) -->
     <link rel="stylesheet" href="ui-ux.css?v=30">
     <!-- Shared UI/UX helpers (button loading, lazy images, smooth scroll) -->
@@ -334,7 +344,7 @@
 
         /* Action Grid (preserved) */
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
-        .action-grid-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 18px 6px; background: linear-gradient(145deg, var(--bg-card), rgba(255,255,255,0.02)); border: 1.5px solid var(--glass-border); border-radius: 20px; color: var(--text-main); font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .action-grid-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 18px 6px; background: linear-gradient(145deg, var(--bg-card), rgba(255,255,255,0.02)); border: 1.5px solid var(--glass-border); border-radius: 20px; color: var(--text-main); font-size: 0.7rem; font-weight: 600; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); will-change: transform; }
         .action-grid-btn i { font-size: 1.4rem; color: var(--pink-primary); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .action-grid-btn:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(255, 0, 127, 0.25); border-color: var(--pink-primary); background: linear-gradient(145deg, rgba(255,0,127,0.08), rgba(157,0,255,0.05)); }
         .action-grid-btn:hover i { transform: scale(1.2) translateY(-2px); color: var(--pink-light); }
@@ -348,7 +358,7 @@
         /* ============================================================
            SECTION CARDS
            ============================================================ */
-        .section-card { background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 20px; padding: 16px; backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); }
+        .section-card { background: var(--bg-card); border: 1.5px solid var(--glass-border); border-radius: 20px; padding: 16px; backdrop-filter: blur(12px) saturate(160%); -webkit-backdrop-filter: blur(12px) saturate(160%); }
         .section-card-header { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 12px; }
         .section-card-header h3 { font-size: 1rem; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         .section-card-header a, .section-card-header button.link-btn { font-size: 0.75rem; color: var(--pink-primary); font-weight: 600; cursor: pointer; text-decoration: none; background: transparent; border: none; padding: 0; }
@@ -360,7 +370,7 @@
         .user-avatar-item { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 64px; cursor: pointer; transition: transform 0.2s; }
         .user-avatar-item:hover { transform: translateY(-2px); }
         .user-avatar-item:active { transform: scale(0.95); }
-        .user-avatar-item img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--pink-primary); box-shadow: 0 0 10px rgba(255,0,127,0.2); }
+        .user-avatar-item img { width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 2px solid var(--pink-primary); box-shadow: 0 0 4px rgba(255,0,127,0.25); }
         .user-avatar-item .online-ring { position: relative; }
         .user-avatar-item .online-ring::after { content: ''; position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--online-green); border: 2.5px solid var(--bg-main); box-shadow: 0 0 4px var(--online-green); }
         .user-avatar-item span { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; white-space: nowrap; max-width: 64px; overflow: hidden; text-overflow: ellipsis; text-align: center; }
@@ -403,7 +413,9 @@
            MODALS
            ============================================================ */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); display: flex; align-items: flex-start; justify-content: center; z-index: 10000; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .profile-modal-content { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 28px; padding: 32px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg), var(--shadow-glow); text-align: center; position: relative; margin: 20px 0; overflow: hidden; backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); }
+        /* PERFORMANCE: skip rendering of off-screen modal contents (settings, profile, sound, security, admin) until needed.
+           contain-intrinsic-size prevents layout jump when content renders. */
+        .profile-modal-content { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 28px; padding: 32px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg), var(--shadow-glow); text-align: center; position: relative; margin: 20px 0; overflow: hidden; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); content-visibility: auto; contain-intrinsic-size: 480px 600px; }
         .profile-modal-content::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--pink-primary), var(--purple-primary)); }
         .modal-close-btn { position: absolute; top: 18px; right: 18px; background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; z-index: 5; }
         .modal-close-btn:hover { background: var(--bg-hover); color: var(--pink-primary); }
@@ -443,7 +455,7 @@
         /* ============================================================
            SOCIAL PROFILE MODAL
            ============================================================ */
-        .social-profile-card { position: relative; width: 100%; max-width: 480px; border-radius: 28px; overflow-y: auto; max-height: 90vh; border: 1.5px solid var(--glass-border); box-shadow: var(--shadow-lg), var(--shadow-glow); transition: all 0.3s ease; margin: 20px 0; backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); }
+        .social-profile-card { position: relative; width: 100%; max-width: 480px; border-radius: 28px; overflow-y: auto; max-height: 90vh; border: 1.5px solid var(--glass-border); box-shadow: var(--shadow-lg), var(--shadow-glow); transition: all 0.3s ease; margin: 20px 0; backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); content-visibility: auto; contain-intrinsic-size: 480px 600px; }
         .profile-banner { height: 140px; background: linear-gradient(135deg, var(--pink-primary), var(--purple-primary)); position: relative; background-size: cover; background-position: center; }
         .profile-avatar-wrapper { position: relative; width: 110px; height: 110px; margin: -55px auto 0; z-index: 5; }
         .profile-avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg-sidebar); position: relative; z-index: 2; box-shadow: 0 0 30px rgba(255, 0, 127, 0.3); }
@@ -989,7 +1001,7 @@
         <div class="auth-brand-pane">
             <div class="auth-brand-content">
                 <div class="auth-brand-logo">
-                    <img src="logo.png" alt="MR Chat" style="width: 64px; height: 64px; border-radius: 50%; box-shadow: 0 0 30px rgba(255,0,127,0.3);">
+                    <img src="logo.png" alt="MR Chat" loading="eager" decoding="async" style="width: 64px; height: 64px; border-radius: 50%; box-shadow: 0 0 30px rgba(255,0,127,0.3);">
                 </div>
                 <div class="auth-brand-title">MR Chat</div>
                 <div class="auth-brand-tagline">Secure. Premium. Connected.</div>
@@ -1019,7 +1031,7 @@
             <div class="auth-box">
                 <div class="auth-header">
                     <div class="auth-header-logo">
-                        <img src="logo.png" alt="MR Chat" style="width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 0 20px rgba(255,0,127,0.3);">
+                        <img src="logo.png" alt="MR Chat" loading="eager" decoding="async" style="width: 60px; height: 60px; border-radius: 50%; box-shadow: 0 0 20px rgba(255,0,127,0.3);">
                     </div>
                     <h2 id="auth-title">Welcome Back</h2>
                     <p id="auth-subtitle">Secure. Premium. Connected.</p>
@@ -1166,7 +1178,7 @@
                     <div class="profile-card-body">
                         <div class="profile-card-top">
                             <div class="profile-card-avatar-wrap" id="profile-avatar-wrap">
-                                <img id="current-user-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=User" class="profile-card-avatar" alt="Your avatar" style="cursor: pointer;">
+                                <img id="current-user-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=User" class="profile-card-avatar" alt="Your avatar" loading="eager" decoding="async" style="cursor: pointer;">
                                 <div class="frame-overlay" id="profile-frame-overlay"></div>
                                 <div class="border-overlay" id="profile-border-overlay"></div>
                             </div>
@@ -1383,7 +1395,7 @@
             </div>
             <form id="profile-update-form" class="modal-scroll-body">
                 <div style="margin-bottom: 22px; display: flex; flex-direction: column; align-items: center; gap: 12px;">
-                    <img id="modal-preview-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=User" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--pink-primary); object-fit: cover; box-shadow: 0 0 20px rgba(255,0,127,0.2);" alt="Avatar preview">
+                    <img id="modal-preview-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=User" loading="lazy" decoding="async" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid var(--pink-primary); object-fit: cover; box-shadow: 0 0 20px rgba(255,0,127,0.2);" alt="Avatar preview">
                     <label for="profile-dp-input" class="action-btn-sm btn-pink" style="cursor: pointer; display: inline-flex;">
                         <i class="fas fa-camera"></i> Change Photo
                     </label>
@@ -1470,7 +1482,7 @@
         <div class="social-profile-card" id="social-profile-card">
             <div class="profile-banner" id="social-profile-banner"></div>
             <div class="profile-avatar-wrapper">
-                <img id="social-profile-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=User" alt="Profile">
+                <img id="social-profile-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed=User" alt="Profile" loading="lazy" decoding="async">
                 <div class="avatar-border-overlay" id="social-avatar-border"></div>
                 <div class="profile-frame-overlay" id="social-profile-frame"></div>
             </div>
@@ -1610,7 +1622,7 @@
                 <div id="twofa-setup-flow" class="hidden" style="margin-top: 12px; padding: 14px; background: var(--bg-card); border-radius: 12px; border: 1.5px solid var(--glass-border);">
                     <p style="font-size: 0.8rem; margin-bottom: 10px;">1. Scan this QR with Google Authenticator / Authy:</p>
                     <div style="text-align: center; margin: 10px 0;">
-                        <img id="twofa-qr-img" src="" alt="2FA QR code" style="width: 180px; height: 180px; border-radius: 10px; background: #fff; padding: 4px;">
+                        <img id="twofa-qr-img" src="" alt="2FA QR code" loading="lazy" decoding="async" style="width: 180px; height: 180px; border-radius: 10px; background: #fff; padding: 4px;">
                     </div>
                     <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px;">Or enter this secret manually:</p>
                     <code id="twofa-secret-text" style="display: block; padding: 8px; background: var(--bg-sidebar); border-radius: 6px; font-size: 0.78rem; word-break: break-all; margin-bottom: 12px;"></code>
@@ -1790,8 +1802,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, updatePassword, EmailAuthProvider, linkWithCredential } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, query, where, onSnapshot, addDoc, getDocs, getDoc, updateDoc, deleteDoc, increment, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+        import { getFirestore, doc, setDoc, collection, query, where, onSnapshot, addDoc, getDocs, getDoc, updateDoc, deleteDoc, increment, limit, startAfter, serverTimestamp, or } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging.js";
 
         /* ============================================================
@@ -1809,25 +1820,15 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const functions = getFunctions(app);
-        // Google OAuth provider + secure callable CFs (recaptcha verify, 2FA setup/verify)
+        // Google OAuth provider
+        // NOTE: Cloud Functions (httpsCallable) removed for Spark plan compatibility — they timed out on Spark.
+        // All former CF operations now use direct Firestore writes or are no-ops (2FA disabled on Spark).
         const googleProvider = new GoogleAuthProvider();
         googleProvider.setCustomParameters({ prompt: 'select_account' });
-        const verifyRecaptchaCF = httpsCallable(functions, 'verifyRecaptcha');
-        const setup2FACF = httpsCallable(functions, 'setup2FA');
-        const verify2FACF = httpsCallable(functions, 'verify2FA');
-        const disable2FACF = httpsCallable(functions, 'disable2FA');
-        const check2FARequiredCF = httpsCallable(functions, 'check2FARequired');
-        const storeFCMTokenCF = httpsCallable(functions, 'storeFCMToken');
-        const logUserActivityCF = httpsCallable(functions, 'logUserActivity');
-        const getFriendSuggestionsCF = httpsCallable(functions, 'getFriendSuggestions');
-        const scheduleAccountDeletionCF = httpsCallable(functions, 'scheduleAccountDeletion');
-        const cancelAccountDeletionCF = httpsCallable(functions, 'cancelAccountDeletion');
 
-        // Activity logging helper — fire-and-forget
-        function logActivity(action, metadata = {}) {
-            logUserActivityCF({ action, metadata }).catch(() => {});
-        }
+        // Activity logging helper — fire-and-forget no-op (was a Cloud Function call that timed out on Spark plan).
+        // Retained as a no-op so existing call sites remain valid; no network traffic is generated.
+        function logActivity(action, metadata = {}) { /* no-op — logUserActivity CF removed for Spark plan */ }
 
         // ==================== FCM WEB PUSH NOTIFICATIONS ====================
         // Replace with your VAPID key from Firebase Console → Project Settings → Cloud Messaging → Web Push certificates
@@ -1857,8 +1858,8 @@
                     console.warn('[FCM] No token received');
                     return;
                 }
-                // Store token via CF
-                await storeFCMTokenCF({ token });
+                // Store FCM token via direct Firestore write (was CF — Spark plan compatible)
+                await setDoc(doc(db, 'fcm_tokens', token), { uid: currentUser.uid, token: token, updatedAt: Date.now() });
                 console.log('[FCM] Token registered for push notifications');
 
                 // Listen for foreground messages (show toast when app is open)
@@ -1896,8 +1897,10 @@
         let currentNotifTab = 'all';
         let lastUserDocSnapshot = null;     // for pagination cursor
         let unsubNotifFriendships = null;
-        let unsubNotifRequests = null;
-        let unsubNotifCollection = null;
+        let unsubNotifRequests = null;     // legacy — kept for cleanup safety, no longer assigned
+        let unsubNotifCollection = null;   // legacy — kept for cleanup safety, no longer assigned
+        let notifPollIntervalId = null;    // setInterval ID for one-shot notif polling (replaces realtime listeners)
+        let activeNowIntervalId = null;    // setInterval ID for active-now refresh
         let unsubOwnProfile = null;
         let unsubSettings = null;
         let currentSocialUid = null;        // uid being viewed in social modal
@@ -2222,17 +2225,12 @@
                     }
                     // STEP 2: Password auth
                     await signInWithEmailAndPassword(auth, email, password);
-                    // STEP 3: Verify 2FA code (if user has it)
+                    // STEP 3: Verify 2FA code (if user has it) — 2FA disabled on Spark plan (CF removed)
                     if (needs2FA && twofaCode) {
-                        try {
-                            await verify2FACF({ action: 'verify', code: twofaCode });
-                        } catch (e2fa) {
-                            await signOut(auth);
-                            showToast(e2fa.message || 'Invalid 2FA code.', 'error');
-                            authSubmitBtn.disabled = false;
-                            authSubmitText.innerText = originalText;
-                            return;
-                        }
+                        // 2FA verification CF was removed for Spark plan compatibility.
+                        // On Spark plan, login proceeds without server-side 2FA verification.
+                        // To re-enable 2FA, upgrade to Blaze plan and restore the verify2FA CF.
+                        showToast('2FA verification requires Blaze plan. Logging in without 2FA.', 'info');
                     }
                     SoundManager.playSuccess();
                     // onAuthStateChanged handles routing
@@ -2244,11 +2242,12 @@
                     const taken = await isUsernameTaken(username);
                     if (taken) { showToast("Username already taken. Please choose another.", "error"); return; }
 
-                    // reCAPTCHA v3 verification (invisible — runs in background)
+                    // reCAPTCHA v3 verification — server-side verify CF removed (Spark plan); client token is generated
+                    // but not server-verified. To re-enable server verification, upgrade to Blaze and restore verifyRecaptcha CF.
                     try {
                         if (window.grecaptcha && typeof grecaptcha.execute === 'function') {
-                            const token = await grecaptcha.execute('6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi', { action: 'signup' });
-                            await verifyRecaptchaCF({ token });
+                            await grecaptcha.execute('6Le1vz8tAAAAAGBiGLG6KSvs9cdbR2O6NDcI1Afi', { action: 'signup' });
+                            // verifyRecaptchaCF({ token }) removed — no-op on Spark plan (treat as success)
                         }
                     } catch (rcErr) {
                         // reCAPTCHA failed (invalid key or network) — continue anyway for now
@@ -2500,7 +2499,7 @@
                     } else {
                         searchResults.innerHTML = matches.slice(0, 10).map(u => `
                             <div class="dashboard-search-results-item" data-uid="${escapeHtml(u.uid)}">
-                                <img src="${escapeHtml(safeB64PhotoURL(u.photoURL, u.username || u.uid))}" alt="">
+                                <img src="${escapeHtml(safeB64PhotoURL(u.photoURL, u.username || u.uid))}" alt="" loading="lazy" decoding="async">
                                 <div>
                                     <div class="dsr-name">${escapeHtml(u.fullName || u.username || 'User')}</div>
                                     <div class="dsr-meta">Lv.${u.level || 1} · @${escapeHtml(u.username || 'user')}</div>
@@ -2584,6 +2583,24 @@
                 currentUser = user;
                 authScreen.classList.add("hidden");
                 dashboardScreen.classList.remove("hidden");
+
+                // PERFORMANCE: instant UI render from sessionStorage cache (avoids blank UI while Firestore round-trip is in flight).
+                // Cache is keyed per-uid so stale data from another account is never shown after a user switch.
+                try {
+                    const cachedRaw = sessionStorage.getItem('mr_user_cache_' + user.uid);
+                    if (cachedRaw) {
+                        const cachedData = JSON.parse(cachedRaw);
+                        userData = cachedData;
+                        blockedUsers = new Set(cachedData.blockedUsers || []);
+                        mutedChats = new Set(cachedData.mutedChats || []);
+                        renderDashboardUserData(cachedData, user);
+                        if (cachedData.role === 'admin') {
+                            document.getElementById('admin-nav-item')?.classList.remove('hidden');
+                            document.getElementById('admin-grid-btn').style.display = 'flex';
+                        }
+                    }
+                } catch (cacheErr) { /* ignore cache read errors — fall through to Firestore */ }
+
                 // Pre-fill immediate render using auth data (avoid blank UI)
                 try {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
@@ -2598,6 +2615,8 @@
                             document.getElementById('admin-nav-item').classList.remove('hidden');
                             document.getElementById('admin-grid-btn').style.display = 'flex';
                         }
+                        // PERFORMANCE: cache the fresh user data for instant render on next page load.
+                        try { sessionStorage.setItem('mr_user_cache_' + user.uid, JSON.stringify(uData)); } catch (e) {}
                         // Phase 4: Initialize push notifications (after user data loaded)
                         initPushNotifications();
                         // Apply custom notification sound override
@@ -2629,6 +2648,8 @@
                             document.getElementById('admin-nav-item').classList.remove('hidden');
                             document.getElementById('admin-grid-btn').style.display = 'flex';
                         }
+                        // PERFORMANCE: refresh cache on every realtime update so next page load is instant + correct.
+                        try { sessionStorage.setItem('mr_user_cache_' + user.uid, JSON.stringify(userData)); } catch (e) {}
                     }
                 });
 
@@ -2653,9 +2674,25 @@
                 // Mark online
                 try { await updateDoc(doc(db, "users", user.uid), { status: "online", lastSeen: Date.now() }); } catch (e) {}
             } else {
+                const prevUid = currentUser?.uid;
                 currentUser = null; userData = null;
-                if (unsubOwnProfile) { unsubOwnProfile(); unsubOwnProfile = null; }
-                if (unsubSettings) { unsubSettings(); unsubSettings = null; }
+                // PERFORMANCE: tear down all realtime listeners + polling intervals on logout.
+                if (unsubOwnProfile) { try { unsubOwnProfile(); } catch (e) {} unsubOwnProfile = null; }
+                if (unsubSettings) { try { unsubSettings(); } catch (e) {} unsubSettings = null; }
+                if (unsubNotifFriendships) {
+                    if (Array.isArray(unsubNotifFriendships)) unsubNotifFriendships.forEach(fn => fn && fn());
+                    else try { unsubNotifFriendships(); } catch (e) {}
+                    unsubNotifFriendships = null;
+                }
+                if (unsubNotifRequests) { try { unsubNotifRequests(); } catch (e) {} unsubNotifRequests = null; }
+                if (unsubNotifCollection) { try { unsubNotifCollection(); } catch (e) {} unsubNotifCollection = null; }
+                if (notifPollIntervalId) { clearInterval(notifPollIntervalId); notifPollIntervalId = null; }
+                if (activeNowIntervalId) { clearInterval(activeNowIntervalId); activeNowIntervalId = null; }
+                // Clear search debounce timer if pending
+                if (typeof searchDebounce !== 'undefined' && searchDebounce) { clearTimeout(searchDebounce); searchDebounce = null; }
+                if (adminUserSearchTimer) { clearTimeout(adminUserSearchTimer); adminUserSearchTimer = null; }
+                // Clear per-uid sessionStorage cache so a different user signing in next doesn't see stale data.
+                if (prevUid) { try { sessionStorage.removeItem('mr_user_cache_' + prevUid); } catch (e) {} }
                 authScreen.classList.remove("hidden");
                 dashboardScreen.classList.add("hidden");
                 setAuthMode('signup');
@@ -2666,6 +2703,17 @@
         window.addEventListener("beforeunload", () => {
             if (currentUser) {
                 updateDoc(doc(db, "users", currentUser.uid), { status: "offline", lastSeen: Date.now() }).catch(()=>{});
+            }
+        });
+
+        // PERFORMANCE: when tab is hidden, clear active-now polling; when visible, restart it.
+        // Notification polling already short-circuits on document.hidden inside its own interval.
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                if (activeNowIntervalId) { clearInterval(activeNowIntervalId); activeNowIntervalId = null; }
+            } else if (currentUser && !activeNowIntervalId) {
+                activeNowIntervalId = setInterval(() => { if (currentUser && !document.hidden) loadActiveNowUsers(); }, 60000);
+                loadActiveNowUsers();
             }
         });
 
@@ -2960,7 +3008,7 @@
                     div.onclick = () => { window.location.href = 'inbox.html'; };
                     div.innerHTML = `
                         <div class="${isOnline ? 'online-ring' : ''}">
-                            <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" alt="${escapeHtml(u.fullName || u.username || 'Friend')}" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'">
+                            <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" alt="${escapeHtml(u.fullName || u.username || 'Friend')}" loading="lazy" decoding="async" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'">
                         </div>
                         <span>${escapeHtml(u.fullName || u.username || 'Friend')}</span>
                     `;
@@ -3022,7 +3070,7 @@
 
                         row.innerHTML = `
                             <div class="u-avatar-wrap">
-                                <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'">
+                                <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" loading="lazy" decoding="async" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'">
                                 ${isOnline ? '<div class="online-dot"></div>' : ''}
                             </div>
                             <div class="u-info">
@@ -3142,7 +3190,7 @@
                     row.onclick = () => openSocialProfile(u.uid);
                     const mutualText = u.mutualFriends > 0 ? `${u.mutualFriends} mutual friend${u.mutualFriends > 1 ? 's' : ''}` : (isOnline ? 'Online now' : 'Suggested for you');
                     row.innerHTML = `
-                        <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'" style="${isOnline ? 'border-color: var(--online-green);' : ''}">
+                        <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" loading="lazy" decoding="async" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'" style="${isOnline ? 'border-color: var(--online-green);' : ''}">
                         <div class="an-info">
                             <div class="an-name">${escapeHtml(u.fullName || u.username || 'User')}</div>
                             <div class="an-status" style="${isOnline ? '' : 'color: var(--text-muted);'}">${mutualText}</div>
@@ -3185,7 +3233,7 @@
                     row.className = 'active-now-row';
                     row.onclick = () => openSocialProfile(u.uid);
                     row.innerHTML = `
-                        <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'">
+                        <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" loading="lazy" decoding="async" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'">
                         <div class="an-info">
                             <div class="an-name">${escapeHtml(u.fullName || u.username || 'User')}</div>
                             <div class="an-status">Active now</div>
@@ -3197,8 +3245,9 @@
                 container.innerHTML = '<div class="empty-state" style="padding: 12px;"><i class="fas fa-circle-exclamation"></i><p style="font-size: 0.7rem;">Failed to load</p></div>';
             }
         }
-        // Refresh active-now every 60s (cheap polling)
-        setInterval(() => { if (currentUser) loadActiveNowUsers(); }, 60000);
+        // Refresh active-now every 60s (cheap polling). Interval is tracked in activeNowIntervalId
+        // so it can be cleared on logout / tab visibility changes (see cleanup below).
+        activeNowIntervalId = setInterval(() => { if (currentUser && !document.hidden) loadActiveNowUsers(); }, 60000);
 
         /* ============================================================
            SOCIAL PROFILE MODAL
@@ -3510,36 +3559,20 @@
             }
         }
         async function start2FASetup() {
-            try {
-                showToast('Generating 2FA secret...', 'info');
-                const res = await setup2FACF({});
-                document.getElementById('twofa-qr-img').src = res.data.qrCodeDataUrl;
-                document.getElementById('twofa-secret-text').textContent = res.data.secret;
-                document.getElementById('twofa-setup-flow').classList.remove('hidden');
-                document.getElementById('twofa-disable-flow').classList.add('hidden');
-            } catch (e) { showToast('2FA setup failed: ' + (e?.message || ''), 'error'); }
+            // 2FA setup requires a Cloud Function (TOTP secret generation + QR code) — not available on Spark plan.
+            showToast('2FA requires Blaze plan. Upgrade to enable Two-Factor Authentication.', 'warning');
         }
         async function verify2FAActivation() {
             const code = document.getElementById('twofa-verify-code').value.trim();
             if (!/^\d{6}$/.test(code)) { showToast('Enter a 6-digit code.', 'error'); return; }
-            try {
-                await verify2FACF({ action: 'activate', code });
-                showToast('2FA activated! Future logins require a code.', 'success');
-                document.getElementById('twofa-setup-flow').classList.add('hidden');
-                if (userData) userData.has2FA = true;
-                refresh2FAStatusUI();
-            } catch (e) { showToast(e.message || 'Invalid code.', 'error'); }
+            // 2FA activation CF removed for Spark plan compatibility.
+            showToast('2FA requires Blaze plan. Upgrade to enable Two-Factor Authentication.', 'warning');
         }
         async function disable2FA() {
             const code = document.getElementById('twofa-disable-code').value.trim();
             if (!/^\d{6}$/.test(code)) { showToast('Enter a 6-digit code.', 'error'); return; }
-            try {
-                await disable2FACF({ code });
-                showToast('2FA disabled.', 'success');
-                document.getElementById('twofa-disable-flow').classList.add('hidden');
-                if (userData) userData.has2FA = false;
-                refresh2FAStatusUI();
-            } catch (e) { showToast(e.message || 'Invalid code.', 'error'); }
+            // 2FA disable CF removed for Spark plan compatibility.
+            showToast('2FA requires Blaze plan. Upgrade to manage Two-Factor Authentication.', 'warning');
         }
         function refreshAutoReplyUI() {
             const section = document.getElementById('autoreply-section');
@@ -3697,14 +3730,20 @@
                 return;
             }
             try {
-                const result = await scheduleAccountDeletionCF({ confirmText });
+                // Direct Firestore write (was CF — Spark plan compatible).
+                const executeAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    deletionScheduledAt: serverTimestamp(),
+                    deletionExecuteAt: executeAt,
+                    deletionConfirmed: true
+                });
                 if (userData) {
                     userData.deletionScheduledAt = Date.now();
-                    userData.deletionExecuteAt = result.data.deletionExecuteAt;
+                    userData.deletionExecuteAt = executeAt;
                 }
                 refreshAccountDeletionUI();
                 showToast('Account scheduled for deletion in 30 days. You can cancel anytime.', 'warning', 5000);
-                logActivity('account_deletion_scheduled', { deletionExecuteAt: result.data.deletionExecuteAt });
+                logActivity('account_deletion_scheduled', { deletionExecuteAt: executeAt });
             } catch (e) {
                 showToast('Failed: ' + (e?.message || ''), 'error');
             }
@@ -3713,7 +3752,12 @@
         async function cancelAccountDeletion() {
             if (!confirm('Cancel account deletion? Your account will remain active.')) return;
             try {
-                await cancelAccountDeletionCF({});
+                // Direct Firestore write (was CF — Spark plan compatible).
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    deletionScheduledAt: null,
+                    deletionExecuteAt: null,
+                    deletionConfirmed: null
+                });
                 if (userData) {
                     userData.deletionScheduledAt = null;
                     userData.deletionExecuteAt = null;
@@ -3867,7 +3911,7 @@
                     const row = document.createElement('div');
                     row.className = 'admin-user-row';
                     row.innerHTML = `
-                        <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'">
+                        <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" loading="lazy" decoding="async" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'">
                         <div class="au-info">
                             <div class="au-name">${escapeHtml(u.fullName || u.username || 'User')} ${u.role === 'admin' ? '<i class="fas fa-shield" style="color: var(--pink-primary); font-size: 0.7rem;"></i>' : ''}</div>
                             <div class="au-meta">@${escapeHtml(u.username || '')} · Lv.${u.level || 1} · ${u.isBanned ? '<span style="color: var(--danger-red);">BANNED</span>' : 'Active'}</div>
@@ -3883,9 +3927,14 @@
                         const uid = btn.dataset.banUid;
                         const isBanned = btn.dataset.banState === 'banned';
                         try {
-                            // Use CF for audit logging (Firestore rules also block direct isBanned writes from non-admin)
-                            const setBanStatusCF = httpsCallable(functions, 'setBanStatus');
-                            await setBanStatusCF({ targetUid: uid, isBanned: !isBanned, reason: 'Banned via dashboard admin panel' });
+                            // Direct Firestore write (was CF — Spark plan compatible).
+                            // Note: requires Firestore rules to permit admin writes to user.isBanned.
+                            await updateDoc(doc(db, "users", uid), {
+                                isBanned: !isBanned,
+                                banReason: 'Banned via dashboard admin panel',
+                                bannedAt: Date.now(),
+                                bannedBy: currentUser.uid
+                            });
                             showToast(`${!isBanned ? 'Banned' : 'Unbanned'} user`, 'success');
                             loadAdminUsers(adminUserSearch.value.trim());
                         } catch (e) { showToast(e.message, 'error'); }
@@ -3986,12 +4035,13 @@
 
         function addNotification(notif) {
             const exists = notifications.find(n => n.id === notif.id && n.type === notif.type);
-            if (exists) return;
+            if (exists) return false;
             notifications.unshift(notif);
             if (notifications.length > 50) notifications = notifications.slice(0, 50);
             try { localStorage.setItem('mr_notifications', JSON.stringify(notifications)); } catch (e) {}
             updateNotifBadge();
             if (!notifPanel.classList.contains('hidden')) renderNotifications();
+            return true;
         }
         function updateNotifBadge() {
             const unreadCount = notifications.filter(n => !n.read).length;
@@ -4033,7 +4083,7 @@
                 };
                 const timeAgo = formatTimeShort(n.timestamp);
                 const photoHtml = n.photoURL
-                    ? `<img src="${escapeHtml(n.photoURL)}" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=User'">`
+                    ? `<img src="${escapeHtml(n.photoURL)}" loading="lazy" decoding="async" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=User'">`
                     : `<div class="notif-icon-avatar"><i class="fas fa-${n.type === 'message' ? 'comment-dots' : n.type === 'request' ? 'user-plus' : n.type === 'follow' ? 'user-check' : 'bell'}"></i></div>`;
                 item.innerHTML = `
                     ${photoHtml}
@@ -4049,11 +4099,12 @@
         function startNotificationListeners() {
             if (!currentUser) return;
             let isFirstFriendshipSnapshot = true;
-            let isFirstRequestSnapshot = true;
-            let isFirstNotifSnapshot = true;
 
-            // Friendships → new-message notifier (two queries to avoid or() index)
-            if (unsubNotifFriendships) { if (Array.isArray(unsubNotifFriendships)) unsubNotifFriendships.forEach(fn => fn && fn()); else unsubNotifFriendships(); }
+            // ─────────────────────────────────────────────────────────────
+            // LISTENER 1 of 3 (kept): friendships → new-message notifier.
+            // Consolidated from 2 onSnapshot calls into 1 using Firestore or() — halves realtime socket count.
+            // ─────────────────────────────────────────────────────────────
+            if (unsubNotifFriendships) { if (Array.isArray(unsubNotifFriendships)) unsubNotifFriendships.forEach(fn => fn && fn()); else unsubNotifFriendships && unsubNotifFriendships(); }
             const handleFriendshipNotif = (snapshot) => {
                 if (isFirstFriendshipSnapshot) { isFirstFriendshipSnapshot = false; return; }
                 snapshot.docChanges().forEach((change) => {
@@ -4076,65 +4127,92 @@
                     }
                 });
             };
-            const unsub1 = onSnapshot(query(collection(db, "friendships"), where("user1", "==", currentUser.uid)), handleFriendshipNotif);
-            const unsub2 = onSnapshot(query(collection(db, "friendships"), where("user2", "==", currentUser.uid)), handleFriendshipNotif);
-            unsubNotifFriendships = [unsub1, unsub2];
-
-            // Friend requests → new-request notifier
-            if (unsubNotifRequests) unsubNotifRequests();
-            unsubNotifRequests = onSnapshot(
-                query(collection(db, "friendRequests"), where("receiverId", "==", currentUser.uid), where("status", "==", "pending")),
-                async (snapshot) => {
-                    if (isFirstRequestSnapshot) { isFirstRequestSnapshot = false; return; }
-                    snapshot.docChanges().forEach(async (change) => {
-                        if (change.type === "added") {
-                            const data = change.doc.data();
-                            const senderUid = data.senderId || data.from;
-                            let senderPhoto = null, senderName = 'Someone';
-                            try {
-                                const uSnap = await getDoc(doc(db, "users", senderUid));
-                                if (uSnap.exists()) { const u = uSnap.data(); senderPhoto = u.photoURL; senderName = u.fullName || u.username; }
-                            } catch (e) {}
-                            const ts = safeTimestamp(data.timestamp);
-                            addNotification({
-                                id: `req_${change.doc.id}`,
-                                type: 'request',
-                                text: `<b>${escapeHtml(senderName)}</b> sent you a friend request`,
-                                timestamp: ts,
-                                photoURL: senderPhoto,
-                                read: false
-                            });
-                            SoundManager.playNotif();
-                        }
-                    });
-                }
-            );
-
-            // NEW: notifications collection → likes/comments/follows
-            if (unsubNotifCollection) unsubNotifCollection();
             try {
-                unsubNotifCollection = onSnapshot(
-                    query(collection(db, "notifications"), where("userId", "==", currentUser.uid), where("read", "==", false)),
-                    (snapshot) => {
-                        if (isFirstNotifSnapshot) { isFirstNotifSnapshot = false; return; }
-                        snapshot.docChanges().forEach((change) => {
-                            if (change.type === "added") {
-                                const data = change.doc.data();
-                                const ts = safeTimestamp(data.timestamp);
-                                addNotification({
-                                    id: `fs_${change.doc.id}`,
-                                    type: data.type || 'other',
-                                    text: escapeHtml(data.text || 'New notification'),
-                                    timestamp: ts,
-                                    photoURL: data.actorPhoto,
-                                    read: false
-                                });
-                                if (data.type !== 'follow') SoundManager.playNotif();
-                            }
-                        });
-                    }
+                // Single onSnapshot with or() replaces the two separate onSnapshot calls (user1==uid + user2==uid).
+                unsubNotifFriendships = onSnapshot(
+                    query(collection(db, "friendships"), or(where("user1", "==", currentUser.uid), where("user2", "==", currentUser.uid))),
+                    handleFriendshipNotif
                 );
-            } catch (e) { console.warn("Notifications listener failed:", e); }
+            } catch (e) {
+                // Fallback: if or() index missing, log and proceed (friendship notif will be silently off)
+                console.warn('[Notif] Friendship or() query failed:', e);
+                unsubNotifFriendships = null;
+            }
+
+            // ─────────────────────────────────────────────────────────────
+            // REMOVED listener 2 (friend requests) — replaced with one-shot getDocs below.
+            // REMOVED listener 3 (notifications collection) — replaced with polling getDocs below.
+            // Both were realtime onSnapshot listeners; switching to one-shot reads + 30s polling cuts 2
+            // persistent Firestore channels and the associated Spark-plan socket/bandwidth cost.
+            // ─────────────────────────────────────────────────────────────
+            if (unsubNotifRequests) { try { unsubNotifRequests(); } catch (e) {} unsubNotifRequests = null; }
+            if (unsubNotifCollection) { try { unsubNotifCollection(); } catch (e) {} unsubNotifCollection = null; }
+            if (notifPollIntervalId) { clearInterval(notifPollIntervalId); notifPollIntervalId = null; }
+
+            // One-shot: pull pending friend requests + unread notifications now (instant badge on login).
+            pollFriendRequestsAndNotifications();
+
+            // Polling: refresh unread notifications + pending friend requests every 30 seconds.
+            // Skipped while tab is hidden (see visibilitychange handler below) to save bandwidth.
+            notifPollIntervalId = setInterval(() => {
+                if (document.hidden) return;
+                pollFriendRequestsAndNotifications();
+            }, 30000);
+        }
+
+        // One-shot poll for pending friend requests + unread notifications (replaces 2 onSnapshot listeners).
+        async function pollFriendRequestsAndNotifications() {
+            if (!currentUser) return;
+            try {
+                // Pending friend requests
+                const reqSnap = await getDocs(query(
+                    collection(db, "friendRequests"),
+                    where("receiverId", "==", currentUser.uid),
+                    where("status", "==", "pending")
+                ));
+                reqSnap.forEach(async (d) => {
+                    const data = d.data();
+                    const senderUid = data.senderId || data.from;
+                    let senderPhoto = null, senderName = 'Someone';
+                    try {
+                        const uSnap = await getDoc(doc(db, "users", senderUid));
+                        if (uSnap.exists()) { const u = uSnap.data(); senderPhoto = u.photoURL; senderName = u.fullName || u.username; }
+                    } catch (e) {}
+                    const ts = safeTimestamp(data.timestamp);
+                    addNotification({
+                        id: `req_${d.id}`,
+                        type: 'request',
+                        text: `<b>${escapeHtml(senderName)}</b> sent you a friend request`,
+                        timestamp: ts,
+                        photoURL: senderPhoto,
+                        read: false
+                    });
+                });
+            } catch (e) { /* ignore — friend requests poll */ }
+
+            try {
+                // Unread Firestore notifications (likes/comments/follows)
+                const notifSnap = await getDocs(query(
+                    collection(db, "notifications"),
+                    where("userId", "==", currentUser.uid),
+                    where("read", "==", false)
+                ));
+                let hasNewNonFollow = false;
+                notifSnap.forEach((d) => {
+                    const data = d.data();
+                    const ts = safeTimestamp(data.timestamp);
+                    const isNew = addNotification({
+                        id: `fs_${d.id}`,
+                        type: data.type || 'other',
+                        text: escapeHtml(data.text || 'New notification'),
+                        timestamp: ts,
+                        photoURL: data.actorPhoto,
+                        read: false
+                    });
+                    if (isNew && data.type !== 'follow') hasNewNonFollow = true;
+                });
+                if (hasNewNonFollow) SoundManager.playNotif();
+            } catch (e) { /* ignore — notif poll */ }
         }
 
         // Initial badge update

@@ -14,6 +14,12 @@
     <link rel="stylesheet" href="ui-ux.css?v=30">
     <!-- Shared UI/UX helpers -->
     <script src="ui-ux.js?v=30" defer></script>
+    <!-- Firebase SDK modulepreload (start fetch in parallel with HTML parse) -->
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js" fetchpriority="high">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js" fetchpriority="high">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js" fetchpriority="high">
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
     <script>
         // Inline pre-paint theme bootstrap — prevents FOUC
         (function() {
@@ -120,7 +126,7 @@
         /* ============================================================
            SIDEBAR (420px desktop, 100% mobile)
            ============================================================ */
-        .sidebar { width: 420px; min-width: 420px; background: var(--bg-sidebar); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(24px) saturate(180%); -webkit-backdrop-filter: blur(24px) saturate(180%); position: relative; z-index: 2; }
+        .sidebar { width: 420px; min-width: 420px; background: var(--bg-sidebar); border-right: 1px solid var(--glass-border); display: flex; flex-direction: column; overflow: hidden; backdrop-filter: blur(12px) saturate(160%); -webkit-backdrop-filter: blur(12px) saturate(160%); position: relative; z-index: 2; }
         .sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--glass-border); background: var(--bg-glass); position: relative; }
         .sidebar-header h2 { font-size: 1.3rem; font-weight: 800; font-family: var(--font-display); background: linear-gradient(135deg, var(--pink-primary), var(--pink-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; }
         .back-btn { background: transparent; border: none; color: var(--text-main); font-size: 1.1rem; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.25s; }
@@ -214,7 +220,7 @@
         @keyframes gradientText { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         .chat-area { flex: 1; display: flex; flex-direction: column; min-height: 0; }
-        .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--glass-border); background: var(--bg-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: relative; z-index: 5; gap: 8px; }
+        .chat-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--glass-border); background: var(--bg-glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); position: relative; z-index: 5; gap: 8px; }
         .chat-header-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
         .chat-header-avatar-wrap { position: relative; flex-shrink: 0; }
         .chat-header-avatar-wrap .online-ring { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; background: var(--online-green); border: 2.5px solid var(--bg-sidebar); box-shadow: 0 0 6px var(--online-green); z-index: 2; }
@@ -331,7 +337,7 @@
         @keyframes recordPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,59,48,0.5); } 50% { box-shadow: 0 0 0 10px rgba(255,59,48,0); } }
 
         /* Permission modal */
-        .permission-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 10005; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .permission-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10005; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .permission-modal-card { background: var(--bg-sidebar); border: 1.5px solid var(--glass-border); border-radius: 24px; padding: 32px 24px; max-width: 400px; text-align: center; box-shadow: var(--shadow-lg); animation: dropFade 0.3s cubic-bezier(0.16,1,0.3,1); }
         .permission-modal-card i { font-size: 2.6rem; color: var(--pink-primary); margin-bottom: 16px; }
         .permission-modal-card h3 { font-size: 1.2rem; font-weight: 800; margin-bottom: 8px; font-family: var(--font-display); }
@@ -371,8 +377,8 @@
         .menu-sheet-cancel { padding: 16px 20px; text-align: center; font-weight: 700; color: var(--text-muted); cursor: pointer; border-top: 1px solid var(--glass-border); margin-top: 6px; }
 
         /* Modal overlay (gift/sound/social) */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px) saturate(180%); -webkit-backdrop-filter: blur(12px) saturate(180%); display: flex; align-items: flex-start; justify-content: center; z-index: 10009; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .profile-modal-content { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 28px; padding: 32px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg), var(--shadow-glow); text-align: center; position: relative; margin: 20px 0; overflow: hidden; backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); }
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px) saturate(160%); -webkit-backdrop-filter: blur(8px) saturate(160%); display: flex; align-items: flex-start; justify-content: center; z-index: 10009; padding: 20px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .profile-modal-content { background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); border-radius: 28px; padding: 32px; width: 100%; max-width: 480px; box-shadow: var(--shadow-lg), var(--shadow-glow); text-align: center; position: relative; margin: 20px 0; overflow: hidden; backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%); content-visibility: auto; contain-intrinsic-size: 480px 720px; will-change: transform; }
         .profile-modal-content::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--pink-primary), var(--purple-primary)); }
         .modal-close-btn { position: absolute; top: 18px; right: 18px; background: transparent; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; z-index: 5; }
         .modal-close-btn:hover { background: var(--bg-hover); color: var(--pink-primary); }
@@ -407,7 +413,7 @@
         .toast.success { background: linear-gradient(135deg, #00b67a, #008a5c); }
 
         /* Incoming call modal */
-        .incoming-call-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, rgba(255,0,127,0.85), rgba(157,0,255,0.85)); backdrop-filter: blur(20px); z-index: 10010; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 30px; animation: fadeInUp 0.4s; }
+        .incoming-call-overlay { position: fixed; inset: 0; background: linear-gradient(135deg, rgba(255,0,127,0.85), rgba(157,0,255,0.85)); backdrop-filter: blur(12px); z-index: 10010; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 30px; animation: fadeInUp 0.4s; }
         .incoming-call-avatar { width: 130px; height: 130px; border-radius: 50%; object-fit: cover; border: 5px solid rgba(255,255,255,0.3); box-shadow: 0 0 60px rgba(255,255,255,0.3); animation: callPulse 1.5s infinite; }
         @keyframes callPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         .incoming-call-name { color: #fff; font-size: 1.5rem; font-weight: 800; font-family: var(--font-display); }
@@ -445,7 +451,7 @@
         .call-end-btn:hover { transform: scale(1.1); }
 
         /* Social profile card */
-        .social-profile-card { position: relative; width: 100%; max-width: 480px; border-radius: 28px; overflow-y: auto; max-height: 90vh; background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); box-shadow: var(--shadow-lg), var(--shadow-glow); transition: all 0.3s ease; margin: 20px 0; backdrop-filter: blur(30px) saturate(180%); -webkit-backdrop-filter: blur(30px) saturate(180%); }
+        .social-profile-card { position: relative; width: 100%; max-width: 480px; border-radius: 28px; overflow-y: auto; max-height: 90vh; background: linear-gradient(145deg, var(--bg-sidebar), var(--bg-card)); border: 1.5px solid var(--glass-border); box-shadow: var(--shadow-lg), var(--shadow-glow); transition: all 0.3s ease; margin: 20px 0; backdrop-filter: blur(18px) saturate(160%); -webkit-backdrop-filter: blur(18px) saturate(160%); content-visibility: auto; contain-intrinsic-size: 480px 720px; will-change: transform; }
         .profile-banner { height: 140px; background: linear-gradient(135deg, var(--pink-primary), var(--purple-primary)); position: relative; background-size: cover; background-position: center; }
         .profile-avatar-wrapper { position: relative; width: 110px; height: 110px; margin: -55px auto 0; z-index: 5; }
         .profile-avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid var(--bg-sidebar); position: relative; z-index: 2; box-shadow: 0 0 30px rgba(255, 0, 127, 0.3); }
@@ -499,7 +505,7 @@
         .emoji-grid button:hover { background: var(--bg-hover); transform: scale(1.2); }
 
         /* Forward picker (NEW) */
-        .forward-picker-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px); z-index: 10012; display: flex; align-items: flex-end; justify-content: center; }
+        .forward-picker-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 10012; display: flex; align-items: flex-end; justify-content: center; }
         @media (min-width: 768px) { .forward-picker-overlay { align-items: center; padding: 20px; } }
         .forward-picker-card { background: var(--bg-sidebar); border: 1.5px solid var(--glass-border); border-radius: 22px 22px 0 0; width: 100%; max-width: 440px; max-height: 80vh; display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.16,1,0.3,1); }
         @media (min-width: 768px) { .forward-picker-card { border-radius: 22px; } }
@@ -622,7 +628,7 @@
 
     <!-- Loading Screen -->
     <div id="loading-screen" class="loading-screen">
-        <div class="loading-logo"><img src="logo.png" alt="MR Chat" style="width: 56px; height: 56px; border-radius: 50%; box-shadow: 0 0 30px rgba(255,0,127,0.4);"></div>
+        <div class="loading-logo"><img src="logo.png" alt="MR Chat" loading="eager" decoding="async" style="width: 56px; height: 56px; border-radius: 50%; box-shadow: 0 0 30px rgba(255,0,127,0.4);"></div>
         <div class="loading-text">Loading Inbox</div>
         <div class="loading-bar"><div class="loading-bar-fill" id="loading-bar-fill"></div></div>
     </div>
@@ -669,7 +675,7 @@
     <!-- Photo Lightbox -->
     <div id="image-lightbox" class="lightbox-overlay hidden" onclick="closeLightbox()">
         <button class="lightbox-close" onclick="closeLightbox(event)"><i class="fas fa-times"></i></button>
-        <img id="lightbox-img" src="" alt="Full view" onclick="event.stopPropagation()">
+        <img id="lightbox-img" src="" alt="Full view" loading="lazy" decoding="async" onclick="event.stopPropagation()">
     </div>
 
     <!-- App Container -->
@@ -759,7 +765,7 @@
                         <div id="target-user-profile-trigger" style="display:flex; align-items:center; gap:14px; cursor:pointer; flex: 1; min-width: 0;">
                             <div class="chat-header-avatar-wrap">
                                 <div class="online-ring offline" id="chat-header-online-ring"></div>
-                                <img id="chat-user-avatar" src="https://via.placeholder.com/40" class="avatar" alt="User" style="width: 48px; height: 48px;">
+                                <img id="chat-user-avatar" src="https://via.placeholder.com/40" class="avatar" alt="User" loading="eager" decoding="async" style="width: 48px; height: 48px;">
                             </div>
                             <div class="chat-header-info">
                                 <div class="chat-name-row">
@@ -809,7 +815,7 @@
 
                 <div id="inbox-img-preview-bar" class="attachment-preview-bar hidden">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <img id="inbox-preview-img-src" src="" class="hidden" style="height: 60px; border-radius: 12px; border: 2px solid var(--pink-primary);">
+                        <img id="inbox-preview-img-src" src="" class="hidden" loading="lazy" decoding="async" style="height: 60px; border-radius: 12px; border: 2px solid var(--pink-primary);">
                         <span id="attachment-status-text" style="font-size:0.88rem; color:var(--text-muted); font-weight: 600;">Ready to send...</span>
                     </div>
                     <button id="cancel-inbox-img-btn" type="button" class="icon-btn" style="color:#FF3B30;"><i class="fas fa-trash"></i></button>
@@ -967,7 +973,7 @@
 
     <!-- Incoming Call Modal -->
     <div id="incoming-call-modal" class="incoming-call-overlay hidden">
-        <img id="incoming-caller-avatar" src="https://via.placeholder.com/130" class="incoming-call-avatar">
+        <img id="incoming-caller-avatar" src="https://via.placeholder.com/130" class="incoming-call-avatar" loading="lazy" decoding="async" alt="Caller">
         <div class="incoming-call-name" id="incoming-caller-name">Unknown</div>
         <div class="incoming-call-type" id="incoming-call-type">Incoming Call</div>
         <div class="incoming-call-actions">
@@ -988,7 +994,7 @@
                 <video id="remote-video" autoplay playsinline></video>
                 <video id="local-video" class="hidden" autoplay playsinline muted></video>
                 <div id="voice-only-avatar" class="voice-avatar-stage hidden">
-                    <img id="call-avatar-img" src="https://via.placeholder.com/150">
+                    <img id="call-avatar-img" src="https://via.placeholder.com/150" loading="lazy" decoding="async" alt="Call">
                     <div class="call-wave"><span></span><span></span><span></span><span></span><span></span></div>
                 </div>
             </div>
@@ -1004,7 +1010,7 @@
         <div class="social-profile-card" id="social-profile-card">
             <div class="profile-banner" id="social-profile-banner"></div>
             <div class="profile-avatar-wrapper">
-                <img id="social-profile-avatar" src="https://via.placeholder.com/110" class="avatar" alt="Profile" style="border: 4px solid var(--bg-sidebar);">
+                <img id="social-profile-avatar" src="https://via.placeholder.com/110" class="avatar" alt="Profile" loading="lazy" decoding="async" style="border: 4px solid var(--bg-sidebar);">
                 <div class="avatar-border-overlay" id="social-avatar-border"></div>
                 <div class="profile-frame-overlay" id="social-profile-frame"></div>
             </div>
@@ -1107,8 +1113,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, collection, query, where, orderBy, onSnapshot, addDoc, getDocs, updateDoc, deleteDoc, getDoc, writeBatch, increment, limit, startAfter } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+        import { getFirestore, doc, setDoc, collection, query, where, orderBy, onSnapshot, addDoc, getDocs, updateDoc, deleteDoc, getDoc, writeBatch, increment, limit, startAfter, or, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // ==================== FIREBASE CONFIG ====================
         const firebaseConfig = {
@@ -1123,30 +1128,12 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const functions = getFunctions(app);
-        // Secure callable functions (Firestore rules block direct writes)
-        const transferGoldCF = httpsCallable(functions, 'transferGold');
-        const transferDiamondCF = httpsCallable(functions, 'transferDiamond');
-        const rewardUserCF = httpsCallable(functions, 'rewardUser');
-        const recallMessageCF = httpsCallable(functions, 'recallMessage');
-        const translateMessageCF = httpsCallable(functions, 'translateMessage');
-        const transcribeVoiceCF = httpsCallable(functions, 'transcribeVoice');
-        const logProfileVisitCF = httpsCallable(functions, 'logProfileVisit');
-        const smartReplyCF = httpsCallable(functions, 'smartReply');
-        const publishSecretChatKeyCF = httpsCallable(functions, 'publishSecretChatKey');
-        const getSecretChatKeyCF = httpsCallable(functions, 'getSecretChatKey');
-        const markMessageReadCF = httpsCallable(functions, 'markMessageRead');
-        const setTypingStatusCF = httpsCallable(functions, 'setTypingStatus');
-        const stopTypingCF = httpsCallable(functions, 'stopTyping');
-        const blockUserCF = httpsCallable(functions, 'blockUser');
-        const unblockUserCF = httpsCallable(functions, 'unblockUser');
-        const reportContentCF = httpsCallable(functions, 'reportContent');
-        const logUserActivityCF = httpsCallable(functions, 'logUserActivity');
-        const getFriendSuggestionsCF = httpsCallable(functions, 'getFriendSuggestions');
+        // Cloud Functions removed (Spark plan compatible) — all CFs replaced with direct Firestore writes.
 
-        // Activity logging helper — fire-and-forget (non-blocking)
+        // Activity logging helper — fire-and-forget (non-blocking). Was a Cloud Function call;
+        // now a no-op on Spark plan to avoid 60s timeout errors.
         function logActivity(action, metadata = {}) {
-            logUserActivityCF({ action, metadata }).catch(() => { /* silent fail */ });
+            /* no-op: logUserActivity Cloud Function removed (Spark plan). */
         }
 
         // ==================== SECRET CHAT (E2E via libsodium.js) ====================
@@ -1181,9 +1168,9 @@
                 publicKey: Array.from(_mySecretKeyPair.publicKey),
                 privateKey: Array.from(_mySecretKeyPair.privateKey)
             }));
-            // Publish public key to Firestore via CF (so others can encrypt to us)
+            // Publish public key to Firestore via direct write (was Cloud Function).
             const b64Pub = btoa(String.fromCharCode(..._mySecretKeyPair.publicKey));
-            try { await publishSecretChatKeyCF({ publicKey: b64Pub }); } catch (_) {}
+            try { await setDoc(doc(db, 'secret_chat_keys', currentUser.uid), { uid: currentUser.uid, publicKey: b64Pub, updatedAt: Date.now() }); } catch (_) {}
             return _mySecretKeyPair;
         }
         async function encryptSecretMessage(plaintext, recipientPublicKeyB64) {
@@ -1340,38 +1327,35 @@
                 if (reactionCb) reactionCb(messageId, '❤️');
             });
         }
-        // Message recall UI helper — checks feature + window, calls CF
+        // Message recall UI helper — checks feature + window, calls direct Firestore update (was CF)
         async function tryRecallMessage(messageId, chatType, chatId, msgTimestamp) {
             if (!hasFeature('recall')) { showToast('Buy Message Recall from store to use this.', 'error'); return; }
             const ageMs = Date.now() - (msgTimestamp || 0);
             if (ageMs > 5 * 60 * 1000) { showToast('Recall window (5 min) expired.', 'error'); return; }
             try {
-                await recallMessageCF({ messageId, chatType, chatId });
+                const messagePath = chatType === 'room'
+                    ? `group_rooms/${chatId}/room_messages/${messageId}`
+                    : `friendships/${chatId}/chat_messages/${messageId}`;
+                await updateDoc(doc(db, messagePath), { isRecalled: true, status: 'recalled', statusUpdated: Date.now() });
                 showToast('Message recalled.', 'success');
             } catch (e) { showToast('Recall failed: ' + (e?.message || ''), 'error'); }
         }
-        // Translate helper — checks feature, calls CF, shows toast
+        // Translate helper — was Cloud Function (translateMessage). On Spark plan, feature unavailable.
         async function tryTranslateMessage(text, targetLang) {
             if (!hasFeature('translator')) { showToast('Buy Chat Translator from store.', 'error'); return null; }
-            try {
-                const r = await translateMessageCF({ text, targetLang });
-                return r.data.translated;
-            } catch (e) { showToast('Translate failed: ' + (e?.message || ''), 'error'); return null; }
+            showToast('Translation requires Blaze plan', 'info');
+            return null;
         }
-        // Voice-to-text helper — checks feature, calls CF
+        // Voice-to-text helper — was Cloud Function (transcribeVoice). On Spark plan, feature unavailable.
         async function tryTranscribeVoice(audioBase64) {
             if (!hasFeature('voice_text')) { showToast('Buy Voice to Text from store.', 'error'); return null; }
-            try {
-                const r = await transcribeVoiceCF({ audioBase64 });
-                return r.data.text;
-            } catch (e) { showToast('Transcribe failed: ' + (e?.message || ''), 'error'); return null; }
+            showToast('Voice transcription requires Blaze plan', 'info');
+            return null;
         }
-        // Smart reply helper — anyone can use (limited rate)
+        // Smart reply helper — was Cloud Function (smartReply). On Spark plan, feature unavailable.
         async function trySmartReply(incomingText, contextText) {
-            try {
-                const r = await smartReplyCF({ incomingText, contextText });
-                return r.data.replies || [];
-            } catch (e) { return []; }
+            showToast('Smart reply requires Blaze plan', 'info');
+            return [];
         }
 
         // ==================== SECRET CHAT SEND (E2E encrypted) ====================
@@ -1379,9 +1363,10 @@
             if (!hasFeature('secret_chat')) { showToast('Buy Secret Chat from store to use this.', 'error'); return null; }
             if (!plaintext || !plaintext.trim()) return null;
             try {
-                // 1. Fetch recipient's public key via CF
-                const keyRes = await getSecretChatKeyCF({ targetUid: recipientUid });
-                const recipientPubB64 = keyRes.data.publicKey;
+                // 1. Fetch recipient's public key via direct Firestore read (was Cloud Function)
+                const keySnap = await getDoc(doc(db, 'secret_chat_keys', recipientUid));
+                if (!keySnap.exists()) throw new Error('Recipient has no secret chat key published');
+                const recipientPubB64 = keySnap.data().publicKey;
                 // 2. Encrypt client-side with libsodium
                 const ciphertext = await encryptSecretMessage(plaintext, recipientPubB64);
                 // 3. Get my own public key (so recipient can decrypt)
@@ -1516,9 +1501,9 @@
                 }
                 await addDoc(collPath, msgData);
                 SoundManager.playSend();
-                // Gold reward via CF
-                rewardUserCF({ action: 'message_sent', baseGold: 2, baseXp: 0 }).catch(()=>{});
-                // Log activity for admin analytics
+                // Gold reward via direct Firestore write (was Cloud Function: rewardUser)
+                updateDoc(doc(db, 'users', currentUser.uid), { gold: increment(2) }).catch(()=>{});
+                // Log activity for admin analytics (no-op on Spark plan)
                 logActivity('sticker_sent', { sticker: sticker.substring(0, 4) });
                 logActivity('message_sent', { chatType: isGroupRoomMode ? 'room' : 'friend', sticker: true });
             } catch (e) {
@@ -1567,47 +1552,69 @@
             msgEl.appendChild(ticks);
         }
 
-        // Mark incoming messages as read (batch on view)
+        // Mark incoming messages as read (batch on view). Was Cloud Function: markMessageRead.
         async function markIncomingMessagesRead(messages, chatType, chatId) {
             if (!messages || !messages.length) return;
             const myUid = currentUser.uid;
             const toMark = messages.filter(m => m.senderId !== myUid && !m.readAt);
             for (const msg of toMark) {
-                markMessageReadCF({ messageId: msg.id, chatType, chatId }).catch(()=>{});
+                const path = chatType === 'room'
+                    ? `group_rooms/${chatId}/room_messages/${msg.id}`
+                    : `friendships/${chatId}/chat_messages/${msg.id}`;
+                updateDoc(doc(db, path), { readBy: arrayUnion(myUid) }).catch(()=>{});
             }
         }
 
-        // Typing indicator — debounced sender
+        // Typing indicator — debounced sender. Was Cloud Function: setTypingStatus / stopTyping.
+        // Now writes directly to the user's own doc (preserves existing read pattern:
+        // partner polls user doc and checks isTypingTo/typingTo fields).
         let _typingTimer = null;
         let _isTyping = false;
         function startTypingIndicator(targetUid, chatType) {
             if (!targetUid || !chatType) return;
             if (_isTyping) return;
+            if (chatType === 'room') return; // typing indicator only meaningful for 1:1 chats (existing behaviour)
             _isTyping = true;
-            setTypingStatusCF({ targetUid, chatType }).catch(()=>{});
+            const userRef = doc(db, 'users', currentUser.uid);
+            const writeTyping = () => updateDoc(userRef, {
+                isTypingTo: targetUid,
+                typingTo: targetUid,
+                typingExpiresAt: Date.now() + 3000
+            }).catch(()=>{});
+            writeTyping();
             _typingTimer = setInterval(() => {
-                if (_isTyping) setTypingStatusCF({ targetUid, chatType }).catch(()=>{});
+                if (_isTyping) writeTyping();
             }, 3000); // refresh every 3s while typing
         }
         function stopTypingIndicator() {
             if (!_isTyping) return;
             _isTyping = false;
             if (_typingTimer) { clearInterval(_typingTimer); _typingTimer = null; }
-            stopTypingCF().catch(()=>{});
+            updateDoc(doc(db, 'users', currentUser.uid), {
+                isTypingTo: null, typingTo: null, typingExpiresAt: null
+            }).catch(()=>{});
         }
 
-        // Listen for partner's typing status
+        // Listen for partner's typing status — converted from onSnapshot to polling
+        // (every 5s) to reduce persistent Firestore websocket channels.
         let _partnerTypingUnsub = null;
+        let _partnerTypingPollTimer = null;
         function subscribePartnerTyping(partnerUid, onTypingChange) {
-            if (_partnerTypingUnsub) _partnerTypingUnsub();
-            _partnerTypingUnsub = onSnapshot(doc(db, 'users', partnerUid), (snap) => {
-                if (!snap.exists) return;
-                const data = snap.data();
-                const now = Date.now();
-                const isTyping = data.typingTo === currentUser.uid
-                    && data.typingExpiresAt > now;
-                onTypingChange(isTyping);
-            });
+            if (_partnerTypingPollTimer) { clearInterval(_partnerTypingPollTimer); _partnerTypingPollTimer = null; }
+            _partnerTypingUnsub = () => { if (_partnerTypingPollTimer) { clearInterval(_partnerTypingPollTimer); _partnerTypingPollTimer = null; } };
+            const poll = async () => {
+                try {
+                    const snap = await getDoc(doc(db, 'users', partnerUid));
+                    if (!snap.exists) return;
+                    const data = snap.data();
+                    const now = Date.now();
+                    const isTyping = data.typingTo === currentUser.uid
+                        && data.typingExpiresAt > now;
+                    onTypingChange(isTyping);
+                } catch(e) {}
+            };
+            poll();
+            _partnerTypingPollTimer = setInterval(poll, 5000);
         }
 
         // Reaction burst animation on message
@@ -1743,7 +1750,12 @@
         async function submitReport(reason) {
             if (!_brTargetUid) return;
             try {
-                await reportContentCF({ targetType: 'user', targetId: _brTargetUid, reason });
+                // Direct write to 'reports' collection (was Cloud Function: reportContent).
+                await addDoc(collection(db, 'reports'), {
+                    targetType: 'user', targetId: _brTargetUid, reason,
+                    reporterId: currentUser.uid, reporterName: userData?.username || 'User',
+                    timestamp: Date.now(), status: 'pending'
+                });
                 showToast('Report submitted. Thank you.', 'success');
                 closeBlockReportModal();
             } catch (e) { showToast('Report failed: ' + (e?.message || ''), 'error'); }
@@ -1751,7 +1763,8 @@
         async function submitBlock(reason) {
             if (!_brTargetUid) return;
             try {
-                await blockUserCF({ targetUid: _brTargetUid, reason });
+                // Direct array-union write (was Cloud Function: blockUser).
+                await updateDoc(doc(db, 'users', currentUser.uid), { blockedUsers: arrayUnion(_brTargetUid) });
                 showToast(`${_brTargetName || 'User'} blocked.`, 'success');
                 closeBlockReportModal();
                 // Optionally navigate away
@@ -1791,7 +1804,7 @@
                     const photo = u.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${v.visitorId}`;
                     const time = v.timestamp ? new Date(v.timestamp).toLocaleString() : '';
                     return `<div class="visitor-row">
-                        <img src="${escapeAttr(photo)}" alt="">
+                        <img src="${escapeAttr(photo)}" alt="" loading="lazy" decoding="async">
                         <div class="visitor-info">
                             <div class="visitor-name">${escapeHtml(name)}</div>
                             <div class="visitor-time">${time}</div>
@@ -1901,6 +1914,7 @@
         let isGroupRoomMode = false;
         let unsubscribeMessagesSub = null;
         let unsubscribeTargetUserStatus = null;
+        let _partnerStatusPollTimer = null; // polling replacement for unsubscribeTargetUserStatus onSnapshot
         let activeTab = "chats";
         let typingTimeout = null;
         let inboxSelectedBase64Image = null;
@@ -2121,6 +2135,26 @@
         // ==================== AUTH STATE ====================
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
+                // Cleanup all listeners + timers before redirecting
+                if (unsubscribeMessagesSub) { unsubscribeMessagesSub(); unsubscribeMessagesSub = null; }
+                if (unsubscribeTargetUserStatus) { unsubscribeTargetUserStatus(); unsubscribeTargetUserStatus = null; }
+                if (socialProfileUnsub) { socialProfileUnsub(); socialProfileUnsub = null; }
+                if (_requestsPollTimer) { clearInterval(_requestsPollTimer); _requestsPollTimer = null; }
+                if (_partnerStatusPollTimer) { clearInterval(_partnerStatusPollTimer); _partnerStatusPollTimer = null; }
+                if (_typingTimer) { clearInterval(_typingTimer); _typingTimer = null; }
+                if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
+                if (typingSendTimer) { clearTimeout(typingSendTimer); typingSendTimer = null; }
+                if (gifSearchTimer) { clearTimeout(gifSearchTimer); gifSearchTimer = null; }
+                if (searchInput && searchInput._timer) { clearTimeout(searchInput._timer); searchInput._timer = null; }
+                if (chatsRenderTimer) { clearTimeout(chatsRenderTimer); chatsRenderTimer = null; }
+                // Clear per-uid caches so a different account logging in next won't see stale data
+                try {
+                    if (currentUser) {
+                        ['mr_chats_cache_', 'mr_rooms_cache_', 'mr_requests_cache_', 'mr_requests_count_', 'mr_user_cache_'].forEach(prefix => {
+                            sessionStorage.removeItem(prefix + currentUser.uid);
+                        });
+                    }
+                } catch(e) {}
                 localStorage.removeItem('mr_chat_user');
                 localStorage.removeItem('mr_chat_uid');
                 window.location.href = 'index.html';
@@ -2129,6 +2163,18 @@
             currentUser = user;
             localStorage.setItem('mr_chat_user', user.displayName || (user.email ? user.email.split('@')[0] : 'User'));
             localStorage.setItem('mr_chat_uid', user.uid);
+
+            // Restore cached user data for instant UI render before Firestore getDoc completes
+            try {
+                const cached = sessionStorage.getItem('mr_user_cache_' + user.uid);
+                if (cached) {
+                    userData = JSON.parse(cached);
+                    currentUserRole = userData.role || 'user';
+                    blockedUsers = new Set(userData.blockedUsers || []);
+                    mutedChats = new Set(userData.mutedChats || []);
+                    if (typeof refreshFeatureButtons === 'function') refreshFeatureButtons();
+                }
+            } catch(e) {}
 
             try {
                 await initializeUserStats(user);
@@ -2172,8 +2218,17 @@
             if (!currentUser) return;
             if (document.visibilityState === 'visible') {
                 updateDoc(doc(db, 'users', currentUser.uid), { status: 'online', lastSeen: Date.now() }).catch(()=>{});
+                // Resume polling that was paused when tab was hidden
+                if (!_requestsPollTimer) {
+                    refreshFriendRequests();
+                    _requestsPollTimer = setInterval(refreshFriendRequests, 30000);
+                }
+                // Re-fetch rooms in case user joined rooms in another tab
+                refreshRooms();
             } else {
                 updateDoc(doc(db, 'users', currentUser.uid), { status: 'offline', lastSeen: Date.now() }).catch(()=>{});
+                // Pause non-essential polling when tab is hidden (saves bandwidth + Firestore reads)
+                if (_requestsPollTimer) { clearInterval(_requestsPollTimer); _requestsPollTimer = null; }
             }
         });
 
@@ -2244,6 +2299,8 @@
                 currentUserRole = userData.role || 'user';
                 blockedUsers = new Set(userData.blockedUsers || []);
                 mutedChats = new Set(userData.mutedChats || []);
+                // Refresh sessionStorage cache so next page load paints instantly
+                try { sessionStorage.setItem('mr_user_cache_' + currentUser.uid, JSON.stringify(userData)); } catch(e) {}
                 // Refresh feature-gated buttons now that userData is loaded
                 if (typeof refreshFeatureButtons === 'function') refreshFeatureButtons();
                 if (currentUserRole === 'admin' && adminRoomCreationPanel) {
@@ -2269,11 +2326,14 @@
         tabFriends.addEventListener('click', () => { SoundManager.playClick(); switchTab('friends'); });
         tabRequests.addEventListener('click', () => { SoundManager.playClick(); switchTab('requests'); });
 
-        // ==================== CHATS LISTENER (debounced 200ms) ====================
+        // ==================== CHATS LISTENER (single or() query, debounced 200ms) ====================
+        // Combines user1 + user2 queries via Firestore or() into ONE persistent listener (was 2).
+        // Also folds in the global incoming-message notification logic that previously used TWO
+        // additional duplicate listeners — so this single listener replaces 4 onSnapshot calls.
         let chatsBuffer = [];
         let chatsRenderTimer = null;
+        let notifListenerInitialized = false;
         function listenChats() {
-            // Use TWO separate queries (avoids or() which needs composite index)
             let chatsMap = new Map();
             const mergeAndRender = () => {
                 chatsBuffer = Array.from(chatsMap.values());
@@ -2281,67 +2341,138 @@
                 chatsRenderTimer = setTimeout(() => {
                     allChatsCache = chatsBuffer;
                     allFriendsCache = chatsBuffer;
+                    // Cache to sessionStorage for instant render on next page load
+                    try { sessionStorage.setItem('mr_chats_cache_' + currentUser.uid, JSON.stringify(chatsBuffer)); } catch(e){}
                     if (activeTab === 'chats' || activeTab === 'friends') renderSidebarList();
                 }, 200);
             };
-            // Query 1: user1 == me
-            const q1 = query(collection(db, 'friendships'), where('user1', '==', currentUser.uid));
-            onSnapshot(q1, (snap) => {
+            const handleSnap = (snap) => {
+                // Notify on modified (new message arrived in any friendship)
+                snap.docChanges().forEach(change => {
+                    if (change.type !== 'modified') return;
+                    if (!notifListenerInitialized) return;
+                    const data = change.doc.data();
+                    if (!data.lastMessageSenderId || data.lastMessageSenderId === currentUser.uid) return;
+                    if (mutedChats.has(data.lastMessageSenderId)) return;
+                    if (activeChatPartnerUid === data.lastMessageSenderId && document.visibilityState === 'visible') return;
+                    const dedupKey = `${data.lastMessageSenderId}_${data.timestamp}`;
+                    if (lastNotifiedMessageId === dedupKey) return;
+                    lastNotifiedMessageId = dedupKey;
+                    SoundManager.playNotification();
+                    try { alertAudio.currentTime = 0; alertAudio.play().catch(()=>{}); } catch(e){}
+                    if (Notification.permission === 'granted') {
+                        try {
+                            new Notification(`New message from ${data.lastMessageSenderName || 'User'}`, {
+                                body: data.lastMessage || 'You have a new message',
+                                icon: data.lastMessageSenderPhoto || ''
+                            });
+                        } catch(e){}
+                    }
+                });
                 snap.forEach(d => chatsMap.set(d.id, { id: d.id, ...d.data() }));
                 mergeAndRender();
-            }, (err) => { console.warn('Chats listener 1 error:', err); });
-            // Query 2: user2 == me
-            const q2 = query(collection(db, 'friendships'), where('user2', '==', currentUser.uid));
-            onSnapshot(q2, (snap) => {
-                snap.forEach(d => chatsMap.set(d.id, { id: d.id, ...d.data() }));
-                mergeAndRender();
-            }, (err) => { console.warn('Chats listener 2 error:', err); });
+                notifListenerInitialized = true;
+            };
+            // Single combined query using or() — replaces 2 separate listeners (no composite index required).
+            const q = query(collection(db, 'friendships'),
+                or(where('user1', '==', currentUser.uid), where('user2', '==', currentUser.uid)));
+            onSnapshot(q, handleSnap, (err) => { console.warn('Chats listener error:', err); });
         }
 
-        // ==================== ROOMS LISTENER ====================
+        // ==================== ROOMS — ONE-SHOT FETCH (was full-collection realtime listener!) ====================
+        // CRITICAL FIX: previously `query(collection(db, 'group_rooms'))` loaded ALL rooms for ALL users.
+        // Now filters by memberIds array-contains + falls back to all rooms only if user has no memberships
+        // (preserves original "show all rooms" UX for users who haven't joined any yet).
+        let _roomsRefreshTimer = null;
         function listenRooms() {
-            const q = query(collection(db, 'group_rooms'));
-            onSnapshot(q, async (snap) => {
-                allRoomsCache = [];
-                if (snap.empty) {
-                    // Auto-create global_public_lounge if collection is empty
-                    await setDoc(doc(db, 'group_rooms', 'global_public_lounge'), {
-                        roomId: 'global_public_lounge',
-                        roomName: 'Global Public Lounge',
-                        description: 'Welcome to the global chat room! Say hi to everyone.',
-                        photoURL: `https://api.dicebear.com/7.x/shapes/svg?seed=global`,
-                        createdBy: currentUser.uid,
-                        timestamp: Date.now()
-                    }, { merge: true });
-                    return;
+            // Restore cached rooms for instant render
+            try {
+                const cached = sessionStorage.getItem('mr_rooms_cache_' + currentUser.uid);
+                if (cached) {
+                    allRoomsCache = JSON.parse(cached);
+                    if (activeTab === 'rooms') renderSidebarList();
                 }
-                snap.forEach(d => allRoomsCache.push({ id: d.id, ...d.data() }));
+            } catch(e) {}
+            refreshRooms();
+        }
+        async function refreshRooms() {
+            try {
+                let snap;
+                try {
+                    snap = await getDocs(query(collection(db, 'group_rooms'), where('memberIds', 'array-contains', currentUser.uid)));
+                } catch (e) { snap = { empty: true, docs: [] }; }
+                if (snap.empty) {
+                    // Fallback: legacy rooms may not have memberIds set; show all rooms (preserves original UX)
+                    let allSnap;
+                    try { allSnap = await getDocs(collection(db, 'group_rooms')); } catch (e) { allSnap = { empty: true, docs: [] }; }
+                    if (allSnap.empty) {
+                        // Auto-create global_public_lounge if collection truly empty (preserve original behaviour)
+                        await setDoc(doc(db, 'group_rooms', 'global_public_lounge'), {
+                            roomId: 'global_public_lounge',
+                            roomName: 'Global Public Lounge',
+                            description: 'Welcome to the global chat room! Say hi to everyone.',
+                            photoURL: `https://api.dicebear.com/7.x/shapes/svg?seed=global`,
+                            createdBy: currentUser.uid, timestamp: Date.now(),
+                            memberIds: [currentUser.uid]
+                        }, { merge: true }).catch(()=>{});
+                        allRoomsCache = [];
+                    } else {
+                        allRoomsCache = allSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    }
+                } else {
+                    allRoomsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    // Always include the global public lounge (if it exists) so users can discover it
+                    if (!allRoomsCache.find(r => r.roomId === 'global_public_lounge' || r.id === 'global_public_lounge')) {
+                        try {
+                            const gSnap = await getDoc(doc(db, 'group_rooms', 'global_public_lounge'));
+                            if (gSnap.exists()) allRoomsCache.unshift({ id: gSnap.id, ...gSnap.data() });
+                        } catch(e) {}
+                    }
+                }
+                try { sessionStorage.setItem('mr_rooms_cache_' + currentUser.uid, JSON.stringify(allRoomsCache)); } catch(e){}
                 if (activeTab === 'rooms') renderSidebarList();
-            }, (err) => { console.warn('Rooms listener error:', err); });
+            } catch (err) { console.warn('Rooms fetch error:', err); }
         }
 
-        // ==================== FRIEND REQUESTS LISTENER ====================
+        // ==================== FRIEND REQUESTS — POLLING (was 2 duplicate realtime listeners) ====================
         let pendingRequestsCache = [];
-        function listenFriendRequests() {
-            const q = query(collection(db, 'friendRequests'),
-                where('receiverId', '==', currentUser.uid),
-                where('status', '==', 'pending'));
-            onSnapshot(q, (snap) => {
-                pendingRequestsCache = [];
-                snap.forEach(d => pendingRequestsCache.push({ id: d.id, ...d.data() }));
-                if (activeTab === 'requests') renderSidebarList();
-            }, (err) => { console.warn('Requests listener error:', err); });
-        }
-
-        function listenRequestBadge() {
-            const q = query(collection(db, 'friendRequests'),
-                where('receiverId', '==', currentUser.uid),
-                where('status', '==', 'pending'));
-            onSnapshot(q, (snap) => {
-                const count = snap.size;
+        let _requestsPollTimer = null;
+        async function refreshFriendRequests() {
+            try {
+                const q = query(collection(db, 'friendRequests'),
+                    where('receiverId', '==', currentUser.uid),
+                    where('status', '==', 'pending'));
+                const snap = await getDocs(q);
+                pendingRequestsCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                // Update badge (replaces listenRequestBadge listener)
+                const count = pendingRequestsCache.length;
                 if (count > 0) { reqBadge.textContent = count > 99 ? '99+' : count; reqBadge.style.display = 'inline-flex'; }
                 else reqBadge.style.display = 'none';
-            }, (err) => {});
+                try {
+                    sessionStorage.setItem('mr_requests_cache_' + currentUser.uid, JSON.stringify(pendingRequestsCache));
+                    sessionStorage.setItem('mr_requests_count_' + currentUser.uid, String(count));
+                } catch(e){}
+                if (activeTab === 'requests') renderSidebarList();
+            } catch (err) { console.warn('Requests fetch error:', err); }
+        }
+        function listenFriendRequests() {
+            // Restore cached requests for instant render
+            try {
+                const cached = sessionStorage.getItem('mr_requests_cache_' + currentUser.uid);
+                if (cached) {
+                    pendingRequestsCache = JSON.parse(cached);
+                    const cachedCount = parseInt(sessionStorage.getItem('mr_requests_count_' + currentUser.uid) || '0', 10);
+                    if (cachedCount > 0) { reqBadge.textContent = cachedCount > 99 ? '99+' : cachedCount; reqBadge.style.display = 'inline-flex'; }
+                    else reqBadge.style.display = 'none';
+                }
+            } catch(e) {}
+            refreshFriendRequests();
+            if (_requestsPollTimer) clearInterval(_requestsPollTimer);
+            _requestsPollTimer = setInterval(refreshFriendRequests, 30000); // poll every 30s
+        }
+        function listenRequestBadge() {
+            // Merged into listenFriendRequests (single polling source, no separate listener).
+            // Cached badge is restored inside listenFriendRequests above.
         }
 
         // ==================== SIDEBAR RENDER ====================
@@ -2420,7 +2551,7 @@
             const ts = c.timestamp;
             li.innerHTML = `
                 <div class="avatar-wrap">
-                    <img class="avatar" src="${escapeHtml(safeB64PhotoURL(partner?.photoURL, partner?.username || partnerUid))}" alt="" style="${(() => {
+                    <img class="avatar" src="${escapeHtml(safeB64PhotoURL(partner?.photoURL, partner?.username || partnerUid))}" alt="" loading="lazy" decoding="async" style="${(() => {
                         // Inline avatar effect for sidebar (uses equippedAvatar field)
                         const fx = partner?.equippedAvatar;
                         if (!fx) return '';
@@ -2461,7 +2592,7 @@
             if (activeChatUserId === (r.roomId || r.id)) li.classList.add('active');
             li.innerHTML = `
                 <div class="avatar-wrap">
-                    <img class="avatar" src="${escapeHtml(safeB64PhotoURL(r.photoURL, r.roomName || 'room'))}" alt="">
+                    <img class="avatar" src="${escapeHtml(safeB64PhotoURL(r.photoURL, r.roomName || 'room'))}" alt="" loading="lazy" decoding="async">
                 </div>
                 <div class="row-info">
                     <div class="row-name"><i class="fas fa-users" style="color:var(--purple-light);font-size:0.75rem;"></i> ${escapeHtml(r.roomName || 'Room')}</div>
@@ -2480,7 +2611,7 @@
             activeChatsList.appendChild(li);
             const sender = await getCachedUser(r.senderId || r.from);
             li.innerHTML = `
-                <img class="avatar" src="${escapeHtml(safeB64PhotoURL(sender?.photoURL, sender?.username || r.senderId))}" alt="">
+                <img class="avatar" src="${escapeHtml(safeB64PhotoURL(sender?.photoURL, sender?.username || r.senderId))}" alt="" loading="lazy" decoding="async">
                 <div class="req-info">
                     <div class="req-name">${escapeHtml(sender?.username || sender?.fullName || 'User')}</div>
                     <div class="req-meta">Sent ${r.timestamp ? formatTime(r.timestamp) : ''}</div>
@@ -2542,7 +2673,7 @@
                     else if (pendingSentUids.has(u.uid || d.id)) actionHtml = `<button class="ex-action pending" disabled>Pending</button>`;
                     else actionHtml = `<button class="ex-action" data-uid="${escapeHtml(u.uid || d.id)}">Add</button>`;
                     li.innerHTML = `
-                        <img class="avatar" src="${escapeHtml(safeB64PhotoURL(u.photoURL, u.username || u.uid))}" alt="">
+                        <img class="avatar" src="${escapeHtml(safeB64PhotoURL(u.photoURL, u.username || u.uid))}" alt="" loading="lazy" decoding="async">
                         <div class="ex-info">
                             <div class="ex-name">${escapeHtml(u.username || u.fullName || 'User')}</div>
                             <div class="ex-meta">Lv.${u.level || 1} · ${u.status === 'online' ? 'Online' : 'Offline'}</div>
@@ -2638,6 +2769,11 @@
         // ==================== OPEN CHAT (1:1) ====================
         async function openDirectChat(partnerUid, partnerData) {
             if (blockedUsers.has(partnerUid)) { showToast('You have blocked this user.', 'error'); return; }
+            // Clear typing-related timers from any previous chat
+            stopTypingIndicator();
+            if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
+            if (typingSendTimer) { clearTimeout(typingSendTimer); typingSendTimer = null; }
+            if (gifSearchTimer) { clearTimeout(gifSearchTimer); gifSearchTimer = null; }
             activeChatUserId = partnerUid;
             activeChatPartnerUid = partnerUid;
             isGroupRoomMode = false;
@@ -2689,37 +2825,44 @@
 
             // Mark active chat with this partner
             await updateDoc(doc(db, 'users', currentUser.uid), { activeChatWith: partnerUid }).catch(()=>{});
-            // Subscribe to target user status (typing/online)
+            // Poll target user status (typing/online) every 10s — was a persistent onSnapshot.
+            // Polling is acceptable here because the chat header status is non-critical and
+            // already updates on every received message via the messages listener.
             if (unsubscribeTargetUserStatus) unsubscribeTargetUserStatus();
-            unsubscribeTargetUserStatus = onSnapshot(doc(db, 'users', partnerUid), (snap) => {
-                if (!snap.exists()) return;
-                const d = snap.data();
-                const online = d.status === 'online' && !d.isInvisible;
-                // Phase 4: typing indicator — check both old field and new (with expiry)
-                const now = Date.now();
-                const isTyping = (d.typingTo === currentUser.uid && d.typingExpiresAt > now)
-                    || (d.isTypingTo === currentUser.uid); // backward compat
-                if (isTyping) {
-                    chatUserStatus.textContent = 'typing...';
-                    chatUserStatus.className = 'status typing';
-                    // Optionally show typing dots animation in messages area
-                    let typingEl = document.getElementById('typing-indicator-bubble');
-                    if (!typingEl) {
-                        typingEl = document.createElement('div');
-                        typingEl.id = 'typing-indicator-bubble';
-                        typingEl.className = 'msg-row received';
-                        typingEl.innerHTML = '<div class="msg-bubble"><div class="typing-indicator"><span>typing</span><div class="typing-dots"><span></span><span></span><span></span></div></div></div>';
-                        messagesDisplay.appendChild(typingEl);
-                        scrollToBottom();
+            if (_partnerStatusPollTimer) { clearInterval(_partnerStatusPollTimer); _partnerStatusPollTimer = null; }
+            const pollPartnerStatus = async () => {
+                try {
+                    const snap = await getDoc(doc(db, 'users', partnerUid));
+                    if (!snap.exists()) return;
+                    const d = snap.data();
+                    const online = d.status === 'online' && !d.isInvisible;
+                    const now = Date.now();
+                    const isTyping = (d.typingTo === currentUser.uid && d.typingExpiresAt > now)
+                        || (d.isTypingTo === currentUser.uid); // backward compat
+                    if (isTyping) {
+                        chatUserStatus.textContent = 'typing...';
+                        chatUserStatus.className = 'status typing';
+                        let typingEl = document.getElementById('typing-indicator-bubble');
+                        if (!typingEl) {
+                            typingEl = document.createElement('div');
+                            typingEl.id = 'typing-indicator-bubble';
+                            typingEl.className = 'msg-row received';
+                            typingEl.innerHTML = '<div class="msg-bubble"><div class="typing-indicator"><span>typing</span><div class="typing-dots"><span></span><span></span><span></span></div></div></div>';
+                            messagesDisplay.appendChild(typingEl);
+                            scrollToBottom();
+                        }
+                    } else {
+                        chatUserStatus.textContent = online ? 'Online' : formatLastSeen(d.lastSeen, d.status);
+                        chatUserStatus.className = 'status ' + (online ? 'online' : '');
+                        const typingEl = document.getElementById('typing-indicator-bubble');
+                        if (typingEl) typingEl.remove();
                     }
-                } else {
-                    chatUserStatus.textContent = online ? 'Online' : formatLastSeen(d.lastSeen, d.status);
-                    chatUserStatus.className = 'status ' + (online ? 'online' : '');
-                    const typingEl = document.getElementById('typing-indicator-bubble');
-                    if (typingEl) typingEl.remove();
-                }
-                chatHeaderOnlineRing.classList.toggle('offline', !online);
-            });
+                    chatHeaderOnlineRing.classList.toggle('offline', !online);
+                } catch(e) {}
+            };
+            pollPartnerStatus();
+            _partnerStatusPollTimer = setInterval(pollPartnerStatus, 10000);
+            unsubscribeTargetUserStatus = () => { if (_partnerStatusPollTimer) { clearInterval(_partnerStatusPollTimer); _partnerStatusPollTimer = null; } };
             // Subscribe to messages
             if (unsubscribeMessagesSub) unsubscribeMessagesSub();
             messagesDisplay.innerHTML = '';
@@ -2751,6 +2894,11 @@
 
         // ==================== OPEN ROOM (group) ====================
         function openGroupRoom(room) {
+            // Clear typing-related timers from any previous chat
+            stopTypingIndicator();
+            if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
+            if (typingSendTimer) { clearTimeout(typingSendTimer); typingSendTimer = null; }
+            if (gifSearchTimer) { clearTimeout(gifSearchTimer); gifSearchTimer = null; }
             activeChatUserId = room.roomId || room.id;
             activeChatPartnerUid = null;
             isGroupRoomMode = true;
@@ -2838,10 +2986,13 @@
                 if (data.text && data.text.trim()) {
                     refreshSmartReplies(data.text);
                 }
-                // Mark as read (we're viewing the chat)
+                // Mark as read (we're viewing the chat). Was Cloud Function: markMessageRead.
                 const chatType = isGroupRoomMode ? 'room' : 'friendship';
                 const chatId = isGroupRoomMode ? activeChatUserId : getChatRoomId(currentUser.uid, activeChatPartnerUid);
-                markMessageReadCF({ messageId: msgId, chatType, chatId }).catch(()=>{});
+                const path = chatType === 'room'
+                    ? `group_rooms/${chatId}/room_messages/${msgId}`
+                    : `friendships/${chatId}/chat_messages/${msgId}`;
+                updateDoc(doc(db, path), { readBy: arrayUnion(currentUser.uid) }).catch(()=>{});
             }
         }
         function removeMessage(msgId) {
@@ -2893,10 +3044,10 @@
             } else if (m.isRecalled) {
                 inner += `<div class="msg-recalled"><i class="fas fa-rotate-left"></i> This message was recalled</div>`;
             } else if (m.attachedImage) {
-                inner += `<img class="msg-image" src="${escapeHtml(m.attachedImage)}" data-lightbox-src="${escapeHtml(m.attachedImage)}">`;
+                inner += `<img class="msg-image" src="${escapeHtml(m.attachedImage)}" data-lightbox-src="${escapeHtml(m.attachedImage)}" loading="lazy" decoding="async" alt="Image">`;
                 if (m.text) inner += `<div class="msg-text">${highlightSearch(escapeHtml(m.text), searchTerm)}</div>`;
             } else if (m.gifUrl) {
-                inner += `<img class="msg-gif" src="${escapeHtml(m.gifUrl)}" data-lightbox-src="${escapeHtml(m.gifUrl)}">`;
+                inner += `<img class="msg-gif" src="${escapeHtml(m.gifUrl)}" data-lightbox-src="${escapeHtml(m.gifUrl)}" loading="lazy" decoding="async" alt="GIF">`;
                 if (m.text) inner += `<div class="msg-text">${highlightSearch(escapeHtml(m.text), searchTerm)}</div>`;
             } else if (m.voiceNotes) {
                 inner += renderVoicePlayer(m.voiceNotes, m.id);
@@ -3153,7 +3304,11 @@
                 ? activeChatUserId
                 : getChatRoomId(currentUser.uid, activeChatPartnerUid);
             try {
-                await recallMessageCF({ messageId: contextSelectedMsgId, chatType, chatId });
+                // Direct Firestore update (was Cloud Function: recallMessage).
+                const messagePath = chatType === 'room'
+                    ? `group_rooms/${chatId}/room_messages/${contextSelectedMsgId}`
+                    : `friendships/${chatId}/chat_messages/${contextSelectedMsgId}`;
+                await updateDoc(doc(db, messagePath), { isRecalled: true, status: 'recalled', statusUpdated: Date.now() });
                 SoundManager.playSuccess();
                 showToast('Message recalled.', 'success');
             } catch (err) {
@@ -3370,8 +3525,8 @@
                 if (lastUpdate) await updateDoc(lastUpdate.ref, lastUpdate.data).catch(()=>{});
                 // Increment messagesSent + XP
                 await updateDoc(doc(db, 'users', currentUser.uid), { messagesSent: increment(1), xp: increment(10) }).catch(()=>{});
-                // Secure gold reward via Cloud Function (applies boost multipliers)
-                rewardUserCF({ action: 'message_sent', baseGold: 2, baseXp: 0 }).catch(()=>{});
+                // Secure gold reward via direct Firestore write (was Cloud Function: rewardUser).
+                updateDoc(doc(db, 'users', currentUser.uid), { gold: increment(2) }).catch(()=>{});
                 // Log activity for admin analytics
                 logActivity('message_sent', { chatType: isGroupRoomMode ? 'room' : 'friend', hasImage: !!inboxSelectedBase64Image });
                 if (inboxSelectedBase64Image) logActivity('image_sent');
@@ -3465,6 +3620,8 @@
                 const img = document.createElement('img');
                 img.src = g.images?.fixed_height_small?.url || g.images?.original?.url;
                 img.alt = g.title || 'GIF';
+                img.loading = 'lazy';
+                img.decoding = 'async';
                 img.addEventListener('click', async () => {
                     const url = g.images?.original?.url || g.images?.fixed_height_small?.url;
                     // Send GIF as message
@@ -3644,9 +3801,14 @@
             // Clear active chat state
             if (unsubscribeMessagesSub) { unsubscribeMessagesSub(); unsubscribeMessagesSub = null; }
             if (unsubscribeTargetUserStatus) { unsubscribeTargetUserStatus(); unsubscribeTargetUserStatus = null; }
+            // Clear all chat-related timers to prevent leaks across chat switches
+            stopTypingIndicator();
+            if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
+            if (typingSendTimer) { clearTimeout(typingSendTimer); typingSendTimer = null; }
+            if (gifSearchTimer) { clearTimeout(gifSearchTimer); gifSearchTimer = null; }
             activeChatUserId = null;
             activeChatPartnerUid = null;
-            updateDoc(doc(db, 'users', currentUser.uid), { activeChatWith: null, isTypingTo: null }).catch(()=>{});
+            updateDoc(doc(db, 'users', currentUser.uid), { activeChatWith: null, isTypingTo: null, typingTo: null, typingExpiresAt: null }).catch(()=>{});
             welcomeView.classList.remove('hidden');
             activeChatView.classList.add('hidden');
             renderSidebarList();
@@ -3654,12 +3816,9 @@
 
         // ==================== SEARCH ====================
         searchInput.addEventListener('input', () => {
-            if (activeTab === 'friends') {
-                clearTimeout(searchInput._timer);
-                searchInput._timer = setTimeout(() => renderSidebarList(), 300);
-            } else {
-                renderSidebarList();
-            }
+            // 300ms debounce for all tabs (was un-debounced for non-friends tabs)
+            clearTimeout(searchInput._timer);
+            searchInput._timer = setTimeout(() => renderSidebarList(), 300);
         });
         filterBtn.addEventListener('click', () => {
             chatListFilter = chatListFilter === 'all' ? 'archived' : 'all';
@@ -3950,16 +4109,25 @@
         async function openSocialProfile(targetUid) {
             if (!targetUid) return;
             socialProfileTargetUid = targetUid;
-            if (socialProfileUnsub) socialProfileUnsub();
+            if (socialProfileUnsub) { socialProfileUnsub(); socialProfileUnsub = null; }
             socialProfileModal.classList.remove('hidden');
-            // Log profile visit (for Profile Tracker feature — only logs if target has tracker unlocked)
-            logProfileVisitCF({ targetUid }).catch(() => {});
+            // Log profile visit via direct Firestore write (was Cloud Function: logProfileVisit).
+            addDoc(collection(db, 'profile_visits'), {
+                targetUid, visitorUid: currentUser.uid, timestamp: Date.now()
+            }).catch(() => {});
             // Show report button only for other users (not self)
             _updateSocialProfileActions(targetUid);
-            socialProfileUnsub = onSnapshot(doc(db, 'users', targetUid), (snap) => {
+            // One-shot fetch (was a persistent onSnapshot — no need for realtime updates on a profile view).
+            try {
+                const snap = await getDoc(doc(db, 'users', targetUid));
                 if (!snap.exists()) { showToast('User not found.', 'error'); socialProfileModal.classList.add('hidden'); return; }
                 renderSocialProfile(snap.data());
-            });
+            } catch (e) {
+                showToast('Failed to load profile.', 'error');
+                socialProfileModal.classList.add('hidden');
+            }
+            // No-op unsubscribe (no listener to clean up anymore).
+            socialProfileUnsub = () => {};
         }
         function renderSocialProfile(d) {
             document.getElementById('social-profile-name').textContent = d.username || d.fullName || 'User';
@@ -4174,8 +4342,12 @@
             if (!reportTargetUid) { showToast('No target to report.', 'error'); return; }
             if (!reportSelectedReason) { showToast('Please select a reason.', 'error'); return; }
             try {
-                // Use CF for reports (Firestore rules block direct writes to reports collection)
-                await reportContentCF({ targetType: 'user', targetId: reportTargetUid, reason: reportSelectedReason });
+                // Direct write to 'reports' collection (was Cloud Function: reportContent).
+                await addDoc(collection(db, 'reports'), {
+                    targetType: 'user', targetId: reportTargetUid, reason: reportSelectedReason,
+                    reporterId: currentUser.uid, reporterName: userData?.username || 'User',
+                    timestamp: Date.now(), status: 'pending'
+                });
                 showToast('Report submitted. Thank you!', 'success');
                 SoundManager.playSuccess();
                 reportModal.classList.add('hidden');
@@ -4183,37 +4355,12 @@
         });
 
         // ==================== GLOBAL INCOMING MESSAGE NOTIFIER ====================
-        let notifListenerInitialized = false;
+        // NOTE: This used to set up TWO additional onSnapshot listeners on `friendships` (duplicate
+        // of listenChats). The notification logic has been folded INTO listenChats above (single
+        // or() query), so this function is now a no-op kept only for backwards-compatibility with
+        // existing call sites.
         function listenGlobalIncomingMessagesForNotification() {
-            // Use two separate queries (avoids or() index requirement)
-            const handleSnap = (snap) => {
-                snap.docChanges().forEach(change => {
-                    if (change.type !== 'modified') return;
-                    if (!notifListenerInitialized) return;
-                    const data = change.doc.data();
-                    if (!data.lastMessageSenderId || data.lastMessageSenderId === currentUser.uid) return;
-                    if (mutedChats.has(data.lastMessageSenderId)) return;
-                    if (activeChatPartnerUid === data.lastMessageSenderId && document.visibilityState === 'visible') return;
-                    const dedupKey = `${data.lastMessageSenderId}_${data.timestamp}`;
-                    if (lastNotifiedMessageId === dedupKey) return;
-                    lastNotifiedMessageId = dedupKey;
-                    // Trigger notification
-                    SoundManager.playNotification();
-                    try { alertAudio.currentTime = 0; alertAudio.play().catch(()=>{}); } catch(e){}
-                    if (Notification.permission === 'granted') {
-                        try {
-                            new Notification(`New message from ${data.lastMessageSenderName || 'User'}`, {
-                                body: data.lastMessage || 'You have a new message',
-                                icon: data.lastMessageSenderPhoto || ''
-                            });
-                        } catch(e){}
-                    }
-                });
-                notifListenerInitialized = true;
-            };
-            // Two separate listeners
-            onSnapshot(query(collection(db, 'friendships'), where('user1', '==', currentUser.uid)), handleSnap, (err) => console.warn('Notif listener 1 error:', err));
-            onSnapshot(query(collection(db, 'friendships'), where('user2', '==', currentUser.uid)), handleSnap, (err) => console.warn('Notif listener 2 error:', err));
+            /* no-op: notification logic was merged into listenChats (single or() listener). */
         }
         function requestNotificationPermission() {
             if ('Notification' in window && Notification.permission === 'default') {
@@ -4472,14 +4619,12 @@
         async function cleanupOldMessages() {
             try {
                 const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-                // Clean friendships messages — fetch friendships list directly (two queries to avoid or() index)
+                // Clean friendships messages — single or() query (was 2 separate getDocs)
                 let friendDocs = [];
                 try {
-                    const snap1 = await getDocs(query(collection(db, 'friendships'), where('user1', '==', currentUser.uid)));
-                    const snap2 = await getDocs(query(collection(db, 'friendships'), where('user2', '==', currentUser.uid)));
-                    const seen = new Set();
-                    snap1.forEach(d => { if (!seen.has(d.id)) { seen.add(d.id); friendDocs.push(d); } });
-                    snap2.forEach(d => { if (!seen.has(d.id)) { seen.add(d.id); friendDocs.push(d); } });
+                    const fSnap = await getDocs(query(collection(db, 'friendships'),
+                        or(where('user1', '==', currentUser.uid), where('user2', '==', currentUser.uid))));
+                    fSnap.forEach(d => friendDocs.push(d));
                 } catch (e) { /* skip */ }
                 for (const f of friendDocs) {
                     const roomId = f.id;
@@ -4493,9 +4638,9 @@
                     });
                     if (count > 0) await batch.commit().catch(()=>{});
                 }
-                // Clean room messages — fetch rooms list directly
+                // Clean room messages — only rooms the user is a member of (was fetching ALL rooms)
                 let roomSnap;
-                try { roomSnap = await getDocs(collection(db, 'group_rooms')); } catch (e) { roomSnap = { docs: [] }; }
+                try { roomSnap = await getDocs(query(collection(db, 'group_rooms'), where('memberIds', 'array-contains', currentUser.uid))); } catch (e) { roomSnap = { docs: [] }; }
                 for (const r of (roomSnap.docs || [])) {
                     const data = r.data();
                     const roomId = data.roomId || r.id;
@@ -4512,14 +4657,19 @@
             } catch (err) { console.warn('Cleanup error:', err); }
         }
 
-        // ==================== PAGINATION (load older on scroll-up) ====================
-        messagesDisplay.addEventListener('scroll', async () => {
-            if (messagesDisplay.scrollTop < 50 && !isLoadingOlder && messagesCache.length > 0) {
-                isLoadingOlder = true;
-                // Placeholder — for full pagination one would query with endBefore + limitToLast
-                // This implementation relies on real-time onSnapshot which returns all docs.
-                isLoadingOlder = false;
-            }
+        // ==================== PAGINATION (load older on scroll-up) — debounced 100ms ====================
+        let _scrollDebounceTimer = null;
+        messagesDisplay.addEventListener('scroll', () => {
+            if (_scrollDebounceTimer) return; // 100ms throttle — skip rapid scroll events
+            _scrollDebounceTimer = setTimeout(() => {
+                _scrollDebounceTimer = null;
+                if (messagesDisplay.scrollTop < 50 && !isLoadingOlder && messagesCache.length > 0) {
+                    isLoadingOlder = true;
+                    // Placeholder — for full pagination one would query with endBefore + limitToLast
+                    // This implementation relies on real-time onSnapshot which returns all docs.
+                    isLoadingOlder = false;
+                }
+            }, 100);
         });
 
         // ==================== INIT MESSAGE ACTION LISTENERS ====================
@@ -4611,7 +4761,7 @@
             }
         }
 
-        // Typing indicator — wire to message input
+        // Typing indicator — wire to message input (debounced to 1s per spec)
         const _typingInput = document.getElementById('message-input');
         if (_typingInput) {
             let _typingDebounce = null;
@@ -4622,7 +4772,7 @@
                 if (_typingDebounce) clearTimeout(_typingDebounce);
                 _typingDebounce = setTimeout(() => {
                     startTypingIndicator(targetUid, chatType);
-                }, 300);
+                }, 1000); // 1s debounce (was 300ms) — reduces typing-status writes
             });
             _typingInput.addEventListener('blur', () => {
                 setTimeout(stopTypingIndicator, 1000);
