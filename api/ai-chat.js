@@ -31,37 +31,66 @@ module.exports = async (req, res) => {
         }
         messages.push({ role: 'user', content: message });
 
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + apiKey,
-                'HTTP-Referer': 'https://mr-chat.vercel.app',
-                'X-Title': 'MR Chat'
-            },
-            body: JSON.stringify({
-                model: 'meta-llama/llama-3.3-70b-instruct:free',
-                messages: messages,
-                temperature: 0.7,
-                max_tokens: 1000
-            })
-        });
+        // Try multiple free models — if one has rate limit, try the next
+        const models = [
+            'meta-llama/llama-3.3-70b-instruct:free',
+            'google/gemini-2.0-flash-exp:free',
+            'deepseek/deepseek-chat-v3-0324:free',
+            'qwen/qwen-2.5-72b-instruct:free',
+            'mistralai/mistral-7b-instruct:free'
+        ];
 
-        if (!response.ok) {
-            const errText = await response.text();
-            console.error('OpenRouter error:', response.status, errText);
-            if (response.status === 429) {
-                return res.status(200).json({ 
-                    reply: 'MR AI is getting too many requests. Please wait a minute and try again.' 
+        let reply = null;
+        let lastError = null;
+
+        for (const model of models) {
+            try {
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + apiKey,
+                        'HTTP-Referer': 'https://mrchat.vercel.app',
+                        'X-Title': 'MR Chat'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    })
                 });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    reply = data?.choices?.[0]?.message?.content;
+                    if (reply) {
+                        console.log('MR AI: Success with', model);
+                        break;
+                    }
+                } else {
+                    const errData = await response.json().catch(() => ({}));
+                    lastError = response.status + ' ' + (errData?.error?.message || '').substring(0, 100);
+                    console.log('MR AI: ' + model + ' failed:', response.status);
+                    // If 429, try next model. If 401/403, key is wrong — stop.
+                    if (response.status === 401 || response.status === 403) {
+                        return res.status(500).json({ error: 'Invalid API key. Check OPENROUTER_API_KEY in Vercel env vars.' });
+                    }
+                    // 429 or other — try next model
+                }
+            } catch (e) {
+                lastError = e.message;
             }
-            return res.status(500).json({ error: 'AI error. Try again.' });
         }
 
-        const data = await response.json();
-        const reply = data?.choices?.[0]?.message?.content || 'Sorry, I could not generate a response.';
+        if (reply) {
+            return res.status(200).json({ reply: reply });
+        }
 
-        return res.status(200).json({ reply: reply });
+        console.error('MR AI: All models failed:', lastError);
+        return res.status(200).json({ 
+            reply: 'MR AI is busy right now. Please try again in a minute.' 
+        });
 
     } catch (error) {
         console.error('MR AI error:', error);
