@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
         if (message.length > 2000) return res.status(400).json({ error: 'Too long' });
 
         const apiKey = process.env.OPENROUTER_API_KEY;
-        if (!apiKey) return res.status(500).json({ error: 'Set OPENROUTER_API_KEY in Vercel env vars. Get free key: https://openrouter.ai/keys' });
+        if (!apiKey) return res.status(500).json({ error: 'Set OPENROUTER_API_KEY in Vercel. Get key: https://openrouter.ai/keys' });
 
         const systemPrompt = 'You are MR AI, the official AI assistant for MR Chat by MR Group. Founder: Tahmeed Bin Towfique. MR Chat features: Messaging (DMs, group rooms, E2E secret chat, voice/video calls), Social Feed (posts, stories, reactions), Premium Store (113 products, Gold & Diamonds), Games Arena (11 games), Mind Reset (free wellness), Motivation Hub (free motivation), Security (Firebase Auth, 2FA, E2E). Be friendly. Use user language (Bengali or English). If user mentions stress, recommend Mind Reset. If user mentions motivation, recommend Motivation Hub.';
 
@@ -31,13 +31,13 @@ module.exports = async (req, res) => {
         }
         messages.push({ role: 'user', content: message });
 
-        // Try multiple free models — if one has rate limit, try the next
+        // Correct free model names from OpenRouter (verified 2025)
         const models = [
             'meta-llama/llama-3.3-70b-instruct:free',
-            'google/gemini-2.0-flash-exp:free',
-            'deepseek/deepseek-chat-v3-0324:free',
-            'qwen/qwen-2.5-72b-instruct:free',
-            'mistralai/mistral-7b-instruct:free'
+            'openai/gpt-oss-120b:free',
+            'nvidia/nemotron-3-super-120b-a12b:free',
+            'qwen/qwen3-next-80b-a3b-instruct:free',
+            'meta-llama/llama-3.2-3b-instruct:free'
         ];
 
         let reply = null;
@@ -71,12 +71,10 @@ module.exports = async (req, res) => {
                 } else {
                     const errData = await response.json().catch(() => ({}));
                     lastError = response.status + ' ' + (errData?.error?.message || '').substring(0, 100);
-                    console.log('MR AI: ' + model + ' failed:', response.status);
-                    // If 429, try next model. If 401/403, key is wrong — stop.
+                    console.log('MR AI: ' + model + ' →', response.status);
                     if (response.status === 401 || response.status === 403) {
-                        return res.status(500).json({ error: 'Invalid API key. Check OPENROUTER_API_KEY in Vercel env vars.' });
+                        return res.status(500).json({ error: 'Invalid OpenRouter API key. Check OPENROUTER_API_KEY.' });
                     }
-                    // 429 or other — try next model
                 }
             } catch (e) {
                 lastError = e.message;
