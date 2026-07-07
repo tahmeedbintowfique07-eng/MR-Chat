@@ -562,6 +562,20 @@
                     <button class="cat-btn" data-cat="giftpack"><i class="fas fa-gift"></i> Gift Packs</button>
                 </div>
 
+                <!-- Daily Reward (Spark-plan friendly — direct Firestore writes only) -->
+                <div id="daily-reward-card" class="daily-reward-card hidden" style="background:linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,0,127,0.08)); border:1.5px solid var(--gold-yellow); border-radius:20px; padding:18px; margin-bottom:16px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                    <div style="width:56px; height:56px; border-radius:16px; background:linear-gradient(135deg, var(--gold-yellow), #FF8C00); display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#1A1D24; flex-shrink:0;">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <div style="flex:1; min-width:160px;">
+                        <div style="font-size:1rem; font-weight:800; color:var(--text-main);">Daily Reward</div>
+                        <div id="daily-reward-text" style="font-size:0.8rem; color:var(--text-muted); margin-top:2px;">Claim your free gold every day!</div>
+                    </div>
+                    <button id="claim-daily-reward-btn" class="action-btn-sm btn-pink" style="padding:10px 20px; font-size:0.85rem; font-weight:700;">
+                        <i class="fas fa-coins"></i> Claim
+                    </button>
+                </div>
+
                 <!-- Product grid -->
                 <div class="product-grid" id="product-grid">
                     <!-- Skeleton placeholders inserted by JS -->
@@ -701,11 +715,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment, onSnapshot, collection, addDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-functions.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         /* ============================================================
-           FIREBASE INIT (config preserved verbatim)
+           FIREBASE INIT — Spark plan compatible (no Cloud Functions)
            ============================================================ */
         const firebaseConfig = {
             apiKey: "AIzaSyCr9Bfn4Ep-qw9JFkguyak00dsN90GSgRY",
@@ -719,18 +732,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const functions = getFunctions(app);
-        // Secure purchase via Cloud Function (Firestore rules block direct gold/diamond writes)
-        const purchaseItemCF = httpsCallable(functions, 'purchaseItem');
-        const logUserActivityCF = httpsCallable(functions, 'logUserActivity');
-
-        // Activity logging helper — fire-and-forget.
-        // NOTE: user_activity collection is write-blocked in firestore.rules (CF-only), so we no-op
-        // on Spark plan to avoid console noise. Admin analytics rely on the CF which isn't available
-        // here; this is acceptable since purchases are still recorded via ownedItems + balance changes.
-        function logActivity(action, metadata = {}) {
-            // Intentionally empty — see note above.
-        }
+        // (Cloud Functions removed — Spark plan doesn't support them. All store
+        //  operations use direct Firestore writes which work on Spark plan.)
 
         /* ============================================================
            SOUND MANAGER (Web Audio API IIFE — copied from index.html)
@@ -1684,11 +1687,15 @@
                 renderStore();
                 renderAllSidebarWidgets();
                 showPurchaseSuccess(item);
-                // Log activity for admin analytics
-                logActivity('store_purchase', { itemId: item.id, itemName: item.name, price: item.price, currency: item.currency, type: item.type });
             } catch (e) {
                 console.error('Purchase failed:', e);
-                const msg = e?.message || 'Purchase failed. Please try again.';
+                // Show a user-friendly error message. Common failures:
+                // - permission-denied: Firestore rules blocked the write
+                // - network: Firebase unreachable
+                let msg = 'Purchase failed. Please try again.';
+                if (e?.code === 'permission-denied') msg = 'Permission denied. Your account may not allow this purchase.';
+                else if (e?.code === 'unavailable' || e?.message?.includes('network')) msg = 'Network error. Check your connection and try again.';
+                else if (e?.message) msg = e.message;
                 showToast(msg, 'error');
                 // Handle balance-related errors with shake + modal refresh
                 if (msg.includes('Insufficient')) {
@@ -2115,20 +2122,123 @@
         /* ============================================================
            AUTH STATE
            ============================================================ */
+        /* ============================================================
+           DAILY REWARD (Spark-plan friendly — direct Firestore writes)
+           Users claim free gold once per day. Streak increases each
+           consecutive day, boosting the reward. Miss a day → streak resets.
+           All data stored on the user doc (lastDailyReward, dailyStreak).
+           ============================================================ */
+        const DAILY_REWARD_BASE = 500;      // base gold reward
+        const DAILY_REWARD_STREAK_BONUS = 100; // +100 per streak day
+        const DAILY_REWARD_MAX_STREAK = 7;  // cap at 7 days (then resets)
+        const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+        function getDailyRewardAmount(streak) {
+            const day = Math.min(streak, DAILY_REWARD_MAX_STREAK);
+            return DAILY_REWARD_BASE + (day - 1) * DAILY_REWARD_STREAK_BONUS;
+        }
+        function canClaimDailyReward() {
+            if (!userData) return false;
+            const last = userData.lastDailyReward || 0;
+            return (Date.now() - last) >= ONE_DAY_MS;
+        }
+        function timeUntilNextDailyReward() {
+            const last = userData?.lastDailyReward || 0;
+            const elapsed = Date.now() - last;
+            return Math.max(0, ONE_DAY_MS - elapsed);
+        }
+        function formatTimeRemaining(ms) {
+            const h = Math.floor(ms / (1000 * 60 * 60));
+            const m = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+            return `${h}h ${m}m`;
+        }
+        function updateDailyRewardUI() {
+            const card = document.getElementById('daily-reward-card');
+            const text = document.getElementById('daily-reward-text');
+            const btn = document.getElementById('claim-daily-reward-btn');
+            if (!card || !text || !btn) return;
+            // Show the card only for real signed-in users (not demo mode).
+            if (!currentUser || currentUser.uid === 'demo-user') {
+                card.classList.add('hidden');
+                return;
+            }
+            card.classList.remove('hidden');
+            if (canClaimDailyReward()) {
+                const streak = (userData?.dailyStreak || 0) + 1;
+                const amount = getDailyRewardAmount(streak);
+                text.textContent = `Day ${streak} reward: ${amount.toLocaleString()} gold ready!`;
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-coins"></i> Claim ${amount.toLocaleString()}`;
+            } else {
+                const remaining = timeUntilNextDailyReward();
+                text.textContent = `Next reward in ${formatTimeRemaining(remaining)} · Streak: ${userData?.dailyStreak || 0} days`;
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-clock"></i> Claimed`;
+            }
+        }
+        document.getElementById('claim-daily-reward-btn').addEventListener('click', async () => {
+            if (!currentUser || currentUser.uid === 'demo-user') return;
+            if (!canClaimDailyReward()) { showToast('Already claimed today. Come back tomorrow!', 'info'); return; }
+            const btn = document.getElementById('claim-daily-reward-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner-sm"></div>';
+            try {
+                // Re-fetch to get the latest streak + avoid race conditions.
+                const snap = await getDoc(doc(db, 'users', currentUser.uid));
+                const data = snap.exists() ? snap.data() : {};
+                const last = data.lastDailyReward || 0;
+                const oldStreak = data.dailyStreak || 0;
+                // Determine new streak: if claimed within 2 days, increment; else reset to 1.
+                const elapsed = Date.now() - last;
+                let newStreak;
+                if (last === 0) newStreak = 1;
+                else if (elapsed < 2 * ONE_DAY_MS) newStreak = Math.min(oldStreak + 1, DAILY_REWARD_MAX_STREAK);
+                else newStreak = 1; // streak broken
+                const reward = getDailyRewardAmount(newStreak);
+                // Single atomic write: gold + streak + timestamp.
+                await updateDoc(doc(db, 'users', currentUser.uid), {
+                    gold: increment(reward),
+                    dailyStreak: newStreak,
+                    lastDailyReward: Date.now()
+                });
+                // Update local state so the UI reflects the change immediately.
+                userData.gold = (data.gold || 0) + reward;
+                userData.dailyStreak = newStreak;
+                userData.lastDailyReward = Date.now();
+                updateGoldDisplay();
+                updateDailyRewardUI();
+                renderAllSidebarWidgets();
+                showToast(`Claimed ${reward.toLocaleString()} gold! Day ${newStreak} streak 🎉`, 'success');
+                SoundManager.playSuccess();
+            } catch (e) {
+                console.error('Daily reward claim failed:', e);
+                let msg = 'Failed to claim reward. Try again.';
+                if (e?.code === 'permission-denied') msg = 'Permission denied.';
+                else if (e?.message) msg = e.message;
+                showToast(msg, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-coins"></i> Claim';
+            }
+        });
+        // Update the countdown timer every minute.
+        setInterval(() => { if (currentUser && currentUser.uid !== 'demo-user') updateDailyRewardUI(); }, 60000);
+
         onAuthStateChanged(auth, async (user) => {
-            // Always subscribe to settings/app — even before auth resolves
-            if (!unsubSettings) {
+            // Subscribe to settings/app only when authenticated — Firestore rules
+            // require auth for reads. When not signed in, use default settings.
+            if (user && !unsubSettings) {
                 try {
                     unsubSettings = onSnapshot(doc(db, 'settings', 'app'), (snap) => {
                         applySettings(snap.exists() ? snap.data() : {});
                     }, (err) => {
                         console.warn('settings/app subscription failed:', err);
-                        // Fail-open: allow store access if settings unreadable
                         applySettings({});
                     });
                 } catch (e) {
                     applySettings({});
                 }
+            } else if (!user) {
+                applySettings({});
             }
 
             if (!user) {
@@ -2166,6 +2276,7 @@
             }
             renderStore();
             renderAllSidebarWidgets();
+            updateDailyRewardUI();
             // Real-time: own profile (so balance updates if changed elsewhere)
             if (unsubOwnProfile) unsubOwnProfile();
             try {
@@ -2178,6 +2289,7 @@
                         updateDiamondDisplay();
                         renderStore();
                         renderAllSidebarWidgets();
+                        updateDailyRewardUI();
                         if (document.getElementById('inventory-modal').classList.contains('hidden') === false) renderInventory();
                     }
                 });

@@ -331,16 +331,28 @@ service cloud.firestore {
     }
 
     // ============================================================
-    //  FRIEND REQUESTS (id pattern: `${fromUid}_${toUid}`)
+    //  FRIEND REQUESTS (id pattern: `${senderId}_${receiverId}`)
+    //  Code writes BOTH (from/to) AND (senderId/receiverId) field pairs
+    //  for backwards-compat. Rules must check all 4 fields.
     // ============================================================
     match /friendRequests/{id} {
       allow read: if isSignedIn()
-        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
-      allow create: if isSignedIn() && request.resource.data.fromUid == uid();
+        && (resource.data.senderId == uid()
+            || resource.data.receiverId == uid()
+            || resource.data.from == uid()
+            || resource.data.to == uid());
+      allow create: if isSignedIn()
+        && (request.resource.data.senderId == uid() || request.resource.data.from == uid());
       allow update: if isSignedIn()
-        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
+        && (resource.data.senderId == uid()
+            || resource.data.receiverId == uid()
+            || resource.data.from == uid()
+            || resource.data.to == uid());
       allow delete: if isSignedIn()
-        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
+        && (resource.data.senderId == uid()
+            || resource.data.receiverId == uid()
+            || resource.data.from == uid()
+            || resource.data.to == uid());
     }
 
     // ============================================================

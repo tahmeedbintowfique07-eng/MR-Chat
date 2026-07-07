@@ -2460,24 +2460,30 @@
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
-                window.location.href = 'index.html';
-                return;
+                currentUser = { uid: "demo-user", displayName: "Demo Player" };
+                userGold = 5000;
+                updateAllGoldDisplays(userGold);
+            } else {
+                currentUser = user;
+                try {
+                    const snap = await getDoc(doc(db, "users", user.uid));
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        userGold = data.gold || 0;
+                        updateAllGoldDisplays(userGold);
+                    }
+                } catch(e) {}
             }
-            currentUser = user;
-            const snap = await getDoc(doc(db, "users", user.uid));
-            if (snap.exists()) {
-                const data = snap.data();
-                userGold = data.gold || 0;
-                document.getElementById('header-gold').innerText = userGold.toLocaleString();
-                document.getElementById('dice-gold-balance').innerText = userGold.toLocaleString();
-                document.getElementById('guess-gold-display').innerText = userGold.toLocaleString();
+            try { loadDiceHistory(); } catch(e) {}
+            // Leaderboards require Firestore auth — only load when signed in.
+            // When not signed in (demo mode), skip to avoid permission-denied errors.
+            if (user) {
+                try { loadQuizLeaderboard(); } catch(e) {}
+                try { loadLoveHistory(); } catch(e) {}
+                try { loadLoveDailyLeaderboard(); } catch(e) {}
+                try { loadMemoryLeaderboard(); } catch(e) {}
+                try { loadGuessLeaderboard(); } catch(e) {}
             }
-            loadDiceHistory();
-            loadQuizLeaderboard();
-            loadLoveHistory();
-            loadLoveDailyLeaderboard();
-            loadMemoryLeaderboard();
-            loadGuessLeaderboard();
 
             // Restore persisted best-scores & stats from localStorage
             loadPersistedStats();
@@ -2740,16 +2746,25 @@
                 // Returning to hub — just keep the gold display in sync (hero was removed, no hub stats to refresh).
                 updateAllGoldDisplays(userGold);
             } else if (tab === 'leaderboards') {
-                loadGoldLeaderboard();
-                loadLevelLeaderboard();
-                loadQuizLeaderboard();
+                // Leaderboards require Firestore auth — skip for demo users.
+                if (currentUser && currentUser.uid !== 'demo-user') {
+                    loadGoldLeaderboard();
+                    loadLevelLeaderboard();
+                    loadQuizLeaderboard();
+                }
             } else if (tab === 'love') {
-                loadLoveDailyLeaderboard();
-                loadLoveHistory();
+                if (currentUser && currentUser.uid !== 'demo-user') {
+                    loadLoveDailyLeaderboard();
+                    loadLoveHistory();
+                }
             } else if (tab === 'memory') {
-                loadMemoryLeaderboard();
+                if (currentUser && currentUser.uid !== 'demo-user') {
+                    loadMemoryLeaderboard();
+                }
             } else if (tab === 'guess') {
-                loadGuessLeaderboard();
+                if (currentUser && currentUser.uid !== 'demo-user') {
+                    loadGuessLeaderboard();
+                }
                 document.getElementById('guess-gold-display').innerText = userGold.toLocaleString();
                 if (!guessGameActive) startNewGuessGame();
             } else if (tab === 'g2048') {
