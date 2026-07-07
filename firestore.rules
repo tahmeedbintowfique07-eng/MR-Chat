@@ -26,14 +26,13 @@ service cloud.firestore {
     // Fields a normal user is NEVER allowed to change on their own doc.
     // These can only be mutated by Cloud Functions (Admin SDK) or admins.
     // NOTE: gold/diamonds removed from protected — needed for direct gift transfer (Spark plan).
-    // NOTE: deletionScheduledAt/deletionExecuteAt/deletionConfirmed removed — users can
-    //   schedule their own account deletion directly (Spark plan, no CF available).
     function protectedUserFields() {
       return [
         'role',
         'isVerified', 'isPremium',
         'isBanned', 'bannedAt', 'banReason', 'forceLogout',
-        'accountCreated'
+        'accountCreated',
+        'deletionScheduledAt', 'deletionExecuteAt', 'deletionConfirmed'
       ];
     }
     // typingTo, typingChatType, typingExpiresAt — set by client via setTypingStatus CF
@@ -104,12 +103,6 @@ service cloud.firestore {
         && resource.data.userId == uid()
         && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['userId', 'timestamp']);
-      // Any signed-in user can update denormalized count fields (reactionsCount,
-      // commentsCount, shares) — the realtime reactions/comments listeners reconcile
-      // these so Saved/Hashtag views show correct counts without a join.
-      allow update: if isSignedIn()
-        && request.resource.data.diff(resource.data).affectedKeys()
-            .hasOnly(['reactionsCount', 'commentsCount', 'shares']);
       allow update: if isAdmin();
       allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
@@ -120,11 +113,7 @@ service cloud.firestore {
     match /stories/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == uid();
-      // Owner can update anything on their own story.
       allow update: if isSignedIn() && resource.data.userId == uid();
-      // Any signed-in viewer can add their uid to the `views` array (mark-as-seen).
-      allow update: if isSignedIn()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']);
       allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
 
@@ -144,13 +133,9 @@ service cloud.firestore {
     match /comments/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == uid();
-      // Owner can edit their own comment (text, editedAt, isDeleted).
       allow update: if isSignedIn()
         && resource.data.userId == uid()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'postId', 'timestamp']);
-      // Any signed-in user can add/update reactions on any comment (reactions map field only).
-      allow update: if isSignedIn()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
       allow update: if isAdmin();
       allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
@@ -167,8 +152,8 @@ service cloud.firestore {
     }
 
     // ============================================================
-    //  GOLD / DIAMOND LEDGERS — client writes allowed (Spark plan)
-    //  Cloud Functions removed; clients now write directly.
+    //  GOLD / DIAMOND LEDGERS — client writes FORBIDDEN
+    //  Only Cloud Functions (Admin SDK) can write here.
     //  Users can read their own transactions only.
     // ============================================================
     match /gold_transactions/{id} {
@@ -193,19 +178,20 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Store purchase audit trail — clients now write directly (Spark plan, CF removed)
+    // Store purchase audit trail — only Cloud Functions write
     match /storeTransactions/{id} {
       allow read: if isSignedIn()
         && (resource.data.userId == uid() || isAdmin());
-      allow create: if isSignedIn() && request.resource.data.userId == uid();
+      allow create: if false;
       allow update: if false;
       allow delete: if isAdmin();
     }
 
-    // Profile visits — clients now write directly (was CF-only: logProfileVisit)
+    // Profile visits — only the visited user can read their own visits.
+    // Written only by Cloud Function (logProfileVisit).
     match /profile_visits/{id} {
       allow read: if isSignedIn() && resource.data.targetUid == uid();
-      allow create: if isSignedIn() && request.resource.data.visitorUid == uid();
+      allow create: if false;
       allow update: if false;
       allow delete: if isSignedIn() && resource.data.targetUid == uid();
     }
@@ -219,16 +205,15 @@ service cloud.firestore {
     }
 
     // User activity log — admin can read all (for analytics dashboard).
-    // Users can read own activity. Clients now write directly (was CF: logUserActivity).
+    // Users can read own activity. Only CF (logUserActivity) writes.
     match /user_activity/{id} {
       allow read: if isSignedIn() && (resource.data.uid == uid() || isAdmin());
-      allow create: if isSignedIn() && request.resource.data.uid == uid();
+      allow create: if false; // only CF writes (Admin SDK bypasses rules)
       allow update: if false;
       allow delete: if isAdmin();
     }
 
     // TOTP secrets for 2FA — owner can read own, only CF writes
-    // (2FA is disabled on Spark plan — no CF available — so this stays blocked)
     match /totp_secrets/{uid} {
       allow read: if isSignedIn() && uid() == uid;
       allow create: if false;
@@ -237,12 +222,10 @@ service cloud.firestore {
     }
 
     // Secret chat public keys — anyone signed-in can read (needed to encrypt to others).
-    // Clients now write own key directly (was CF: publishSecretChatKey).
+    // Only owner can publish their own key (via publishSecretChatKey CF; direct writes blocked).
     match /secret_chat_keys/{uid} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && uid() == uid;
-      allow update: if isSignedIn() && uid() == uid;
-      allow delete: if false;
+      allow write: if false;
     }
 
     // Scheduled messages — owner can create/read/delete own; CF marks sent
@@ -269,7 +252,7 @@ service cloud.firestore {
     // ============================================================
     match /admin_logs/{id} {
       allow read: if isAdmin();
-      allow create: if isAdmin(); // admin panel writes directly now (was CF)
+      allow create: if false; // Only Cloud Functions write logs (admin SDK)
       allow update: if false;
       allow delete: if isAdmin();
     }
@@ -346,28 +329,16 @@ service cloud.firestore {
     }
 
     // ============================================================
-    //  FRIEND REQUESTS (id pattern: `${senderId}_${receiverId}`)
-    //  Code writes BOTH (from/to) AND (senderId/receiverId) field pairs
-    //  for backwards-compat. Rules must check all 4 fields.
+    //  FRIEND REQUESTS (id pattern: `${fromUid}_${toUid}`)
     // ============================================================
     match /friendRequests/{id} {
       allow read: if isSignedIn()
-        && (resource.data.senderId == uid()
-            || resource.data.receiverId == uid()
-            || resource.data.from == uid()
-            || resource.data.to == uid());
-      allow create: if isSignedIn()
-        && (request.resource.data.senderId == uid() || request.resource.data.from == uid());
+        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
+      allow create: if isSignedIn() && request.resource.data.fromUid == uid();
       allow update: if isSignedIn()
-        && (resource.data.senderId == uid()
-            || resource.data.receiverId == uid()
-            || resource.data.from == uid()
-            || resource.data.to == uid());
+        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
       allow delete: if isSignedIn()
-        && (resource.data.senderId == uid()
-            || resource.data.receiverId == uid()
-            || resource.data.from == uid()
-            || resource.data.to == uid());
+        && (resource.data.fromUid == uid() || resource.data.toUid == uid());
     }
 
     // ============================================================
@@ -384,11 +355,11 @@ service cloud.firestore {
     }
 
     // ============================================================
-    //  REPORTS — clients now create directly (was CF: reportContent)
+    //  REPORTS — created via reportContent CF only
     // ============================================================
     match /reports/{id} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.reporterId == uid());
-      allow create: if isSignedIn() && request.resource.data.reporterId == uid();
+      allow create: if false; // only CF (reportContent) creates
       allow update, delete: if isAdmin();
     }
 
