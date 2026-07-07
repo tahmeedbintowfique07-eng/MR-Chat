@@ -696,10 +696,14 @@
             }
         }, 5000);
 
-        // Check if module script failed to load (file:// protocol issue)
+        // Check if module script failed to load (file:// protocol issue).
+        // Only show this warning if the protocol is actually file:// — otherwise a slow
+        // Firebase load on localhost/deployed sites would trigger a false "Server required"
+        // warning that confuses users.
+        // Wait 15s before checking (was 6s) — Firebase modules can take 5-10s on slow networks.
         setTimeout(function() {
-            if (typeof window.MR_CHAT_LOADED === 'undefined') {
-                // Module failed — show error overlay
+            if (typeof window.MR_CHAT_LOADED === 'undefined' && window.location.protocol === 'file:') {
+                // Module failed AND we're on file:// protocol — genuine issue.
                 var overlay = document.createElement('div');
                 overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;background:linear-gradient(135deg,#FF007F,#9D00FF);color:#fff;padding:14px 20px;z-index:99999;font-size:0.85rem;font-family:Inter,sans-serif;text-align:center;box-shadow:0 4px 8px rgba(0,0,0,0.5);';
                 overlay.innerHTML = '<i class="fas fa-triangle-exclamation"></i> <strong>Server required!</strong> Firebase features need a web server. Open via <code>localhost</code> or deploy to Vercel. Don\'t open HTML files directly.';
@@ -707,7 +711,9 @@
                 setTimeout(function() { overlay.style.transition='opacity 0.5s'; overlay.style.opacity='0'; }, 8000);
                 setTimeout(function() { overlay.remove(); }, 8500);
             }
-        }, 6000);
+            // If MR_CHAT_LOADED is undefined but we're NOT on file:// (e.g. localhost or
+            // deployed), the module is just slow to load — don't show the false warning.
+        }, 15000);
     </script>
 
     <!-- Permission Modal -->
@@ -2267,25 +2273,28 @@
             } catch(e) {}
 
             try {
-                await initializeUserStats(user);
-                // Set online
-                await updateDoc(doc(db, 'users', user.uid), { status: 'online', lastSeen: Date.now() }).catch(()=>{});
-                // Boot listeners
-                listenSystemSettings();
-                listenOwnUserDoc();
-                switchTab(window.location.hash === '#friends' ? 'friends' : 'chats');
-                listenFriendRequests();
-                listenRequestBadge();
-                listenChats();
-                listenRooms();
+                // Initialize user stats — wrapped in try/catch so a Firestore error
+                // (e.g. "server required" / offline / permission-denied) doesn't block
+                // the entire inbox from loading. The user can still see cached data.
+                try { await initializeUserStats(user); } catch (e) { console.warn('initializeUserStats failed:', e); }
+                // Set online (fire-and-forget — don't block boot)
+                updateDoc(doc(db, 'users', user.uid), { status: 'online', lastSeen: Date.now() }).catch(()=>{});
+                // Boot listeners — each wrapped in try/catch so one failure doesn't break all
+                try { listenSystemSettings(); } catch(e) { console.warn('listenSystemSettings:', e); }
+                try { listenOwnUserDoc(); } catch(e) { console.warn('listenOwnUserDoc:', e); }
+                try { switchTab(window.location.hash === '#friends' ? 'friends' : 'chats'); } catch(e) { console.warn('switchTab:', e); }
+                try { listenFriendRequests(); } catch(e) { console.warn('listenFriendRequests:', e); }
+                try { listenRequestBadge(); } catch(e) { console.warn('listenRequestBadge:', e); }
+                try { listenChats(); } catch(e) { console.warn('listenChats:', e); }
+                try { listenRooms(); } catch(e) { console.warn('listenRooms:', e); }
                 // UNIFIED NOTIFICATION SYSTEM — listens to Firestore `notifications` collection
                 // for likes / follows / comments / friend-requests / messages. Replaces the old
                 // listenGlobalIncomingMessagesForNotification() no-op.
-                startNotificationSystem(user.uid);
-                initMessageActionListeners();
-                listenForIncomingCalls();
-                cleanupOldMessages();
-                requestNotificationPermission();
+                try { startNotificationSystem(user.uid); } catch(e) { console.warn('startNotificationSystem:', e); }
+                try { initMessageActionListeners(); } catch(e) { console.warn('initMessageActionListeners:', e); }
+                try { listenForIncomingCalls(); } catch(e) { console.warn('listenForIncomingCalls:', e); }
+                try { cleanupOldMessages(); } catch(e) { console.warn('cleanupOldMessages:', e); }
+                try { requestNotificationPermission(); } catch(e) { console.warn('requestNotificationPermission:', e); }
 
                 // Reveal UI (only if not already revealed by the cache branch above)
                 if (loadingScreen && !loadingScreen.classList.contains('hidden')) { loadingScreen.classList.add('fade-out'); setTimeout(() => loadingScreen.classList.add('hidden'), 300); }
@@ -3613,7 +3622,23 @@
             }
         });
         messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); messageForm.requestSubmit(); }
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                // Directly call the send function — don't go through requestSubmit()
+                // which can have timing issues on some browsers.
+                const text = messageInput.value.trim();
+                if (!text && !inboxSelectedBase64Image) return;
+                if (_pendingScheduleAt) {
+                    const chatType = isGroupRoomMode ? 'room' : 'friendship';
+                    const chatId = isGroupRoomMode ? activeChatUserId : getChatRoomId(currentUser.uid, activeChatPartnerUid);
+                    sendScheduledMessage(text, chatType, chatId).then(() => {
+                        messageInput.value = '';
+                        messageInput.style.height = 'auto';
+                    });
+                    return;
+                }
+                sendSecureMessage(text);
+            }
         });
 
         messageForm.addEventListener('submit', async (e) => {
@@ -5544,4 +5569,3 @@
     </style>
 </body>
 </html>
-                                  
