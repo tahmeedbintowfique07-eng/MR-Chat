@@ -1672,6 +1672,12 @@
                 // Apply net currency deltas (handles the giftpack case where price + reward are the same currency).
                 if (goldDelta !== 0) updates.gold = increment(goldDelta);
                 if (diamondDelta !== 0) updates.diamonds = increment(diamondDelta);
+                // Record this purchase in the purchasedItems audit trail (for the Recent
+                // Purchases sidebar widget). arrayUnion with an object works in Firestore.
+                updates.purchasedItems = arrayUnion({
+                    itemId: item.id, name: item.name, price: item.price,
+                    currency: item.currency, type: item.type, timestamp: Date.now()
+                });
                 await updateDoc(userRef, updates);
 
                 // 3) Re-fetch user doc so local cache reflects the truth.

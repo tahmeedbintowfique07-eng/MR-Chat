@@ -2497,17 +2497,32 @@
                     if (u.exists()) recipientUid = recipient;
                 }
                 if (!recipientUid) { showToast('User not found', 'error'); return; }
+                // Compute roomId (same pattern as inbox.html: sorted UIDs joined by '_')
+                const roomId = [currentUser.uid, recipientUid].sort().join('_');
+                // Check if friendship exists — if not, the user can't share via DM.
+                const fSnap = await getDoc(doc(db, 'friendships', roomId));
+                if (!fSnap.exists()) { showToast('You must be friends with this user to share via DM.', 'error'); return; }
                 const postSnap = await getDoc(doc(db, "posts", shareTargetPost));
                 const post = postSnap.exists() ? postSnap.data() : null;
-                addDoc(collection(db, "messages"), {
+                const senderName = currentUserData?.fullName || currentUser?.displayName || 'User';
+                // Write to the DM subcollection (not the top-level messages collection).
+                addDoc(collection(db, 'friendships', roomId, 'chat_messages'), {
                     senderId: currentUser.uid,
-                    senderName: currentUserData?.fullName || 'User',
+                    senderName,
                     receiverId: recipientUid,
                     text: `Shared a post: ${post?.text?.slice(0,80) || ''}`,
-                    type: 'story_reply',
-                    sharedPostId: shareTargetPost,
-                    timestamp: Date.now()
-                }).then(() => {
+                    attachedImage: null, gifUrl: null, voiceNotes: null,
+                    replyContext: null, isDeleted: false, isRecalled: false,
+                    reactions: {}, forwardedFrom: null,
+                    timestamp: Date.now(),
+                    status: 'delivered', statusUpdated: false
+                }).then(async () => {
+                    // Update the friendship's lastMessage + increment shares.
+                    updateDoc(doc(db, 'friendships', roomId), {
+                        lastMessage: '📎 Shared a post', lastMessageSenderId: currentUser.uid,
+                        lastMessageSenderName: senderName, lastMessageSenderPhoto: currentUserData?.photoURL || '',
+                        timestamp: Date.now()
+                    }).catch(()=>{});
                     updateDoc(doc(db, "posts", shareTargetPost), { shares: increment(1) }).catch(()=>{});
                     showToast('Shared to chat', 'success');
                     closeShareModal();
@@ -2682,7 +2697,10 @@
                     editedAt: null,
                     isDeleted: false
                 });
-                // (commentsCount is reconciled by the realtime listener in toggleComments — no manual increment.)
+                // Increment commentsCount immediately so the post-stats display updates
+                // even when the comments section is closed. The realtime listener in
+                // toggleComments also reconciles (fixes drift from soft-deletes etc.).
+                updateDoc(doc(db, "posts", postId), { commentsCount: increment(1) }).catch(()=>{});
                 // Notify post owner or parent comment owner
                 const postSnap = await getDoc(doc(db, "posts", postId));
                 if (postSnap.exists()) {
@@ -2735,7 +2753,16 @@
         window.deleteComment = function(commentId) {
             if (!confirm('Delete this comment?')) return;
             updateDoc(doc(db, "comments", commentId), { isDeleted: true, text: '', editedAt: Date.now() }).then(() => {
-                // (commentsCount is reconciled by the realtime listener in toggleComments — no manual decrement.)
+                // Decrement commentsCount on the post. Find the post ID via the DOM
+                // (the comment-item is inside a .comments-section whose ID contains the post ID).
+                const item = document.querySelector(`.comment-item[data-cid="${commentId}"]`);
+                if (item) {
+                    const section = item.closest('.comments-section');
+                    if (section) {
+                        const postId = section.id.replace('comments-', '');
+                        updateDoc(doc(db, "posts", postId), { commentsCount: increment(-1) }).catch(()=>{});
+                    }
+                }
                 showToast('Comment deleted', 'success', 1800);
             }).catch(() => showToast('Failed to delete', 'error'));
         };
@@ -3220,14 +3247,31 @@
             if (!text || !storyQueue[currentStoryIndex]) return;
             const story = storyQueue[currentStoryIndex];
             try {
-                await addDoc(collection(db, "messages"), {
+                // Compute roomId and check if friendship exists.
+                const roomId = [currentUser.uid, story.userId].sort().join('_');
+                const fSnap = await getDoc(doc(db, 'friendships', roomId));
+                if (!fSnap.exists()) { showToast('You must be friends with this user to reply.', 'error'); return; }
+                const senderName = currentUserData?.fullName || currentUser?.displayName || 'User';
+                // Write to the DM subcollection so the recipient actually receives it.
+                await addDoc(collection(db, 'friendships', roomId, 'chat_messages'), {
                     senderId: currentUser.uid,
-                    senderName: currentUserData?.fullName || currentUser?.displayName || 'User',
+                    senderName,
                     receiverId: story.userId,
                     text: `Replied to your story: "${text}"`,
+                    attachedImage: null, gifUrl: null, voiceNotes: null,
+                    replyContext: null, isDeleted: false, isRecalled: false,
+                    reactions: {}, forwardedFrom: null,
                     timestamp: Date.now(),
-                    type: 'story_reply'
+                    status: 'delivered', statusUpdated: false
                 });
+                // Update lastMessage so the chat appears at the top of the inbox.
+                await updateDoc(doc(db, 'friendships', roomId), {
+                    lastMessage: `Replied to your story: "${text.slice(0, 40)}"`,
+                    lastMessageSenderId: currentUser.uid,
+                    lastMessageSenderName: senderName,
+                    lastMessageSenderPhoto: currentUserData?.photoURL || '',
+                    timestamp: Date.now()
+                }).catch(()=>{});
                 showToast('Reply sent', 'success', 1800);
                 input.value = '';
             } catch (e) { showToast('Failed to send reply', 'error'); }

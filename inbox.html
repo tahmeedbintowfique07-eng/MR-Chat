@@ -185,7 +185,8 @@
         .explore-row .ex-meta { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
         .explore-row .ex-action { padding: 6px 14px; border-radius: 10px; background: linear-gradient(135deg, var(--pink-primary), var(--purple-primary)); color: #fff; font-size: 0.72rem; font-weight: 700; border: none; cursor: pointer; transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s; }
         .explore-row .ex-action:hover { transform: translateY(-1px); box-shadow: var(--shadow-glow); }
-        .explore-row .ex-action.pending, .explore-row .ex-action.friend { background: var(--bg-card); color: var(--text-muted); border: 1.5px solid var(--glass-border); cursor: default; }
+        .explore-row .ex-action.pending, .explore-row .ex-action.friend { background: var(--bg-card); color: var(--text-muted); border: 1.5px solid var(--glass-border); cursor: pointer; }
+        .explore-row .ex-action.pending:hover { background: rgba(255,59,48,0.1); border-color: var(--danger-red); color: var(--danger-red); }
         .explore-row .ex-action.friend { color: var(--online-green); border-color: var(--online-green); }
 
         /* Request row */
@@ -1302,6 +1303,9 @@
                 .replace(/"/g, '&quot;')
                 .replace(/'/g, '&#039;');
         }
+        // escapeAttr is an alias for escapeHtml (same escaping rules apply for attribute values).
+        // Defined here because several inline HTML templates use escapeAttr() in data-* attributes.
+        function escapeAttr(str) { return escapeHtml(str); }
         function safeB64PhotoURL(url, fallbackSeed) {
             if (url && typeof url === 'string' && url.startsWith('data:')) return url;
             if (url && typeof url === 'string' && (url.startsWith('http://') || url.startsWith('https://'))) return url;
@@ -2334,7 +2338,7 @@
                     fullName: user.displayName || username,
                     email: user.email || '',
                     photoURL: user.photoURL || defaultPhoto,
-                    level: 1, xp: 0, gold: 100, diamonds: 0,
+                    level: 1, xp: 0, gold: 0, diamonds: 0,
                     friendsCount: 0, roomsJoined: 0, messagesSent: 0,
                     status: 'online', lastSeen: Date.now(),
                     role: 'user',
@@ -2787,7 +2791,7 @@
                     li.className = 'explore-row';
                     let actionHtml;
                     if (friendUids.has(u.uid || d.id)) actionHtml = `<button class="ex-action friend" disabled>✓ Friend</button>`;
-                    else if (pendingSentUids.has(u.uid || d.id)) actionHtml = `<button class="ex-action pending" disabled>Pending</button>`;
+                    else if (pendingSentUids.has(u.uid || d.id)) actionHtml = `<button class="ex-action pending" data-uid="${escapeHtml(u.uid || d.id)}" data-cancel="1">Pending</button>`;
                     else actionHtml = `<button class="ex-action" data-uid="${escapeHtml(u.uid || d.id)}">Add</button>`;
                     li.innerHTML = `
                         <img class="avatar" src="${escapeHtml(safeB64PhotoURL(u.photoURL, u.username || u.uid))}" alt="" loading="lazy" decoding="async">
@@ -2799,8 +2803,10 @@
                     `;
                     li.querySelector('img').addEventListener('click', () => openProfileCard(u.uid || d.id));
                     li.querySelector('.ex-info').addEventListener('click', () => openProfileCard(u.uid || d.id));
-                    const addBtn = li.querySelector('.ex-action:not([disabled])');
+                    const addBtn = li.querySelector('.ex-action[data-uid]:not([data-cancel])');
                     if (addBtn) addBtn.addEventListener('click', (e) => { e.stopPropagation(); sendFriendRequest(u.uid || d.id, addBtn); });
+                    const cancelBtn = li.querySelector('.ex-action[data-cancel="1"]');
+                    if (cancelBtn) cancelBtn.addEventListener('click', (e) => { e.stopPropagation(); cancelFriendRequest(cancelBtn.dataset.uid, cancelBtn); });
                     activeChatsList.appendChild(li);
                 });
                 if (count === 0) activeChatsList.innerHTML = `<div class="empty-state"><i class="fas fa-user-slash"></i><p>No users found.</p></div>`;
@@ -2819,8 +2825,8 @@
                     receiverId: targetUid, to: targetUid,
                     status: 'pending', timestamp: Date.now()
                 });
-                // Write notification
-                await addDoc(collection(db, 'notifications'), {
+                // Write notification (fire-and-forget — don't block UI).
+                addDoc(collection(db, 'notifications'), {
                     userId: targetUid, type: 'request',
                     actorId: currentUser.uid, actorName: userData?.username || 'User',
                     actorPhoto: userData?.photoURL || '',
@@ -2828,7 +2834,14 @@
                     targetType: 'profile', targetId: currentUser.uid,
                     read: false, timestamp: Date.now()
                 }).catch(()=>{});
-                if (btnEl) { btnEl.textContent = 'Pending'; btnEl.classList.add('pending'); btnEl.disabled = true; }
+                if (btnEl) {
+                    btnEl.textContent = 'Pending';
+                    btnEl.classList.add('pending');
+                    btnEl.dataset.cancel = '1';
+                    btnEl.disabled = false; // Keep clickable so user can cancel.
+                    // Re-wire the button to cancel on next click.
+                    btnEl.onclick = (e) => { e.stopPropagation(); cancelFriendRequest(targetUid, btnEl); };
+                }
                 SoundManager.playSuccess();
                 showToast('Friend request sent!', 'success');
             } catch (err) {
@@ -2837,6 +2850,24 @@
                 SoundManager.playError();
             }
         }
+
+        async function cancelFriendRequest(targetUid, btnEl) {
+            try {
+                const reqId = `${currentUser.uid}_${targetUid}`;
+                await deleteDoc(doc(db, 'friendRequests', reqId));
+                if (btnEl) {
+                    btnEl.textContent = 'Add';
+                    btnEl.classList.remove('pending');
+                    delete btnEl.dataset.cancel;
+                    btnEl.onclick = (e) => { e.stopPropagation(); sendFriendRequest(targetUid, btnEl); };
+                }
+                showToast('Friend request cancelled.', 'info');
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to cancel request.', 'error');
+            }
+        }
+        window.cancelFriendRequest = cancelFriendRequest;
 
         async function acceptFriendRequest(req, sender) {
             try {
@@ -3056,8 +3087,10 @@
             chatUserStatus.textContent = 'Group Room';
             chatUserStatus.className = 'status';
             chatHeaderOnlineRing.classList.add('offline');
-            document.getElementById('chat-user-level').textContent = '';
-            document.getElementById('chat-user-badge').classList.add('hidden');
+            // (Level/badge elements were removed from the chat header — use optional chaining
+            //  so this doesn't throw if the elements don't exist.)
+            document.getElementById('chat-user-level')?.textContent = '';
+            document.getElementById('chat-user-badge')?.classList.add('hidden');
             // Clear activeChatWith
             updateDoc(doc(db, 'users', currentUser.uid), { activeChatWith: null }).catch(()=>{});
             // Subscribe
@@ -3601,16 +3634,34 @@
 
         async function sendSecureMessage(text) {
             if (!activeChatUserId) return;
+            // IMMEDIATELY clear the composer so the user sees instant feedback — don't
+            // wait for Firestore writes to complete (which can take 1-5s on slow networks).
+            // This prevents the "text stays in box for 5s after send" bug.
+            const capturedText = text || '';
+            const capturedImage = inboxSelectedBase64Image || null;
+            const capturedReply = currentReplyContextPayload || null;
+            // Clear UI state right away (before any await).
+            if (!currentEditModeActive) {
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                inboxSelectedBase64Image = null;
+                inboxImgPreviewBar.classList.add('hidden');
+                inboxPreviewImgSrc.classList.add('hidden');
+                attachmentStatusText.textContent = 'Ready to send...';
+                currentReplyContextPayload = null;
+                replyPreviewBar.classList.add('hidden');
+            }
+            SoundManager.playSend();
             try {
                 const senderName = userData?.username || 'User';
                 const msgData = {
                     senderId: currentUser.uid, senderName,
-                    text: text || '',
+                    text: capturedText,
                     timestamp: Date.now(),
-                    attachedImage: inboxSelectedBase64Image || null,
+                    attachedImage: capturedImage,
                     gifUrl: null,
                     voiceNotes: null,
-                    replyContext: currentReplyContextPayload || null,
+                    replyContext: capturedReply,
                     isDeleted: false, isRecalled: false,
                     reactions: {},
                     forwardedFrom: null
@@ -3620,7 +3671,7 @@
                     const collPath = isGroupRoomMode
                         ? collection(db, 'group_rooms', activeChatUserId, 'room_messages')
                         : collection(db, 'friendships', getChatRoomId(currentUser.uid, activeChatPartnerUid), 'chat_messages');
-                    await updateDoc(doc(collPath, contextSelectedMsgId), { text: text, edited: true });
+                    await updateDoc(doc(collPath, contextSelectedMsgId), { text: capturedText, edited: true });
                     currentEditModeActive = false;
                     contextSelectedMsgId = null;
                     contextSelectedMsgData = null;
@@ -3655,37 +3706,23 @@
                     };
                 }
                 await addDoc(collPath, msgData);
-                if (lastUpdate) await updateDoc(lastUpdate.ref, lastUpdate.data).catch(()=>{});
-                // Increment messagesSent + XP
-                await updateDoc(doc(db, 'users', currentUser.uid), { messagesSent: increment(1), xp: increment(10) }).catch(()=>{});
-                // Secure gold reward via direct Firestore write (was Cloud Function: rewardUser).
+                // Fire-and-forget the non-critical writes (lastMessage update, XP, gold, notification)
+                // so the function returns immediately after the message is written.
+                if (lastUpdate) updateDoc(lastUpdate.ref, lastUpdate.data).catch(()=>{});
+                updateDoc(doc(db, 'users', currentUser.uid), { messagesSent: increment(1), xp: increment(10) }).catch(()=>{});
                 updateDoc(doc(db, 'users', currentUser.uid), { gold: increment(2) }).catch(()=>{});
-                // Log activity for admin analytics
-                logActivity('message_sent', { chatType: isGroupRoomMode ? 'room' : 'friend', hasImage: !!inboxSelectedBase64Image });
-                if (inboxSelectedBase64Image) logActivity('image_sent');
-                // Reset composer
-                messageInput.value = '';
-                messageInput.style.height = 'auto';
-                inboxSelectedBase64Image = null;
-                inboxImgPreviewBar.classList.add('hidden');
-                inboxPreviewImgSrc.classList.add('hidden');
-                attachmentStatusText.textContent = 'Ready to send...';
-                currentReplyContextPayload = null;
-                replyPreviewBar.classList.add('hidden');
-                SoundManager.playSend();
-                // Clear typing indicator immediately after sending so the recipient
-                // doesn't see "typing..." for up to 13s after the message arrives.
+                // Clear typing indicator immediately after sending.
                 stopTypingIndicator();
                 if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
                 if (typingSendTimer) { clearTimeout(typingSendTimer); typingSendTimer = null; }
                 updateDoc(doc(db, 'users', currentUser.uid), { isTypingTo: null, typingTo: null, typingExpiresAt: null }).catch(()=>{});
-                // Notify recipient (NEW notifications collection) — 1:1 only
+                // Notify recipient (fire-and-forget — don't block on this).
                 if (!isGroupRoomMode) {
-                    await addDoc(collection(db, 'notifications'), {
+                    addDoc(collection(db, 'notifications'), {
                         userId: activeChatPartnerUid, type: 'message',
                         actorId: currentUser.uid, actorName: senderName,
                         actorPhoto: userData?.photoURL || '',
-                        text: text ? text.slice(0, 80) : (msgData.attachedImage ? '📷 Photo' : '🎵 Voice'),
+                        text: capturedText ? capturedText.slice(0, 80) : (capturedImage ? '📷 Photo' : '🎵 Voice'),
                         targetType: 'chat', targetId: currentUser.uid,
                         read: false, timestamp: Date.now()
                     }).catch(()=>{});
@@ -3926,13 +3963,18 @@
             }
         }
         async function sendVoiceMessage(b64) {
+            // Clear reply context immediately (before any await).
+            const capturedReply = currentReplyContextPayload || null;
+            currentReplyContextPayload = null;
+            replyPreviewBar.classList.add('hidden');
+            SoundManager.playSend();
             try {
                 const senderName = userData?.username || 'User';
                 const msgData = {
                     senderId: currentUser.uid, senderName,
                     text: '', timestamp: Date.now(),
                     attachedImage: null, gifUrl: null, voiceNotes: b64,
-                    replyContext: currentReplyContextPayload || null,
+                    replyContext: capturedReply,
                     isDeleted: false, isRecalled: false, reactions: {}, forwardedFrom: null
                 };
                 let collPath, lastUpdate;
@@ -3946,12 +3988,10 @@
                     lastUpdate = { ref: doc(db, 'friendships', roomId), data: { lastMessage: '🎵 Voice', lastMessageSenderId: currentUser.uid, lastMessageSenderName: senderName, lastMessageSenderPhoto: userData?.photoURL || '', timestamp: Date.now() } };
                 }
                 await addDoc(collPath, msgData);
-                if (lastUpdate) await updateDoc(lastUpdate.ref, lastUpdate.data).catch(()=>{});
-                await updateDoc(doc(db, 'users', currentUser.uid), { messagesSent: increment(1), xp: increment(10) }).catch(()=>{});
-                currentReplyContextPayload = null;
-                replyPreviewBar.classList.add('hidden');
-                SoundManager.playSend();
-                // Clear typing indicator immediately after sending voice message.
+                // Fire-and-forget non-critical writes.
+                if (lastUpdate) updateDoc(lastUpdate.ref, lastUpdate.data).catch(()=>{});
+                updateDoc(doc(db, 'users', currentUser.uid), { messagesSent: increment(1), xp: increment(10) }).catch(()=>{});
+                // Clear typing indicator.
                 stopTypingIndicator();
                 if (typingTimeout) { clearTimeout(typingTimeout); typingTimeout = null; }
                 if (typingSendTimer) { clearTimeout(typingSendTimer); typingSendTimer = null; }

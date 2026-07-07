@@ -26,13 +26,14 @@ service cloud.firestore {
     // Fields a normal user is NEVER allowed to change on their own doc.
     // These can only be mutated by Cloud Functions (Admin SDK) or admins.
     // NOTE: gold/diamonds removed from protected — needed for direct gift transfer (Spark plan).
+    // NOTE: deletionScheduledAt/deletionExecuteAt/deletionConfirmed removed — users can
+    //   schedule their own account deletion directly (Spark plan, no CF available).
     function protectedUserFields() {
       return [
         'role',
         'isVerified', 'isPremium',
         'isBanned', 'bannedAt', 'banReason', 'forceLogout',
-        'accountCreated',
-        'deletionScheduledAt', 'deletionExecuteAt', 'deletionConfirmed'
+        'accountCreated'
       ];
     }
     // typingTo, typingChatType, typingExpiresAt — set by client via setTypingStatus CF
@@ -103,6 +104,12 @@ service cloud.firestore {
         && resource.data.userId == uid()
         && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['userId', 'timestamp']);
+      // Any signed-in user can update denormalized count fields (reactionsCount,
+      // commentsCount, shares) — the realtime reactions/comments listeners reconcile
+      // these so Saved/Hashtag views show correct counts without a join.
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['reactionsCount', 'commentsCount', 'shares']);
       allow update: if isAdmin();
       allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
@@ -113,7 +120,11 @@ service cloud.firestore {
     match /stories/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == uid();
+      // Owner can update anything on their own story.
       allow update: if isSignedIn() && resource.data.userId == uid();
+      // Any signed-in viewer can add their uid to the `views` array (mark-as-seen).
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']);
       allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }
 
@@ -133,9 +144,13 @@ service cloud.firestore {
     match /comments/{id} {
       allow read: if isSignedIn();
       allow create: if isSignedIn() && request.resource.data.userId == uid();
+      // Owner can edit their own comment (text, editedAt, isDeleted).
       allow update: if isSignedIn()
         && resource.data.userId == uid()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'postId', 'timestamp']);
+      // Any signed-in user can add/update reactions on any comment (reactions map field only).
+      allow update: if isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
       allow update: if isAdmin();
       allow delete: if isSignedIn() && (resource.data.userId == uid() || isAdmin());
     }

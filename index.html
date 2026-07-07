@@ -393,6 +393,8 @@
         .all-user-row .u-action:hover { transform: translateY(-1px); }
         .all-user-row .u-status-friend { font-size: 0.7rem; color: var(--online-green); font-weight: 700; }
         .all-user-row .u-status-pending { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; }
+        .all-user-row .u-cancel-action { font-size: 0.7rem; padding: 5px 12px; border-radius: 10px; background: rgba(255,255,255,0.05); color: var(--text-muted); font-weight: 700; border: 1px solid var(--glass-border); cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+        .all-user-row .u-cancel-action:hover { background: rgba(255,59,48,0.1); border-color: var(--danger-red); color: var(--danger-red); }
         .load-more-row { text-align: center; padding: 14px; }
         .load-more-btn { background: transparent; border: 1.5px dashed var(--glass-border); color: var(--pink-primary); padding: 8px 20px; border-radius: 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s; }
         .load-more-btn:hover { background: var(--bg-hover); border-color: var(--pink-primary); }
@@ -1474,17 +1476,17 @@
       <div class="profile-modal-content">
         <button class="modal-close-btn" onclick="closeProfileModal()" aria-label="Close"><i class="fas fa-times"></i></button>
         <!-- Cover photo -->
-        <div class="profile-cover" id="profile-cover"></div>
+        <div class="profile-cover" id="profile-modal-cover"></div>
         <!-- Avatar -->
         <div class="profile-avatar-wrap">
           <img id="profile-avatar" class="profile-avatar-img" src="" alt="Profile">
           <div class="profile-verified-badge hidden" id="profile-verified"><i class="fas fa-check-circle"></i></div>
         </div>
         <!-- Name + Username -->
-        <h2 id="profile-name" class="profile-display-name"></h2>
+        <h2 id="profile-modal-name" class="profile-display-name"></h2>
         <p id="profile-username" class="profile-handle"></p>
         <!-- Bio -->
-        <p id="profile-bio" class="profile-bio-text"></p>
+        <p id="profile-modal-bio" class="profile-bio-text"></p>
         <!-- Interests (NEW — 5 max) -->
         <div id="profile-interests" class="profile-interests-row"></div>
         <!-- Stats -->
@@ -1956,6 +1958,8 @@
                 playSend() { playTone(900, 'sine', 0.1, 0.2, 'send').catch(()=>{}); setTimeout(() => playTone(1100, 'sine', 0.08, 0.15, 'send').catch(()=>{}), 60); },
                 playReceive() { playTone(700, 'sine', 0.12, 0.22, 'receive').catch(()=>{}); },
                 playNotif() { playTone(1000, 'triangle', 0.15, 0.22, 'notif').catch(()=>{}); setTimeout(() => playTone(1300, 'triangle', 0.1, 0.18, 'notif').catch(()=>{}), 100); },
+                // Alias: some call sites use playNotification (e.g. FCM handler, notif sound).
+                playNotification() { this.playNotif(); },
                 playSuccess() { playTone(523, 'sine', 0.1, 0.2, 'fx').catch(()=>{}); setTimeout(() => playTone(659, 'sine', 0.1, 0.2, 'fx').catch(()=>{}), 100); setTimeout(() => playTone(784, 'sine', 0.2, 0.2, 'fx').catch(()=>{}), 200); },
                 playError() { playTone(200, 'sawtooth', 0.3, 0.2, 'fx').catch(()=>{}); setTimeout(() => playTone(150, 'sawtooth', 0.3, 0.15, 'fx').catch(()=>{}), 200); },
                 setVolume(type, value) { volumes[type] = value / 100; localStorage.setItem('mr_sound_volumes', JSON.stringify(volumes)); },
@@ -3213,7 +3217,7 @@
 
                         let actionHtml = '';
                         if (isFriend) actionHtml = '<span class="u-status-friend"><i class="fas fa-check"></i> Friend</span>';
-                        else if (isPending) actionHtml = '<span class="u-status-pending">Pending</span>';
+                        else if (isPending) actionHtml = `<button class="u-cancel-action" data-uid="${escapeHtml(u.uid)}" title="Cancel Request"><i class="fas fa-user-clock"></i> Pending</button>`;
                         else actionHtml = `<button class="u-action" data-uid="${escapeHtml(u.uid)}">Add</button>`;
 
                         row.innerHTML = `
@@ -3235,6 +3239,13 @@
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         dashboardSendFriendRequest(btn.dataset.uid, btn);
+                    });
+                });
+                // Wire Cancel Request buttons (Facebook-style: clicking "Pending" cancels the request)
+                container.querySelectorAll('.u-cancel-action[data-uid]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dashboardCancelFriendRequest(btn.dataset.uid, btn);
                     });
                 });
                 // Update pagination cursor
@@ -3283,16 +3294,49 @@
                 try { await updateDoc(doc(db, "users", currentUser.uid), { friendRequestsSentToday: increment(1) }); } catch (e) {}
                 showToast("Friend request sent!", "success");
                 if (btnEl) {
-                    const span = document.createElement('span');
-                    span.className = 'u-status-pending';
-                    span.innerText = 'Pending';
-                    btnEl.replaceWith(span);
+                    const newBtn = document.createElement('button');
+                    newBtn.className = 'u-cancel-action';
+                    newBtn.dataset.uid = targetUid;
+                    newBtn.title = 'Cancel Request';
+                    newBtn.innerHTML = '<i class="fas fa-user-clock"></i> Pending';
+                    newBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dashboardCancelFriendRequest(targetUid, newBtn);
+                    });
+                    btnEl.replaceWith(newBtn);
                 }
                 // XP reward using atomic increment (fixes race condition)
                 rewardXpToCurrentUser(15);
             } catch (e) { showToast(e.message, "error"); }
         }
         window.dashboardSendFriendRequest = dashboardSendFriendRequest;
+
+        // Cancel a pending friend request (Facebook-style: "Pending" → click → "Add" again).
+        async function dashboardCancelFriendRequest(targetUid, btnEl) {
+            if (!currentUser || !targetUid) return;
+            const reqId = `${currentUser.uid}_${targetUid}`;
+            try {
+                await deleteDoc(doc(db, "friendRequests", reqId));
+                // Decrement the daily counter (best-effort)
+                try { await updateDoc(doc(db, "users", currentUser.uid), { friendRequestsSentToday: increment(-1) }); } catch (e) {}
+                showToast("Friend request cancelled.", "info");
+                if (btnEl) {
+                    const newBtn = document.createElement('button');
+                    newBtn.className = 'u-action';
+                    newBtn.dataset.uid = targetUid;
+                    newBtn.innerText = 'Add';
+                    newBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dashboardSendFriendRequest(targetUid, newBtn);
+                    });
+                    btnEl.replaceWith(newBtn);
+                }
+            } catch (e) {
+                console.error('Cancel friend request error:', e);
+                showToast('Failed to cancel request: ' + (e?.message || ''), 'error');
+            }
+        }
+        window.dashboardCancelFriendRequest = dashboardCancelFriendRequest;
 
         /* ============================================================
            XP REWARDS — uses increment() (fixes race condition)
@@ -3316,13 +3360,19 @@
             try {
                 // Direct Firestore query (no CF — Spark plan compatible)
                 const friendIds = new Set(dashboardFriends.map(f => f.uid));
+                // Fetch pending request receiver IDs so we can show "Pending" + cancel.
+                let pendingReqIds = new Set();
+                try {
+                    const reqSnap = await getDocs(query(collection(db, "friendRequests"), where("senderId", "==", currentUser.uid), where("status", "==", "pending")));
+                    reqSnap.forEach(d => { const data = d.data(); pendingReqIds.add(data.receiverId || data.to); });
+                } catch (e) {}
                 let q = query(collection(db, "users"), limit(15));
                 const snap = await getDocs(q);
-                const suggested = [];
+                let suggested = [];
                 snap.forEach(d => {
                     const u = d.data();
                     if (u.uid !== currentUser.uid && !friendIds.has(u.uid) && !u.isBanned) {
-                        suggested.push({ uid: u.uid, username: u.username, fullName: u.fullName, photoURL: u.photoURL, status: u.status, isInvisible: u.isInvisible, lastSeen: u.lastSeen, mutualFriends: 0 });
+                        suggested.push({ uid: u.uid, username: u.username, fullName: u.fullName, photoURL: u.photoURL, status: u.status, isInvisible: u.isInvisible, lastSeen: u.lastSeen, mutualFriends: 0, isPending: pendingReqIds.has(u.uid) });
                     }
                 });
                 suggested = suggested.slice(0, 5);
@@ -3337,13 +3387,15 @@
                     row.className = 'active-now-row';
                     row.onclick = () => openProfileCard(u.uid);
                     const mutualText = u.mutualFriends > 0 ? `${u.mutualFriends} mutual friend${u.mutualFriends > 1 ? 's' : ''}` : (isOnline ? 'Online now' : 'Suggested for you');
+                    const btnClass = u.isPending ? 'action-btn-sm btn-muted u-cancel-action' : 'action-btn-sm btn-pink u-action';
+                    const btnIcon = u.isPending ? 'fa-user-clock' : 'fa-plus';
                     row.innerHTML = `
                         <img src="${escapeHtml(safeB64PhotoURL(u.photoURL))}" loading="lazy" decoding="async" onerror="this.src='https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(u.fullName || u.username || 'User')}'" style="${isOnline ? 'border-color: var(--online-green);' : ''}">
                         <div class="an-info">
                             <div class="an-name">${escapeHtml(u.fullName || u.username || 'User')}</div>
                             <div class="an-status" style="${isOnline ? '' : 'color: var(--text-muted);'}">${mutualText}</div>
                         </div>
-                        <button class="action-btn-sm btn-pink u-action" data-uid="${escapeHtml(u.uid)}" style="padding: 4px 10px; font-size: 0.65rem;"><i class="fas fa-plus"></i></button>
+                        <button class="${btnClass}" data-uid="${escapeHtml(u.uid)}" style="padding: 4px 10px; font-size: 0.65rem;"><i class="fas ${btnIcon}"></i></button>
                     `;
                     container.appendChild(row);
                 });
@@ -3351,6 +3403,12 @@
                     btn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         dashboardSendFriendRequest(btn.dataset.uid, btn);
+                    });
+                });
+                container.querySelectorAll('.u-cancel-action[data-uid]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        dashboardCancelFriendRequest(btn.dataset.uid, btn);
                     });
                 });
             } catch (e) { console.error('loadSuggestedUsers error:', e); }
@@ -3422,7 +3480,7 @@
                 modal.classList.remove('hidden');
 
                 // Cover photo
-                const coverEl = document.getElementById('profile-cover');
+                const coverEl = document.getElementById('profile-modal-cover');
                 if (coverEl) {
                     if (data.coverPhoto) coverEl.style.background = `url('${data.coverPhoto}') center/cover no-repeat`;
                     else coverEl.style.background = 'linear-gradient(135deg, var(--pink-primary), var(--purple-primary))';
@@ -3436,9 +3494,9 @@
                 }
 
                 // Name + Username + Bio
-                document.getElementById('profile-name').textContent = data.fullName || data.username || 'User';
+                document.getElementById('profile-modal-name').textContent = data.fullName || data.username || 'User';
                 document.getElementById('profile-username').textContent = '@' + (data.username || 'user');
-                document.getElementById('profile-bio').textContent = data.bio || 'No bio yet';
+                document.getElementById('profile-modal-bio').textContent = data.bio || 'No bio yet';
 
                 // Currency
                 document.getElementById('profile-gold').textContent = (data.gold || 0).toLocaleString();
@@ -3998,7 +4056,7 @@
         async function loadAdminReports() {
             if (!userData || userData.role !== 'admin') return;
             try {
-                const snap = await getDocs(query(collection(db, "reports"), where("status", "==", "open"), limit(20)));
+                const snap = await getDocs(query(collection(db, "reports"), where("status", "==", "pending"), limit(20)));
                 adminReportsList.innerHTML = '';
                 if (snap.empty) {
                     adminReportsList.innerHTML = '<div class="empty-state" style="padding: 16px;"><i class="fas fa-inbox"></i><p style="font-size: 0.72rem;">No reports</p></div>';
@@ -4307,7 +4365,7 @@
                 if (pm && !pm.classList.contains('hidden')) pm.classList.add('hidden');
                 if (!adminModal.classList.contains("hidden")) adminModal.classList.add("hidden");
                 webThemeDropdown.classList.add("hidden");
-                menuDropdown.classList.add("hidden");
+                // (menuDropdown reference removed — was never declared, caused ReferenceError on Escape.)
             }
         });
 
